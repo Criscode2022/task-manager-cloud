@@ -1,11 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
-import { addIcons } from 'ionicons';
-import {
-  closeCircleOutline,
-  optionsOutline,
-  trashOutline,
-} from 'ionicons/icons';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { ItemReorderEventDetail } from '@ionic/angular';
 import { TaskService } from '../task.service';
 import { Task } from '../types/Task';
 import { TaskForm } from './task.form';
@@ -22,37 +16,25 @@ export class Tab1Page extends TaskForm implements OnInit {
   protected canClick = true;
   protected isDisabled = false;
 
-  protected closeCircleOutline = closeCircleOutline;
-  protected trashOutline = trashOutline;
-  protected optionsOutline = optionsOutline;
+  private taskService = inject(TaskService);
 
-  public alertButtons: any[];
-
-  constructor(
-    private taskService: TaskService,
-    private alertController: AlertController
-  ) {
-    super();
-    addIcons({ closeCircleOutline, trashOutline, optionsOutline });
-
-    this.alertButtons = [
-      {
-        text: 'Cancel',
-        role: 'cancel',
-        handler: () => {
-          console.log('Cancel clicked');
-        },
+  public alertButtons = [
+    {
+      text: 'Cancel',
+      role: 'cancel',
+      handler: () => {
+        console.log('Cancel clicked');
       },
-      {
-        text: 'Confirm',
-        role: 'confirm',
-        handler: () => {
-          this.deleteAllTasks();
-          window.location.reload();
-        },
+    },
+    {
+      text: 'Confirm',
+      role: 'confirm',
+      handler: () => {
+        this.deleteAllTasks();
+        window.location.reload();
       },
-    ];
-  }
+    },
+  ];
 
   async ngOnInit() {
     this.taskService.storageInitialized.subscribe(async () => {
