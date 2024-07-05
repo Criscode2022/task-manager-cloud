@@ -1,8 +1,17 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      Tab 1
-    </ion-title>
+    <ion-title> Task Manager </ion-title>
+    <div slot="end">
+      <ion-button id="delete-alert" color="danger">
+        <ion-icon name="trash-outline"></ion-icon>
+      </ion-button>
+    </div>
+    <ion-alert
+      trigger="delete-alert"
+      header="Confirmation"
+      message="Are you sure you want to delete all tasks? This action cannot be undone."
+      [buttons]="alertButtons"
+    ></ion-alert>
   </ion-toolbar>
 </ion-header>
 
@@ -13,5 +22,90 @@
     </ion-toolbar>
   </ion-header>
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
+  <ion-content>
+    <form
+      [formGroup]="form"
+      class="flex flex-col gap-2 md:w-3/5 lg:w-2/5 mx-auto px-4 pt-8"
+      (ngSubmit)="addTask()"
+    >
+      <mat-form-field appearance="outline" class="">
+        <mat-label>Title</mat-label>
+        <input matInput type="text" formControlName="title" />
+
+        @if (this.title?.hasError('maxlength')) {
+        <mat-error
+          >If you have so many things to tell, add them to the description!
+        </mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="">
+        <mat-label>Description</mat-label>
+        <input type="text" matInput formControlName="description" />
+
+        @if (this.description?.hasError('maxlength')) {
+        <mat-error>Remember, keep it simple! </mat-error>
+        }
+      </mat-form-field>
+
+      <button
+        class="bg-blue-500 text-white rounded-lg py-2 hover:bg-blue-600 transition duration-200 shadow-md"
+      >
+        Add Task
+      </button>
+    </form>
+
+    <ion-list class="mt-8 mb-12 space-y-4">
+      <ion-reorder-group
+        [disabled]="isDisabled"
+        (ionItemReorder)="handleReorder($any($event))"
+      >
+        @for (task of tasks(); track task.id) {
+
+        <ion-item-sliding>
+          <ion-item>
+            <mat-checkbox
+              [checked]="task.done"
+              (change)="canClick ? toggleTaskCompletion(task.id) : null"
+              class="mr-4"
+              [class.disabled]="!canClick"
+            ></mat-checkbox>
+            <ion-label
+              (click)="canClick ? toggleTaskCompletion(task.id) : null"
+              [class.done]="task.done"
+              class="cursor-pointer text-sm md:text-base lg:text-lg xl:text-xl"
+              [class.disabled]="!canClick"
+            >
+              {{ task.title }} - {{ task.description }}
+            </ion-label>
+            <ion-reorder slot="end"></ion-reorder>
+            <ion-icon
+              slot="end"
+              color="danger"
+              name="close-circle-outline"
+              (dblclick)="deleteTask(task.id)"
+              class="hidden sm:block cursor-pointer"
+              matTooltip="Double click to delete the task"
+            ></ion-icon>
+          </ion-item>
+          <ion-item-options side="start">
+            <ion-item-option (click)="deleteTask(task.id)" color="danger"
+              >Delete</ion-item-option
+            >
+          </ion-item-options>
+          <ion-item-options side="end">
+            <ion-item-option (click)="deleteTask(task.id)" color="danger"
+              >Delete</ion-item-option
+            >
+          </ion-item-options>
+        </ion-item-sliding>
+
+        } @empty {
+        <div class="flex justify-center font-semibold mx-4">
+          I am sure you have something to do... Why don't you add it?
+        </div>
+
+        }
+      </ion-reorder-group>
+    </ion-list>
+  </ion-content>
 </ion-content>
