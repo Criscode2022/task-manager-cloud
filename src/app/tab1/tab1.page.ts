@@ -31,7 +31,6 @@ export class Tab1Page extends TaskForm implements OnInit {
       role: 'confirm',
       handler: () => {
         this.deleteAllTasks();
-        window.location.reload();
       },
     },
   ];
