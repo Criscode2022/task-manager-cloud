@@ -17,7 +17,7 @@
 
   <p class="m-4 font-bold">Save your tasks to the cloud</p>
 
-  @if (this.uploading === true) {
+  @if (this.loading() === true) {
   <ion-spinner name="crescent"></ion-spinner>
 
   }
@@ -26,16 +26,16 @@
     <ion-icon name="save"></ion-icon>
   </ion-button>
 
-  @if (this.userId() && this.uploading === false) {
+  @if (this.userId() && this.loading() === false) {
 
   <ion-title class="my-4"
     >Your user ID : <strong>{{this.userId()}}</strong></ion-title
   >
 
-  <div class="p-12">
+  <div class="px-4 py-12">
     <p>Use this userId to import your tasks on any device</p>
   </div>
-  } @if (this.message() && this.uploading === false) {
+  } @if (this.message() && this.loading() === false) {
 
   <div class="p-8">
     <p><strong>{{this.message()}}</strong></p>

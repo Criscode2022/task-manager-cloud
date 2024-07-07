@@ -44,19 +44,15 @@ export class Tab1Page extends TaskForm implements OnInit {
 
     this.taskService.tasksUpdated.subscribe(async () => {
       const storedTasks = await this.taskService.getTasks();
-      console.log('Tasks updated:', storedTasks);
       this.tasks.set(storedTasks);
     });
 
     this.taskService.downloadTasks.subscribe((tasks) => {
-      console.log('Downloaded tasks from tab1 subs:', tasks);
       if (tasks.length === 0) {
-        console.log('No tasks to download');
         return;
       }
 
       this.tasks.set(tasks);
-      console.log('Tasks set after download:', tasks);
     });
   }
 

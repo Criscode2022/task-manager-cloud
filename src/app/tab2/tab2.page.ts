@@ -17,7 +17,6 @@ export class Tab2Page {
   protected userId = this.http.userId;
 
   protected loading = this.http.loading;
-  protected uploading = false;
 
   public alertButtonsDownload = [
     {
@@ -44,7 +43,6 @@ export class Tab2Page {
 
   protected async upload() {
     try {
-      this.uploading = true;
       const tasks = await this.taskService.getTasks();
       this.tasks.set(tasks);
 
@@ -57,8 +55,6 @@ export class Tab2Page {
       await this.http.upload(tasks);
     } catch (error) {
       console.error('Error uploading tasks:', error);
-    } finally {
-      this.uploading = false;
     }
   }
 
