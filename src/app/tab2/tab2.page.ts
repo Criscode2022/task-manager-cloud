@@ -19,7 +19,7 @@ export class Tab2Page {
   protected loading = this.http.loading;
   protected uploading = false;
 
-  public alertButtons = [
+  public alertButtonsDownload = [
     {
       text: 'Cancel',
       role: 'cancel',
