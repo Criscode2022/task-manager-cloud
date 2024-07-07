@@ -35,6 +35,11 @@
   <div class="p-8">
     <p>Use this userId to import your tasks on any device</p>
   </div>
+  } @if (this.message() && this.uploading === false) {
+
+  <div class="p-8">
+    <p><strong>{{this.message()}}</strong></p>
+  </div>
   }
 
   <p class="m-4 font-bold">Get your tasks from the cloud</p>

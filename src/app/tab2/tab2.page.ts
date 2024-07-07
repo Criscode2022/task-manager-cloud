@@ -13,6 +13,7 @@ export class Tab2Page {
   private http = inject(TaskHttpService);
 
   protected tasks = signal<Task[]>([]);
+  protected message = signal<string | null>(null);
   protected userId = this.http.userId;
 
   protected loading = this.http.loading;
@@ -46,6 +47,13 @@ export class Tab2Page {
       this.uploading = true;
       const tasks = await this.taskService.getTasks();
       this.tasks.set(tasks);
+
+      if (tasks.length === 0) {
+        this.message.set('No tasks to upload');
+        return;
+      }
+
+      this.message.set(null);
       await this.http.upload(tasks);
     } catch (error) {
       console.error('Error uploading tasks:', error);
