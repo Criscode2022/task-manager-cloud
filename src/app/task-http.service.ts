@@ -39,9 +39,10 @@ export class TaskHttpService {
         .subscribe((response: any) => {
           this.loading = false;
           this.taskService.saveTasks(response);
-          window.location.reload();
+          this.taskService.downloadTasks.next(response);
         });
     } catch (error) {
+      console.error('Error downloading tasks:', error);
     } finally {
       this.loading = false;
     }
