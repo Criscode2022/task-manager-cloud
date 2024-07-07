@@ -17,15 +17,17 @@ export class TaskHttpService {
   async upload(tasks: Task[]) {
     this.loading = true;
 
-    this.http.post('http://localhost:3000/insert-tasks', tasks).subscribe(
-      (response: any) => {
-        this.loading = false;
-        this.userId.set(response['userid']);
-      },
-      (error) => {
-        console.error('Error uploading tasks:', error);
-      }
-    );
+    this.http
+      .post('https://api-task-i35c.onrender.com/insert-tasks', tasks)
+      .subscribe(
+        (response: any) => {
+          this.loading = false;
+          this.userId.set(response['userid']);
+        },
+        (error) => {
+          console.error('Error uploading tasks:', error);
+        }
+      );
   }
 
   async download(userId: number) {
@@ -33,7 +35,7 @@ export class TaskHttpService {
       this.loading = true;
 
       this.http
-        .get(`http://localhost:3000/tasks/${userId}`)
+        .get(`https://api-task-i35c.onrender.com/${userId}`)
         .subscribe((response: any) => {
           this.loading = false;
           this.taskService.saveTasks(response);

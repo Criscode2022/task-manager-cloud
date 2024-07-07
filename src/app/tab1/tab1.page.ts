@@ -63,6 +63,7 @@ export class Tab1Page extends TaskForm implements OnInit {
       };
 
       this.taskService.addTask(task);
+      this.form.reset();
     }
   }
 
