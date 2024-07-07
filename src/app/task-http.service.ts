@@ -19,15 +19,19 @@ export class TaskHttpService {
 
     this.http
       .post('https://api-task-i35c.onrender.com/insert-tasks', tasks)
-      .subscribe(
-        (response: any) => {
+      .subscribe({
+        next: (response: any) => {
           this.loading.set(false);
           this.userId.set(response['userid']);
         },
-        (error) => {
+        error: (error: any) => {
+          this.loading.set(false);
           console.error('Error uploading tasks:', error);
-        }
-      );
+        },
+        complete: () => {
+          this.loading.set(false);
+        },
+      });
   }
 
   async download(userId: number) {
