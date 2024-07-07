@@ -35,7 +35,7 @@ export class TaskHttpService {
       this.loading = true;
 
       this.http
-        .get(`https://api-task-i35c.onrender.com/${userId}`)
+        .get(`https://api-task-i35c.onrender.com/tasks/${userId}`)
         .subscribe((response: any) => {
           this.loading = false;
           this.taskService.saveTasks(response);
