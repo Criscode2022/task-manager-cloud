@@ -14,6 +14,7 @@ export class TaskHttpService {
   private taskService = inject(TaskService);
 
   public loading = signal<boolean>(false);
+  public messageDownload = signal<string | null>(null);
 
   async upload(tasks: Task[]) {
     this.loading.set(true);
@@ -47,13 +48,19 @@ export class TaskHttpService {
     try {
       this.http
         .get(`https://api-task-i35c.onrender.com/tasks/${userId}`)
-        .subscribe((response: any) => {
-          const tasks = response.map((task: Task) => ({
-            ...task,
-            done: task.done ? true : false,
-          }));
-          this.taskService.saveTasks(tasks);
-          this.taskService.downloadTasks.next(tasks);
+        .subscribe({
+          next: (response: any) => {
+            const tasks = response.map((task: Task) => ({
+              ...task,
+              done: task.done ? true : false,
+            }));
+            this.taskService.saveTasks(tasks);
+            this.taskService.downloadTasks.next(tasks);
+            this.messageDownload.set('success');
+          },
+          error: () => {
+            this.messageDownload.set('error');
+          },
         });
     } catch (error) {
       console.error('Error downloading tasks:', error);
