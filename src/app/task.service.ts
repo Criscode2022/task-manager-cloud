@@ -28,16 +28,6 @@ export class TaskService {
     this.tasksUpdated.next();
   }
 
-  public async updateTask(updatedTask: Task) {
-    const tasks = await this.getTasks();
-    const taskIndex = tasks.findIndex((task) => task.id === updatedTask.id);
-    if (taskIndex !== -1) {
-      tasks[taskIndex] = updatedTask;
-      await this.saveTasks(tasks);
-      this.tasksUpdated.next();
-    }
-  }
-
   public async removeTask(taskId: number) {
     const tasks = await this.getTasks();
     const updatedTasks = tasks.filter((task) => task.id !== taskId);

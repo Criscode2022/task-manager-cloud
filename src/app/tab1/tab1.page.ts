@@ -22,9 +22,6 @@ export class Tab1Page extends TaskForm implements OnInit {
     {
       text: 'Cancel',
       role: 'cancel',
-      handler: () => {
-        console.log('Cancel clicked');
-      },
     },
     {
       text: 'Confirm',
@@ -37,7 +34,6 @@ export class Tab1Page extends TaskForm implements OnInit {
 
   async ngOnInit() {
     this.taskService.storageInitialized.subscribe(async () => {
-      console.log('Storage initialized event received');
       const storedTasks = await this.taskService.getTasks();
       this.tasks.set(storedTasks);
       this.nextId =
@@ -47,7 +43,6 @@ export class Tab1Page extends TaskForm implements OnInit {
     });
 
     this.taskService.tasksUpdated.subscribe(async () => {
-      console.log('Tasks updated event received');
       const storedTasks = await this.taskService.getTasks();
       this.tasks.set(storedTasks);
     });
@@ -94,8 +89,6 @@ export class Tab1Page extends TaskForm implements OnInit {
 
       return updatedTasks;
     });
-
-    console.log('Task toggled with ID:', taskId);
   }
 
   protected handleReorder(event: CustomEvent<ItemReorderEventDetail>) {
@@ -119,7 +112,6 @@ export class Tab1Page extends TaskForm implements OnInit {
   protected deleteAllTasks() {
     this.tasks.set([]);
     this.taskService.saveTasks(this.tasks());
-    console.log('All tasks deleted');
   }
 
   private toggleReorder() {
