@@ -36,6 +36,7 @@ export class Tab2Page {
       placeholder: 'User ID',
       type: 'number',
       name: 'userId',
+      min: 1000,
       label: 'User ID',
       required: true,
     },
