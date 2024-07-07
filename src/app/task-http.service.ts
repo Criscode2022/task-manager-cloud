@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
+import { catchError, retry } from 'rxjs';
 import { TaskService } from './task.service';
 import { Task } from './types/Task';
 
@@ -19,6 +20,14 @@ export class TaskHttpService {
 
     this.http
       .post('https://api-task-i35c.onrender.com/insert-tasks', tasks)
+      .pipe(
+        retry(10),
+        catchError((error) => {
+          this.loading.set(false);
+          console.error('Error uploading tasks:', error);
+          throw error;
+        })
+      )
       .subscribe({
         next: (response: any) => {
           this.loading.set(false);
