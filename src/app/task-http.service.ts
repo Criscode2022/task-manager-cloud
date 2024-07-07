@@ -48,8 +48,12 @@ export class TaskHttpService {
       this.http
         .get(`https://api-task-i35c.onrender.com/tasks/${userId}`)
         .subscribe((response: any) => {
-          this.taskService.saveTasks(response);
-          this.taskService.downloadTasks.next(response);
+          const tasks = response.map((task: Task) => ({
+            ...task,
+            done: task.done ? true : false,
+          }));
+          this.taskService.saveTasks(tasks);
+          this.taskService.downloadTasks.next(tasks);
         });
     } catch (error) {
       console.error('Error downloading tasks:', error);
