@@ -10,7 +10,6 @@ export class TaskService {
   private _storage: Storage | null = null;
   public storageInitialized = new BehaviorSubject<void>(undefined);
   public tasksUpdated = new BehaviorSubject<void>(undefined);
-  public downloadTasks = new BehaviorSubject<Task[]>([]);
 
   constructor(private storage: Storage) {
     this.init();
@@ -44,6 +43,7 @@ export class TaskService {
 
   public async saveTasks(tasks: Task[]) {
     await this._storage?.set('tasks', tasks);
+    this.tasksUpdated.next();
   }
 
   public async clearTasks() {

@@ -46,14 +46,6 @@ export class Tab1Page extends TaskForm implements OnInit {
       const storedTasks = await this.taskService.getTasks();
       this.tasks.set(storedTasks);
     });
-
-    this.taskService.downloadTasks.subscribe((tasks) => {
-      if (tasks.length === 0) {
-        return;
-      }
-
-      this.tasks.set(tasks);
-    });
   }
 
   protected addTask() {

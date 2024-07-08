@@ -55,7 +55,6 @@ export class TaskHttpService {
               done: task.done ? true : false,
             }));
             this.taskService.saveTasks(tasks);
-            this.taskService.downloadTasks.next(tasks);
             this.messageDownload.set('success');
           },
           error: () => {
