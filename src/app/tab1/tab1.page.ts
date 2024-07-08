@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { ItemReorderEventDetail } from '@ionic/angular';
+import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
 import { TaskService } from '../task.service';
 import { Task } from '../types/Task';
 import { TaskForm } from './task.form';
@@ -17,6 +17,7 @@ export class Tab1Page extends TaskForm implements OnInit {
   protected isDisabled = false;
 
   private taskService = inject(TaskService);
+  private alertController = inject(AlertController);
 
   protected alertButtons = [
     {
@@ -31,6 +32,70 @@ export class Tab1Page extends TaskForm implements OnInit {
       },
     },
   ];
+
+  protected alertEditButtons = [
+    {
+      text: 'Cancel',
+      role: 'cancel',
+    },
+    {
+      text: 'Confirm',
+      role: 'confirm',
+      handler: (data: any) => {
+        const id = data.id;
+        const updatedTitle = data.title;
+        const updatedDescription = data.description;
+        this.editTask(id, updatedTitle, updatedDescription);
+      },
+    },
+  ];
+
+  public alertInputs = [
+    {
+      placeholder: 'Title',
+      type: 'string',
+      name: 'title',
+      label: 'Title',
+      required: true,
+    },
+    {
+      placeholder: 'Description',
+      type: 'string',
+      name: 'description',
+      label: 'Description',
+      required: true,
+    },
+  ];
+
+  protected async presentEditAlert(task: Task) {
+    const alert = await this.alertController.create({
+      header: 'Edit Task',
+      inputs: [
+        {
+          name: 'title',
+          type: 'text',
+          placeholder: 'Title',
+          value: task.title,
+        },
+        {
+          name: 'description',
+          type: 'text',
+          placeholder: 'Description',
+          value: task.description,
+        },
+        {
+          name: 'id',
+          value: task.id,
+          attributes: {
+            type: 'hidden',
+          },
+        },
+      ],
+      buttons: this.alertEditButtons,
+    });
+
+    await alert.present();
+  }
 
   async ngOnInit() {
     this.taskService.storageInitialized.subscribe(async () => {
@@ -90,6 +155,16 @@ export class Tab1Page extends TaskForm implements OnInit {
 
       return updatedTasks;
     });
+  }
+
+  protected editTask(id: number, title: string, description: string) {
+    this.tasks.update((tasks) => {
+      const updatedTasks = tasks.map((task) =>
+        task.id === id ? { ...task, title, description } : task
+      );
+      return updatedTasks;
+    });
+    this.taskService.saveTasks(this.tasks());
   }
 
   protected handleReorder(event: CustomEvent<ItemReorderEventDetail>) {

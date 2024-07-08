@@ -32,6 +32,7 @@ export class Tab2Page {
       },
     },
   ];
+
   public alertInputs = [
     {
       placeholder: 'User ID',
