@@ -125,21 +125,17 @@ export class Tab1Page extends TaskForm implements OnInit {
 
     this.canClick.set(false);
     this.toggleReorder();
-    this.tasks.update((tasks) => {
-      const updatedTasks = tasks.map((task) =>
+    this.tasks.update((tasks) =>
+      tasks.map((task) =>
         task.id === taskId ? { ...task, done: !task.done } : task
-      );
+      )
+    );
 
-      this.tasks.set(updatedTasks);
-
-      setTimeout(() => {
-        this.tasks.set(this.reorderTasks(updatedTasks));
-        this.canClick.set(true);
-        this.toggleReorder();
-      }, 500);
-
-      return updatedTasks;
-    });
+    setTimeout(() => {
+      this.tasks.set(this.reorderTasks(this.tasks()));
+      this.canClick.set(true);
+      this.toggleReorder();
+    }, 500);
   }
 
   protected editTask(id: number, title: string, description: string) {
