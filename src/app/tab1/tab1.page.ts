@@ -18,7 +18,7 @@ export class Tab1Page extends TaskForm implements OnInit {
 
   private taskService = inject(TaskService);
 
-  public alertButtons = [
+  protected alertButtons = [
     {
       text: 'Cancel',
       role: 'cancel',

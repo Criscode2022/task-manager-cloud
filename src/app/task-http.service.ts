@@ -16,7 +16,7 @@ export class TaskHttpService {
   public loading = signal<boolean>(false);
   public messageDownload = signal<string | null>(null);
 
-  async upload(tasks: Task[]) {
+  public async upload(tasks: Task[]) {
     this.loading.set(true);
 
     this.http
@@ -44,10 +44,11 @@ export class TaskHttpService {
       });
   }
 
-  async download(userId: number) {
+  public async download(userId: number) {
     try {
       this.http
         .get(`https://api-task-i35c.onrender.com/tasks/${userId}`)
+        .pipe(retry(10))
         .subscribe({
           next: (response: any) => {
             const tasks = response.map((task: Task) => ({
