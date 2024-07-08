@@ -1,5 +1,5 @@
 <ion-header [translucent]="true">
-  <ion-toolbar color="light">
+  <ion-toolbar>
     <ion-title> Task Manager </ion-title>
     <div slot="end">
       <ion-button class="invisible" id="delete-alert" color="danger">
@@ -12,7 +12,7 @@
 <ion-content [fullscreen]="true">
   <p class="m-4 font-bold">Save your tasks to the cloud</p>
 
-  <ion-button (click)="upload()" class="p-4">
+  <ion-button color="secondary" (click)="upload()" class="p-4">
     <ion-icon name="save"></ion-icon>
   </ion-button>
 
@@ -34,7 +34,7 @@
 
   <p class="m-4 font-bold">Get your tasks from the cloud</p>
 
-  <ion-button id="download-alert" class="p-4">
+  <ion-button color="secondary" id="download-alert" class="p-4">
     <ion-icon name="cloud-download"></ion-icon>
   </ion-button>
 

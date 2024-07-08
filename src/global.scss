@@ -9,6 +9,8 @@
 // Be sure that you only ever include this mixin once!
 @include mat.core();
 
+
+
 // Define the theme object.
 $app-theme: mat.define-theme((
   color: (
@@ -78,6 +80,20 @@ $app-theme: mat.define-theme((
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+:root {
+  --ion-background-color: #f5ede2;
+  --ion-tab-bar-background: #e2c7a2;
+  --ion-toolbar-background: #c2965d !important;
+  --ion-toolbar-color: white !important;
+
+}
+
+
+.mat-mdc-text-field-wrapper {
+  background-color: white;
+
+}
 
 html, body { height: 100%;
   @apply bg-gray-100;

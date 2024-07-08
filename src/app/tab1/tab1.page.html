@@ -1,5 +1,5 @@
 <ion-header [translucent]="true">
-  <ion-toolbar color="light">
+  <ion-toolbar>
     <ion-title> Task Manager </ion-title>
     <div slot="end">
       <ion-button id="delete-alert" color="danger">
@@ -42,11 +42,7 @@
         }
       </mat-form-field>
 
-      <button
-        class="bg-blue-500 text-white rounded-lg py-2 hover:bg-blue-600 transition duration-200 shadow-md"
-      >
-        Add Task
-      </button>
+      <ion-button type="submit" color="secondary"> Add Task </ion-button>
     </form>
 
     <ion-list class="mt-8 mb-12 space-y-4">
