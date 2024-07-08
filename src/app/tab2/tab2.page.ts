@@ -1,7 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { TaskHttpService } from '../core/services/task-http.service';
 import { TaskService } from '../core/services/task.service';
-import { Task } from '../shared/types/Task';
 
 @Component({
   selector: 'app-tab2',
@@ -12,9 +11,9 @@ export class Tab2Page {
   private taskService = inject(TaskService);
   private http = inject(TaskHttpService);
 
-  protected tasks = signal<Task[]>([]);
   protected messageUpload = signal<string | null>(null);
 
+  private tasks = this.taskService.tasks;
   protected userId = this.http.userId;
   protected loading = this.http.loading;
   protected messageDownload = this.http.messageDownload;
@@ -44,6 +43,12 @@ export class Tab2Page {
     },
   ];
 
+  constructor() {
+    effect(() => {
+      this.taskService.saveTasks(this.tasks());
+    });
+  }
+
   protected async upload() {
     try {
       const tasks = await this.taskService.getTasks();
@@ -62,6 +67,6 @@ export class Tab2Page {
   }
 
   protected async download(userId: number) {
-    this.http.download(userId);
+    this.tasks.set(await this.http.download(userId));
   }
 }

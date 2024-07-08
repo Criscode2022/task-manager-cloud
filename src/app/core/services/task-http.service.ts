@@ -44,26 +44,31 @@ export class TaskHttpService {
       });
   }
 
-  public async download(userId: number) {
+  public async download(userId: number): Promise<Task[]> {
     try {
-      this.http
-        .get(`https://api-task-i35c.onrender.com/tasks/${userId}`)
-        .pipe(retry(10))
-        .subscribe({
-          next: (response: any) => {
-            const tasks = response.map((task: Task) => ({
-              ...task,
-              done: task.done ? true : false,
-            }));
-            this.taskService.saveTasks(tasks);
-            this.messageDownload.set('success');
-          },
-          error: () => {
-            this.messageDownload.set('error');
-          },
-        });
+      return new Promise<Task[]>((resolve, reject) => {
+        this.http
+          .get(`https://api-task-i35c.onrender.com/tasks/${userId}`)
+          .pipe(retry(10))
+          .subscribe({
+            next: (response: any) => {
+              const tasks = response.map((task: Task) => ({
+                ...task,
+                done: task.done ? true : false,
+              }));
+              this.taskService.saveTasks(tasks);
+              this.messageDownload.set('success');
+              resolve(tasks);
+            },
+            error: () => {
+              this.messageDownload.set('error');
+              reject();
+            },
+          });
+      });
     } catch (error) {
       console.error('Error downloading tasks:', error);
+      throw error;
     }
   }
 }

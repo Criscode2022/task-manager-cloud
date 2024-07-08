@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { BehaviorSubject } from 'rxjs';
 import { Task } from '../../shared/types/Task';
@@ -9,6 +9,8 @@ import { Task } from '../../shared/types/Task';
 export class TaskService {
   private _storage: Storage | null = null;
   public storageInitialized = new BehaviorSubject<void>(undefined);
+
+  public tasks = signal<Task[]>([]);
 
   constructor(private storage: Storage) {
     this.init();

@@ -10,7 +10,6 @@ import { TaskForm } from './task.form';
   styleUrls: ['tab1.page.scss'],
 })
 export class Tab1Page extends TaskForm implements OnInit {
-  protected tasks = signal<Task[]>([]);
   protected canClick = signal(true);
   protected isDisabled = signal(false);
 
@@ -18,6 +17,8 @@ export class Tab1Page extends TaskForm implements OnInit {
 
   private taskService = inject(TaskService);
   private alertController = inject(AlertController);
+
+  protected tasks = this.taskService.tasks;
 
   protected alertButtons = [
     {
