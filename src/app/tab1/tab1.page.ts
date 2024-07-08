@@ -50,23 +50,6 @@ export class Tab1Page extends TaskForm implements OnInit {
     },
   ];
 
-  public alertInputs = [
-    {
-      placeholder: 'Title',
-      type: 'string',
-      name: 'title',
-      label: 'Title',
-      required: true,
-    },
-    {
-      placeholder: 'Description',
-      type: 'string',
-      name: 'description',
-      label: 'Description',
-      required: true,
-    },
-  ];
-
   protected async presentEditAlert(task: Task) {
     const alert = await this.alertController.create({
       header: 'Edit Task',
