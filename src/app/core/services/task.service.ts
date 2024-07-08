@@ -20,12 +20,6 @@ export class TaskService {
     this.storageInitialized.next();
   }
 
-  public async removeTask(taskId: number) {
-    const tasks = await this.getTasks();
-    const updatedTasks = tasks.filter((task) => task.id !== taskId);
-    await this.saveTasks(updatedTasks);
-  }
-
   public async getTasks(): Promise<Task[]> {
     if (!this._storage) {
       return [];
@@ -35,9 +29,5 @@ export class TaskService {
 
   public async saveTasks(tasks: Task[]) {
     await this._storage?.set('tasks', tasks);
-  }
-
-  public async clearTasks() {
-    await this._storage?.clear();
   }
 }
