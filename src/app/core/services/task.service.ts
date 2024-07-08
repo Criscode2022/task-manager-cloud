@@ -9,7 +9,6 @@ import { Task } from '../../shared/types/Task';
 export class TaskService {
   private _storage: Storage | null = null;
   public storageInitialized = new BehaviorSubject<void>(undefined);
-  public tasksUpdated = new BehaviorSubject<void>(undefined);
 
   constructor(private storage: Storage) {
     this.init();
@@ -19,13 +18,6 @@ export class TaskService {
     const storage = await this.storage.create();
     this._storage = storage;
     this.storageInitialized.next();
-  }
-
-  public async addTask(task: Task) {
-    const tasks = await this.getTasks();
-    tasks.push(task);
-    await this.saveTasks(tasks);
-    this.tasksUpdated.next();
   }
 
   public async removeTask(taskId: number) {
@@ -43,11 +35,9 @@ export class TaskService {
 
   public async saveTasks(tasks: Task[]) {
     await this._storage?.set('tasks', tasks);
-    this.tasksUpdated.next();
   }
 
   public async clearTasks() {
     await this._storage?.clear();
-    this.tasksUpdated.next();
   }
 }

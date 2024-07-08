@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
 import { TaskService } from '../core/services/task.service';
 import { Task } from '../shared/types/Task';
@@ -50,6 +50,24 @@ export class Tab1Page extends TaskForm implements OnInit {
     },
   ];
 
+  constructor() {
+    super();
+    effect(() => {
+      this.taskService.saveTasks(this.tasks());
+    });
+  }
+
+  async ngOnInit() {
+    this.taskService.storageInitialized.subscribe(async () => {
+      const storedTasks = await this.taskService.getTasks();
+      this.tasks.set(storedTasks);
+      this.nextId =
+        storedTasks.length > 0
+          ? Math.max(...storedTasks.map((t: any) => t.id)) + 1
+          : 0;
+    });
+  }
+
   protected async presentEditAlert(task: Task) {
     const alert = await this.alertController.create({
       header: 'Edit Task',
@@ -80,22 +98,6 @@ export class Tab1Page extends TaskForm implements OnInit {
     await alert.present();
   }
 
-  async ngOnInit() {
-    this.taskService.storageInitialized.subscribe(async () => {
-      const storedTasks = await this.taskService.getTasks();
-      this.tasks.set(storedTasks);
-      this.nextId =
-        storedTasks.length > 0
-          ? Math.max(...storedTasks.map((t: any) => t.id)) + 1
-          : 0;
-    });
-
-    this.taskService.tasksUpdated.subscribe(async () => {
-      const storedTasks = await this.taskService.getTasks();
-      this.tasks.set(storedTasks);
-    });
-  }
-
   protected addTask() {
     if (this.form.invalid) {
       console.error('Invalid form, please check the inputs');
@@ -110,7 +112,8 @@ export class Tab1Page extends TaskForm implements OnInit {
         done: false,
       };
 
-      this.taskService.addTask(task);
+      this.tasks.update((tasks) => [...tasks, task]);
+
       this.form.reset();
     }
   }
@@ -131,7 +134,6 @@ export class Tab1Page extends TaskForm implements OnInit {
 
       setTimeout(() => {
         this.tasks.set(this.reorderTasks(updatedTasks));
-        this.taskService.saveTasks(this.tasks());
         this.canClick.set(true);
         this.toggleReorder();
       }, 500);
@@ -146,7 +148,6 @@ export class Tab1Page extends TaskForm implements OnInit {
         task.id === id ? { ...task, title, description } : task
       )
     );
-    this.taskService.saveTasks(this.tasks());
   }
 
   protected handleReorder(event: CustomEvent<ItemReorderEventDetail>) {
@@ -154,7 +155,6 @@ export class Tab1Page extends TaskForm implements OnInit {
     const movedItem = items.splice(event.detail.from, 1)[0];
     items.splice(event.detail.to, 0, movedItem);
     this.tasks.set(items);
-    this.taskService.saveTasks(this.tasks());
     event.detail.complete();
   }
 
@@ -164,12 +164,10 @@ export class Tab1Page extends TaskForm implements OnInit {
 
   protected deleteTask(taskId: number) {
     this.tasks.update((tasks) => tasks.filter((task) => task.id !== taskId));
-    this.taskService.saveTasks(this.tasks());
   }
 
   protected deleteAllTasks() {
     this.tasks.set([]);
-    this.taskService.saveTasks(this.tasks());
   }
 
   private toggleReorder() {
