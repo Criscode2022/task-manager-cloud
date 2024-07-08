@@ -15,14 +15,14 @@ import { Tab1Page } from './tab1.page';
   imports: [
     IonicModule,
     CommonModule,
+    Tab1PageRoutingModule,
     ReactiveFormsModule,
     MatButtonModule,
-    MatFormFieldModule,
-    MatTooltipModule,
     MatCheckboxModule,
+    MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    Tab1PageRoutingModule,
+    MatTooltipModule,
   ],
   declarations: [Tab1Page],
 })

@@ -11,10 +11,10 @@ import { TaskForm } from './task.form';
 })
 export class Tab1Page extends TaskForm implements OnInit {
   protected tasks = signal<Task[]>([]);
-  private nextId = 0;
+  protected canClick = signal(true);
+  protected isDisabled = signal(false);
 
-  protected canClick = true;
-  protected isDisabled = false;
+  private nextId = 0;
 
   private taskService = inject(TaskService);
   private alertController = inject(AlertController);
@@ -41,7 +41,7 @@ export class Tab1Page extends TaskForm implements OnInit {
     {
       text: 'Confirm',
       role: 'confirm',
-      handler: (data: any) => {
+      handler: (data: Task) => {
         const id = data.id;
         const updatedTitle = data.title;
         const updatedDescription = data.description;
@@ -120,7 +120,7 @@ export class Tab1Page extends TaskForm implements OnInit {
       return;
     }
 
-    this.canClick = false;
+    this.canClick.set(false);
     this.toggleReorder();
     this.tasks.update((tasks) => {
       const updatedTasks = tasks.map((task) =>
@@ -132,7 +132,7 @@ export class Tab1Page extends TaskForm implements OnInit {
       setTimeout(() => {
         this.tasks.set(this.reorderTasks(updatedTasks));
         this.taskService.saveTasks(this.tasks());
-        this.canClick = true;
+        this.canClick.set(true);
         this.toggleReorder();
       }, 500);
 
@@ -141,12 +141,11 @@ export class Tab1Page extends TaskForm implements OnInit {
   }
 
   protected editTask(id: number, title: string, description: string) {
-    this.tasks.update((tasks) => {
-      const updatedTasks = tasks.map((task) =>
+    this.tasks.update((tasks) =>
+      tasks.map((task) =>
         task.id === id ? { ...task, title, description } : task
-      );
-      return updatedTasks;
-    });
+      )
+    );
     this.taskService.saveTasks(this.tasks());
   }
 
@@ -174,6 +173,6 @@ export class Tab1Page extends TaskForm implements OnInit {
   }
 
   private toggleReorder() {
-    this.isDisabled = !this.isDisabled;
+    this.isDisabled.set(!this.isDisabled());
   }
 }

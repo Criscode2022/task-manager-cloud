@@ -9,6 +9,8 @@ export class TaskForm {
     description: ['', [Validators.required, Validators.maxLength(30)]],
   };
 
+  protected form = this.fb.group(this.skeleton);
+
   get title() {
     return this.form.get('title');
   }
@@ -16,6 +18,4 @@ export class TaskForm {
   get description() {
     return this.form.get('description');
   }
-
-  protected form = this.fb.group(this.skeleton);
 }

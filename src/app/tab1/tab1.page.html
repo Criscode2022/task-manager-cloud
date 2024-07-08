@@ -47,7 +47,7 @@
 
     <ion-list class="mt-8 mb-12 space-y-4">
       <ion-reorder-group
-        [disabled]="isDisabled"
+        [disabled]="isDisabled()"
         (ionItemReorder)="handleReorder($any($event))"
       >
         @for (task of tasks(); track task.id) {
@@ -56,15 +56,15 @@
           <ion-item>
             <mat-checkbox
               [checked]="task.done"
-              (change)="canClick ? toggleTaskCompletion(task.id) : null"
+              (change)="canClick() ? toggleTaskCompletion(task.id) : null"
               class="mr-4"
-              [class.disabled]="!canClick"
+              [class.disabled]="!canClick()"
             ></mat-checkbox>
             <ion-label
-              (click)="canClick ? toggleTaskCompletion(task.id) : null"
+              (click)="canClick() ? toggleTaskCompletion(task.id) : null"
               [class.done]="task.done"
               class="cursor-pointer text-sm md:text-base lg:text-lg xl:text-xl"
-              [class.disabled]="!canClick"
+              [class.disabled]="!canClick()"
             >
               {{ task.title }} - {{ task.description }}
             </ion-label>
