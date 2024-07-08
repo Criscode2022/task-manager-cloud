@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { BehaviorSubject } from 'rxjs';
-import { Task } from './types/Task';
+import { Task } from '../../shared/types/Task';
 
 @Injectable({
   providedIn: 'root',

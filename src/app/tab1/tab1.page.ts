@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
-import { TaskService } from '../task.service';
-import { Task } from '../types/Task';
+import { TaskService } from '../core/services/task.service';
+import { Task } from '../shared/types/Task';
 import { TaskForm } from './task.form';
 
 @Component({

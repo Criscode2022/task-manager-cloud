@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
-import { TaskHttpService } from '../task-http.service';
-import { TaskService } from '../task.service';
-import { Task } from '../types/Task';
+import { TaskHttpService } from '../core/services/task-http.service';
+import { TaskService } from '../core/services/task.service';
+import { Task } from '../shared/types/Task';
 
 @Component({
   selector: 'app-tab2',

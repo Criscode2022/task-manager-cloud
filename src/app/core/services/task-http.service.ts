@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { catchError, retry } from 'rxjs';
+import { Task } from '../../shared/types/Task';
 import { TaskService } from './task.service';
-import { Task } from './types/Task';
 
 @Injectable({
   providedIn: 'root',
