@@ -18,12 +18,16 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="false" class="relative">
   <form
     [formGroup]="form"
     class="flex flex-col gap-4 md:w-3/5 lg:w-2/5 mx-auto px-4 pt-8"
     (ngSubmit)="addTask()"
   >
+    <strong class="absolute top-2 right-4 text-blue-600"
+      >{{this.filter()}}</strong
+    >
+
     <mat-form-field appearance="outline" class="">
       <mat-label>Title</mat-label>
       <input matInput type="text" formControlName="title" />
