@@ -29,6 +29,7 @@ export class Tab1Page extends TaskForm implements OnInit {
   protected tasks = this.taskService.tasks;
   protected indexStatus = signal(0);
   protected filter = signal<StatusEnum>(StatusEnum.All);
+
   public filteredTasks = computed(() => {
     switch (this.filter()) {
       case StatusEnum.All:

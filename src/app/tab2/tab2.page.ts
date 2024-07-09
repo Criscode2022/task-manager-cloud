@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { TaskHttpService } from '../core/services/task-http.service';
 import { TaskService } from '../core/services/task.service';
 
@@ -43,18 +43,12 @@ export class Tab2Page {
     },
   ];
 
-  constructor() {
-    effect(() => {
-      this.taskService.saveTasks(this.tasks());
-    });
-  }
-
   protected async upload() {
     try {
       const tasks = await this.taskService.getTasks();
       this.tasks.set(tasks);
 
-      if (tasks.length === 0) {
+      if (!tasks.length) {
         this.messageUpload.set('No tasks to upload');
         return;
       }
