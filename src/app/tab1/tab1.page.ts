@@ -153,7 +153,8 @@ export class Tab1Page extends TaskForm implements OnInit {
     );
 
     setTimeout(() => {
-      this.tasks.set(this.reorderTasks(this.tasks()));
+      const tasksReorder = [...this.tasks()];
+      this.tasks.set(this.reorderTasks(tasksReorder));
       this.canClick.set(true);
       this.toggleReorder();
     }, 500);
