@@ -1,14 +1,17 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-button class="invisible" slot="start" id="delete-alert" color="danger">
+    <ion-button
+      slot="start"
+      class="invisible ion-margin"
+      id="delete-alert"
+      color="danger"
+    >
       <ion-icon name="trash-outline"></ion-icon>
     </ion-button>
-    <ion-title> Task Manager </ion-title>
-    <div slot="end">
-      <ion-button class="invisible" id="delete-alert" color="danger">
-        <ion-icon name="trash-outline"></ion-icon>
-      </ion-button>
-    </div>
+    <ion-title class="ion-text-center"> Task Manager </ion-title>
+    <ion-button slot="end" class="invisible ion-margin" color="primary">
+      <ion-icon name="filter-outline"></ion-icon>
+    </ion-button>
   </ion-toolbar>
 </ion-header>
 
