@@ -27,8 +27,11 @@ export class Tab1Page extends TaskForm implements OnInit {
   private alertController = inject(AlertController);
 
   protected tasks = this.taskService.tasks;
-  protected indexStatus = signal(0);
   protected filter = signal<StatusEnum>(StatusEnum.All);
+
+  protected indexStatus = computed(() => {
+    return StatusEnumArray.indexOf(this.filter());
+  });
 
   public filteredTasks = computed(() => {
     switch (this.filter()) {
@@ -193,13 +196,14 @@ export class Tab1Page extends TaskForm implements OnInit {
   }
 
   protected changeFilter() {
-    this.indexStatus.set(this.indexStatus() + 1);
+    let index = this.indexStatus();
 
-    if (this.indexStatus() >= 3) {
-      this.indexStatus.set(0);
+    index += 1;
+    if (index === 3) {
+      index = 0;
     }
 
-    this.filter.set(StatusEnumArray[this.indexStatus()]);
+    this.filter.set(StatusEnumArray[index]);
   }
 
   private toggleReorder() {
