@@ -31,7 +31,6 @@ export class TaskHttpService {
       )
       .subscribe({
         next: (response: any) => {
-          this.loading.set(false);
           this.userId.set(response['userid']);
         },
         error: (error: any) => {
