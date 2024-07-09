@@ -76,12 +76,15 @@ export class Tab1Page extends TaskForm implements OnInit {
     super();
     effect(() => {
       this.taskService.saveTasks(this.tasks());
+      this.taskService.saveFilter(this.filter());
     });
   }
 
   async ngOnInit() {
     this.taskService.storageInitialized.subscribe(async () => {
       const storedTasks = await this.taskService.getTasks();
+      const storedFilter = await this.taskService.getFilter();
+      this.filter.set(storedFilter);
       this.tasks.set(storedTasks);
       this.nextId =
         storedTasks.length > 0

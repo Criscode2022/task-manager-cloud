@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { BehaviorSubject } from 'rxjs';
+import { StatusEnum } from 'src/app/tab1/types/statusEnum';
 import { Task } from '../../shared/types/Task';
 
 @Injectable({
@@ -31,5 +32,16 @@ export class TaskService {
 
   public async saveTasks(tasks: Task[]) {
     await this._storage?.set('tasks', tasks);
+  }
+
+  public async getFilter(): Promise<StatusEnum> {
+    if (!this._storage) {
+      return StatusEnum.All;
+    }
+    return (await this._storage.get('filter')) || StatusEnum.All;
+  }
+
+  public async saveFilter(filter: string) {
+    await this._storage?.set('filter', filter);
   }
 }
