@@ -2,6 +2,9 @@
   <ion-toolbar>
     <ion-title> Task Manager </ion-title>
     <div slot="end">
+      <ion-button color="primary" (click)="changeFilter()">
+        <ion-icon name="filter-outline"></ion-icon>
+      </ion-button>
       <ion-button id="delete-alert" color="danger">
         <ion-icon name="trash-outline"></ion-icon>
       </ion-button>
@@ -48,7 +51,7 @@
       [disabled]="isDisabled()"
       (ionItemReorder)="handleReorder($any($event))"
     >
-      @for (task of tasks(); track task.id) {
+      @for (task of filteredTasks(); track task.id) {
 
       <ion-item-sliding>
         <ion-item>

@@ -1,8 +1,16 @@
-import { Component, effect, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
 import { TaskService } from '../core/services/task.service';
 import { Task } from '../shared/types/Task';
 import { TaskForm } from './task.form';
+import { StatusEnum, StatusEnumArray } from './types/statusEnum';
 
 @Component({
   selector: 'app-tab1',
@@ -19,6 +27,18 @@ export class Tab1Page extends TaskForm implements OnInit {
   private alertController = inject(AlertController);
 
   protected tasks = this.taskService.tasks;
+  protected indexStatus = signal(0);
+  protected filter = signal<StatusEnum>(StatusEnum.All);
+  public filteredTasks = computed(() => {
+    switch (this.filter()) {
+      case StatusEnum.All:
+        return this.tasks();
+      case StatusEnum.Done:
+        return this.tasks().filter((task) => task.done);
+      case StatusEnum.Undone:
+        return this.tasks().filter((task) => !task.done);
+    }
+  });
 
   protected alertButtons = [
     {
@@ -165,6 +185,16 @@ export class Tab1Page extends TaskForm implements OnInit {
 
   protected deleteAllTasks() {
     this.tasks.set([]);
+  }
+
+  protected changeFilter() {
+    this.indexStatus.set(this.indexStatus() + 1);
+
+    if (this.indexStatus() >= 3) {
+      this.indexStatus.set(0);
+    }
+
+    this.filter.set(StatusEnumArray[this.indexStatus()]);
   }
 
   private toggleReorder() {
