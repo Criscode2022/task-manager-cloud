@@ -32,15 +32,13 @@
     class="flex flex-col gap-4 md:w-3/5 lg:w-2/5 mx-auto px-4 pt-8"
     (ngSubmit)="addTask()"
   >
-    <strong class="absolute top-1 right-4 text-blue-600"
-      >{{this.filter()}}</strong
-    >
+    <strong class="absolute top-1 right-4 text-blue-600">{{filter()}}</strong>
 
     <mat-form-field appearance="outline" class="">
       <mat-label>Title</mat-label>
       <input matInput type="text" formControlName="title" />
 
-      @if (this.title?.hasError('maxlength')) {
+      @if (title?.hasError('maxlength')) {
       <mat-error
         >If you have so many things to write down, add them to the description!
       </mat-error>
@@ -50,7 +48,7 @@
       <mat-label>Description</mat-label>
       <input type="text" matInput formControlName="description" />
 
-      @if (this.description?.hasError('maxlength')) {
+      @if (description?.hasError('maxlength')) {
       <mat-error>Remember, keep it simple! </mat-error>
       }
     </mat-form-field>
