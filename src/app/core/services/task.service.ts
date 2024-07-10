@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { BehaviorSubject } from 'rxjs';
-import { StatusEnum } from 'src/app/tab1/types/statusEnum';
+import { StatusEnum } from 'src/app/tab-list/types/statusEnum';
 import { Task } from '../../shared/types/Task';
 
 @Injectable({

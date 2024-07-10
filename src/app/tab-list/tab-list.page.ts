@@ -14,10 +14,10 @@ import { StatusEnum, StatusEnumArray } from './types/statusEnum';
 
 @Component({
   selector: 'app-tab1',
-  templateUrl: 'tab1.page.html',
-  styleUrls: ['tab1.page.scss'],
+  templateUrl: 'tab-list.page.html',
+  styleUrls: ['tab-list.page.scss'],
 })
-export class Tab1Page extends TaskForm implements OnInit {
+export class TabListPage extends TaskForm implements OnInit {
   protected canClick = signal(true);
   protected isDisabled = signal(false);
 

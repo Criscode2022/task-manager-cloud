@@ -1,13 +1,14 @@
 import { Component, inject, signal } from '@angular/core';
 import { TaskHttpService } from '../core/services/task-http.service';
 import { TaskService } from '../core/services/task.service';
+import { User } from './types/Task';
 
 @Component({
-  selector: 'app-tab2',
-  templateUrl: 'tab2.page.html',
-  styleUrls: ['tab2.page.scss'],
+  selector: 'app-tab-options',
+  templateUrl: 'tab-options.page.html',
+  styleUrls: ['tab-options.page.scss'],
 })
-export class Tab2Page {
+export class TabOptionsPage {
   private taskService = inject(TaskService);
   private http = inject(TaskHttpService);
 
@@ -26,8 +27,8 @@ export class Tab2Page {
     {
       text: 'Confirm',
       role: 'confirm',
-      handler: (data: any) => {
-        this.download(data.userId);
+      handler: (user: User) => {
+        this.download(user.id);
       },
     },
   ];
@@ -36,7 +37,7 @@ export class Tab2Page {
     {
       placeholder: 'User ID',
       type: 'number',
-      name: 'userId',
+      name: 'id',
       min: 1000,
       label: 'User ID',
       required: true,
@@ -60,7 +61,7 @@ export class Tab2Page {
     }
   }
 
-  protected async download(userId: number) {
-    this.tasks.set(await this.http.download(userId));
+  protected async download(id: User['id']) {
+    this.tasks.set(await this.http.download(id));
   }
 }

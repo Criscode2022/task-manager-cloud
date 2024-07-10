@@ -44,11 +44,11 @@ export class TaskHttpService {
       });
   }
 
-  public async download(userId: number): Promise<Task[]> {
+  public async download(id: number): Promise<Task[]> {
     try {
       return new Promise<Task[]>((resolve, reject) => {
         this.http
-          .get(`${environment.baseUrl}/tasks/${userId}`)
+          .get(`${environment.baseUrl}/tasks/${id}`)
           .pipe(retry(10))
           .subscribe({
             next: (response: any) => {

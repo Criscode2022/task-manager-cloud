@@ -8,14 +8,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { IonicModule } from '@ionic/angular';
-import { Tab1PageRoutingModule } from './tab1-routing.module';
-import { Tab1Page } from './tab1.page';
+import { TabListPage } from './tab-list.page';
+import { TabListPageRoutingModule } from './tab-list.routing.module';
 
 @NgModule({
   imports: [
     IonicModule,
     CommonModule,
-    Tab1PageRoutingModule,
+    TabListPageRoutingModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatCheckboxModule,
@@ -24,6 +24,6 @@ import { Tab1Page } from './tab1.page';
     MatInputModule,
     MatTooltipModule,
   ],
-  declarations: [Tab1Page],
+  declarations: [TabListPage],
 })
-export class Tab1PageModule {}
+export class TabListPageModule {}
