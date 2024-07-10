@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { catchError, retry } from 'rxjs';
+import { environment } from 'src/environments/environment.prod';
 import { Task } from '../../shared/types/Task';
 import { TaskService } from './task.service';
 
@@ -20,7 +21,7 @@ export class TaskHttpService {
     this.loading.set(true);
 
     this.http
-      .post('https://api-task-i35c.onrender.com/insert-tasks', tasks)
+      .post(`${environment.baseUrl}/insert-tasks`, tasks)
       .pipe(
         retry(10),
         catchError((error) => {
@@ -47,7 +48,7 @@ export class TaskHttpService {
     try {
       return new Promise<Task[]>((resolve, reject) => {
         this.http
-          .get(`https://api-task-i35c.onrender.com/tasks/${userId}`)
+          .get(`${environment.baseUrl}/tasks/${userId}`)
           .pipe(retry(10))
           .subscribe({
             next: (response: any) => {
