@@ -77,7 +77,7 @@
             class="cursor-pointer text-sm md:text-base lg:text-lg xl:text-xl"
             [class.disabled]="!canClick()"
           >
-            {{ task.title }} - {{ task.description }}
+            {{ task.title }} @if(task.description){- {{ task.description }}}
           </ion-label>
           <ion-reorder slot="end"></ion-reorder>
           <ion-icon

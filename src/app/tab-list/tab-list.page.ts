@@ -132,11 +132,11 @@ export class TabListPage extends TaskForm implements OnInit {
       return;
     }
 
-    if (this.title?.value && this.description?.value) {
+    if (this.title?.value) {
       const task: Task = {
         id: this.nextId++,
         title: this.title?.value,
-        description: this.description?.value,
+        description: this.description?.value || '',
         done: false,
       };
 

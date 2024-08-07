@@ -6,7 +6,7 @@ export class TaskForm {
 
   private skeleton = {
     title: ['', [Validators.required, Validators.maxLength(40)]],
-    description: ['', [Validators.required, Validators.maxLength(30)]],
+    description: ['', [Validators.maxLength(30)]],
   };
 
   protected form = this.fb.group(this.skeleton);
