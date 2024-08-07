@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
     <ion-button
       slot="start"
@@ -28,7 +28,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="false" class="relative">
+<ion-content>
   <form
     [formGroup]="form"
     class="flex flex-col gap-2 md:w-3/5 lg:w-2/5 mx-auto px-4 pt-8"
@@ -54,7 +54,7 @@
     <ion-button type="submit" color="primary"> Add Task </ion-button>
   </form>
 
-  <ion-list class="mt-8 mb-12 space-y-4">
+  <ion-list class="mt-8 mb-12 space-y-4 overflow-y-scroll h-80 lg:h-96">
     <ion-reorder-group
       [disabled]="isDisabled()"
       (ionItemReorder)="handleReorder($any($event))"
