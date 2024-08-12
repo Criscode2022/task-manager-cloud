@@ -89,7 +89,6 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 }
 
-
 .mat-mdc-text-field-wrapper {
   background-color: white;
 
@@ -98,6 +97,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 html, body { height: 100%;
   @apply bg-gray-100;
  }
+
  body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
  .mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field .mdc-notched-outline__notch {
@@ -113,3 +113,10 @@ html, body { height: 100%;
    font-size: 0.70rem;
  }
 
+ .scrollbar-always-visible {
+  scrollbar-width: thin !important; /* Firefox */
+}
+
+.scrollbar-always-visible::-webkit-scrollbar {
+  width: 12px !important; /* Safari and Chrome */
+}

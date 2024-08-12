@@ -34,12 +34,12 @@
     class="flex flex-col gap-2 md:w-3/5 lg:w-2/5 mx-auto px-4 pt-8"
     (ngSubmit)="addTask()"
   >
-    <mat-form-field appearance="outline" class="">
+    <mat-form-field appearance="outline">
       <mat-label>Title</mat-label>
       <input matInput type="text" formControlName="title" />
 
       @if (title?.hasError('maxlength')) {
-      <mat-error>Text too long, use the description! </mat-error>
+      <mat-error>Text too long, use the description</mat-error>
       }
     </mat-form-field>
     <mat-form-field appearance="outline" class="">
@@ -54,7 +54,9 @@
     <ion-button type="submit" color="primary"> Add Task </ion-button>
   </form>
 
-  <ion-list class="mt-8 mb-12 space-y-4 overflow-y-scroll h-80 lg:h-96">
+  <ion-list
+    class="mt-2 space-y-4 overflow-y-scroll h-64 lg:h-96 scrollbar-always-visible"
+  >
     <ion-reorder-group
       [disabled]="isDisabled()"
       (ionItemReorder)="handleReorder($any($event))"
@@ -100,6 +102,7 @@
       </ion-item-sliding>
 
       } @empty {
+
       <div class="flex justify-center font-semibold mx-4">
         I am sure you have something to do... Why don't you add it?
       </div>
