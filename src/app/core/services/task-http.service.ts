@@ -9,13 +9,13 @@ import { TaskService } from './task.service';
   providedIn: 'root',
 })
 export class TaskHttpService {
-  public userId = signal<number | null>(null);
-
   private http = inject(HttpClient);
   private taskService = inject(TaskService);
 
-  public loading = signal<boolean>(false);
+  public userId = signal<number | null>(null);
   public messageDownload = signal<string | null>(null);
+
+  public loading = signal<boolean>(false);
 
   public async upload(tasks: Task[]) {
     this.loading.set(true);
@@ -54,7 +54,7 @@ export class TaskHttpService {
             next: (response: any) => {
               const tasks = response.map((task: Task) => ({
                 ...task,
-                done: task.done ? true : false,
+                done: task.done ? true : false, // Convert 0/1 from MySQL database to boolean
               }));
               this.taskService.saveTasks(tasks);
               this.messageDownload.set('success');
