@@ -3,7 +3,7 @@
     <ion-button slot="start" class="invisible ion-margin">
       <ion-icon name="trash-outline"></ion-icon>
     </ion-button>
-    <ion-title class="relative left-4 ion-text-center">
+    <ion-title class="lg:relative lg:left-4 ion-text-center">
       Task Manager
     </ion-title>
     <ion-button slot="end" class="invisible ion-margin w-20"> </ion-button>
@@ -13,7 +13,7 @@
 <ion-content [fullscreen]="true">
   <img
     src="assets/background-image.svg"
-    class="absolute bottom-10 right-2 opacity-40"
+    class="absolute bottom-10 right-2 opacity-35"
     alt="soft background image of a girl and sunflowers"
   />
 
@@ -23,16 +23,16 @@
     <ion-icon name="save"></ion-icon>
   </ion-button>
 
-  @if (loading() === true) {
+  @if (loading()) {
   <ion-spinner name="crescent"></ion-spinner>
 
-  } @if (userId() && loading() === false) {
+  } @if (userId() && !loading()) {
 
   <div class="px-4 py-6">
     <p class="px-4"><strong>Your user ID : {{userId()}}</strong></p>
     <p class="px-4">Use this user ID to import your tasks on any device</p>
   </div>
-  } @if (messageUpload() && loading() === false) {
+  } @if (messageUpload() && !loading()) {
 
   <div class="p-8">
     <strong class="text-red-600">{{messageUpload()}}</strong>
@@ -61,7 +61,7 @@
   <ion-alert
     trigger="download-alert"
     header="Import tasks"
-    message="Important: This will overwrite your current tasks"
+    message="IMPORTANT: This will OVERWRITE your current tasks"
     [buttons]="alertButtonsDownload"
     [inputs]="alertInputs"
   ></ion-alert>

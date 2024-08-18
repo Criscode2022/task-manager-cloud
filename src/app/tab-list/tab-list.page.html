@@ -8,7 +8,7 @@
     >
       <ion-icon name="trash-outline"></ion-icon>
     </ion-button>
-    <ion-title class="relative left-4 ion-text-center">
+    <ion-title class="lg:relative lg:left-4 ion-text-center">
       Task Manager
     </ion-title>
     <ion-button
@@ -22,13 +22,13 @@
     <ion-alert
       trigger="delete-alert"
       header="Confirmation"
-      message="Are you sure that you want to delete all of the tasks? This action cannot be undone"
+      message="Are you sure that you want to delete all the tasks? This action CANNOT BE UNDONE"
       [buttons]="alertButtons"
     ></ion-alert>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content [scrollY]="false">
   <form
     [formGroup]="form"
     class="flex flex-col gap-2 md:w-3/5 lg:w-2/5 mx-auto px-4 pt-8"
@@ -55,7 +55,7 @@
   </form>
 
   <ion-list
-    class="mt-2 space-y-4 overflow-y-scroll h-64 lg:h-96 scrollbar-always-visible"
+    class="space-y-4 pb-4 overflow-y-scroll h-64 lg:h-96 scrollbar-always-visible"
   >
     <ion-reorder-group
       [disabled]="isDisabled()"
@@ -110,4 +110,13 @@
       }
     </ion-reorder-group>
   </ion-list>
+
+  @if (newTask()) {
+
+  <div class="flex justify-center opacity-50">
+    <ion-button shape="round" class="absolute bottom-4 animate-bounce">
+      <ion-icon slot="icon-only" name="chevron-down"></ion-icon>
+    </ion-button>
+  </div>
+  }
 </ion-content>

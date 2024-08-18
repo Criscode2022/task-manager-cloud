@@ -23,6 +23,8 @@ export class TabListPage extends TaskForm implements OnInit {
 
   private nextId = 0;
 
+  protected newTask = signal(false);
+
   private taskService = inject(TaskService);
   private alertController = inject(AlertController);
 
@@ -143,6 +145,11 @@ export class TabListPage extends TaskForm implements OnInit {
       this.tasks.update((tasks) => [...tasks, task]);
 
       this.form.reset();
+
+      this.newTask.set(true);
+      setTimeout(() => {
+        this.newTask.set(false);
+      }, 1000);
     }
   }
 
