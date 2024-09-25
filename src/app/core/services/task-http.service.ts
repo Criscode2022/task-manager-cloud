@@ -44,31 +44,39 @@ export class TaskHttpService {
       });
   }
 
-  public async download(id: number): Promise<Task[]> {
-    try {
-      return new Promise<Task[]>((resolve, reject) => {
-        this.http
-          .get(`${environment.baseUrl}/tasks/${id}`)
-          .pipe(retry(10))
-          .subscribe({
-            next: (response: any) => {
-              const tasks = response.map((task: Task) => ({
-                ...task,
-                done: task.done ? true : false, // Convert 0/1 from MySQL database to boolean
-              }));
-              this.taskService.saveTasks(tasks);
-              this.messageDownload.set('success');
-              resolve(tasks);
-            },
-            error: () => {
-              this.messageDownload.set('error');
-              reject();
-            },
-          });
+  public download(userId: number) {
+    this.http
+      .get(`https://api-task-i35c.onrender.com/tasks/${userId}`, {
+        observe: 'response',
+      })
+      .pipe(
+        retry(10),
+        catchError((error) => {
+          console.error('Error downloading tasks:', error);
+
+          if (error.status == 404) {
+            this.messageDownload.set('not found');
+          }
+
+          if (error.status == 500) {
+            this.messageDownload.set('error');
+          }
+
+          console.log(error.status);
+
+          return [];
+        })
+      )
+      .subscribe({
+        next: (response: any) => {
+          const tasks = response.body.map((task: Task) => ({
+            ...task,
+            done: !!task.done,
+          }));
+          this.taskService.saveTasks(tasks);
+          this.taskService.tasks.set(tasks);
+          this.messageDownload.set('success');
+        },
       });
-    } catch (error) {
-      console.error('Error downloading tasks:', error);
-      throw error;
-    }
   }
 }

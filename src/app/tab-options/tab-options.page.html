@@ -51,10 +51,16 @@
     <strong class="text-green-600"> Tasks downloaded correctly! </strong>
   </div>
 
-  } @if (messageDownload() === 'error') {
+  } @if (messageDownload() === 'not found') {
 
   <div class="p-8">
     <strong class="text-red-600"> That user ID doesn't exist </strong>
+  </div>
+
+  } @if (messageDownload() === 'error') {
+
+  <div class="p-8">
+    <strong class="text-red-600"> Server error, please try again </strong>
   </div>
   }
 

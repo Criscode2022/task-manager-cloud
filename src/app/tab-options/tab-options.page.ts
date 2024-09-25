@@ -61,7 +61,7 @@ export class TabOptionsPage {
     }
   }
 
-  protected async download(id: User['id']) {
-    this.tasks.set(await this.http.download(id));
+  protected download(id: User['id']) {
+    this.http.download(id);
   }
 }
