@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { TaskHttpService } from '../core/services/task-http.service';
 import { TaskService } from '../core/services/task.service';
 import { StatusEnum } from '../tab-list/types/statusEnum';
 
@@ -7,7 +8,9 @@ import { StatusEnum } from '../tab-list/types/statusEnum';
   templateUrl: 'tabs.page.html',
 })
 export class TabsPage implements OnInit {
+  private http = inject(TaskHttpService);
   private taskService = inject(TaskService);
+
   protected filter = signal<StatusEnum>(StatusEnum.All);
   private tasks = this.taskService.tasks;
 
@@ -18,6 +21,13 @@ export class TabsPage implements OnInit {
       this.taskService.userId.set(
         await this.taskService._storage?.get('userId')
       );
+
+      const userId = this.taskService.userId();
+      if (userId !== null && userId !== undefined) {
+        this.http.download(userId);
+      } else {
+        console.error('User ID is null');
+      }
     });
   }
 }

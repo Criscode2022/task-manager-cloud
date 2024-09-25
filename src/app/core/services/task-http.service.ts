@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { effect, inject, Injectable, signal } from '@angular/core';
 import { catchError, retry } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
 import { Task } from '../../shared/types/Task';
@@ -15,6 +15,17 @@ export class TaskHttpService {
   public messageDownload = signal<string | null>(null);
 
   public loading = signal(false);
+
+  constructor() {
+    effect(() => {
+      if (this.taskService.tasks()) {
+        const userId = this.taskService.userId();
+        if (userId !== null && userId !== undefined) {
+          this.autoUpload(this.taskService.tasks(), userId);
+        }
+      }
+    });
+  }
 
   public async upload(tasks: Task[], userId?: number) {
     this.loading.set(true);
@@ -48,6 +59,34 @@ export class TaskHttpService {
         },
         complete: () => {
           this.loading.set(false);
+        },
+      });
+  }
+
+  public autoUpload(tasks: Task[], userId?: number) {
+    const body = {
+      userIdParam: userId,
+      tasks: tasks,
+    };
+
+    this.http
+      .post(`${environment.baseUrl}/insert-tasks`, body)
+      .pipe(
+        retry(10),
+        catchError((error) => {
+          console.error('Error uploading tasks:', error);
+          throw error;
+        })
+      )
+      .subscribe({
+        next: (response: any) => {
+          console.log('Auto upload response:', response);
+        },
+        error: (error: any) => {
+          console.error('Error in auto upload:', error);
+        },
+        complete: () => {
+          console.log('Auto upload complete');
         },
       });
   }
