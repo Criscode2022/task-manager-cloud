@@ -9,13 +9,13 @@ import { User } from './types/Task';
   styleUrls: ['tab-options.page.scss'],
 })
 export class TabOptionsPage {
-  private taskService = inject(TaskService);
   private http = inject(TaskHttpService);
+  private taskService = inject(TaskService);
 
   protected messageUpload = signal<string | null>(null);
 
   private tasks = this.taskService.tasks;
-  protected userId = this.http.userId;
+  protected userId = this.taskService.userId;
   protected loading = this.http.loading;
   protected messageDownload = this.http.messageDownload;
 
@@ -46,16 +46,13 @@ export class TabOptionsPage {
 
   protected async upload() {
     try {
-      const tasks = await this.taskService.getTasks();
-      this.tasks.set(tasks);
-
-      if (!tasks.length) {
+      if (!this.tasks().length) {
         this.messageUpload.set('No tasks to upload');
         return;
       }
 
       this.messageUpload.set(null);
-      await this.http.upload(tasks);
+      await this.http.upload(this.tasks(), this.userId() || undefined);
     } catch (error) {
       console.error('Error uploading tasks:', error);
     }

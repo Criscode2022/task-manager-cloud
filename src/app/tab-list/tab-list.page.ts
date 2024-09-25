@@ -1,11 +1,4 @@
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  OnInit,
-  signal,
-} from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
 import { TaskService } from '../core/services/task.service';
 import { Task } from '../shared/types/Task';
@@ -17,17 +10,16 @@ import { StatusEnum, StatusEnumArray } from './types/statusEnum';
   templateUrl: 'tab-list.page.html',
   styleUrls: ['tab-list.page.scss'],
 })
-export class TabListPage extends TaskForm implements OnInit {
+export class TabListPage extends TaskForm {
   protected canClick = signal(true);
   protected isDisabled = signal(false);
-
-  private nextId = 0;
 
   protected newTask = signal(false);
 
   private taskService = inject(TaskService);
   private alertController = inject(AlertController);
 
+  private nextId = this.taskService.nextId;
   protected tasks = this.taskService.tasks;
   protected filter = signal<StatusEnum>(StatusEnum.All);
 
@@ -85,19 +77,6 @@ export class TabListPage extends TaskForm implements OnInit {
     });
   }
 
-  async ngOnInit() {
-    this.taskService.storageInitialized.subscribe(async () => {
-      const storedTasks = await this.taskService.getTasks();
-      const storedFilter = await this.taskService.getFilter();
-      this.filter.set(storedFilter);
-      this.tasks.set(storedTasks);
-      this.nextId =
-        storedTasks.length > 0
-          ? Math.max(...storedTasks.map((t: any) => t.id)) + 1
-          : 0;
-    });
-  }
-
   protected async presentEditAlert(task: Task) {
     const alert = await this.alertController.create({
       header: 'Edit Task',
@@ -135,8 +114,10 @@ export class TabListPage extends TaskForm implements OnInit {
     }
 
     if (this.title?.value) {
+      this.nextId.set(this.nextId() + 1);
+
       const task: Task = {
-        id: this.nextId++,
+        id: this.nextId(),
         title: this.title?.value,
         description: this.description?.value || '',
         done: false,

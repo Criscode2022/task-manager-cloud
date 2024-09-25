@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { effect, Injectable, signal } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { BehaviorSubject } from 'rxjs';
 import { StatusEnum } from 'src/app/tab-list/types/statusEnum';
@@ -8,13 +8,21 @@ import { Task } from '../../shared/types/Task';
   providedIn: 'root',
 })
 export class TaskService {
-  private _storage: Storage | null = null;
+  public _storage: Storage | null = null;
   public storageInitialized = new BehaviorSubject<void>(undefined);
+  public nextId = signal<number>(0);
 
   public tasks = signal<Task[]>([]);
+  public userId = signal<number | null>(null);
 
   constructor(private storage: Storage) {
     this.init();
+
+    effect(() => {
+      if (this.userId()) {
+        this._storage?.set('userId', this.userId());
+      }
+    });
   }
 
   async init() {
@@ -27,6 +35,7 @@ export class TaskService {
     if (!this._storage) {
       return [];
     }
+
     return (await this._storage.get('tasks')) || [];
   }
 

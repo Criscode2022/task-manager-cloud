@@ -12,16 +12,20 @@ export class TaskHttpService {
   private http = inject(HttpClient);
   private taskService = inject(TaskService);
 
-  public userId = signal<number | null>(null);
   public messageDownload = signal<string | null>(null);
 
-  public loading = signal<boolean>(false);
+  public loading = signal(false);
 
-  public async upload(tasks: Task[]) {
+  public async upload(tasks: Task[], userId?: number) {
     this.loading.set(true);
 
+    const body = {
+      userIdParam: userId,
+      tasks: tasks,
+    };
+
     this.http
-      .post(`${environment.baseUrl}/insert-tasks`, tasks)
+      .post(`${environment.baseUrl}/insert-tasks`, body)
       .pipe(
         retry(10),
         catchError((error) => {
@@ -32,7 +36,11 @@ export class TaskHttpService {
       )
       .subscribe({
         next: (response: any) => {
-          this.userId.set(response['userid']);
+          if (!userId) {
+            this.taskService.userId.set(response['userid']);
+          } else {
+            this.taskService.userId.set(userId);
+          }
         },
         error: (error: any) => {
           this.loading.set(false);
@@ -73,7 +81,6 @@ export class TaskHttpService {
             ...task,
             done: !!task.done,
           }));
-          this.taskService.saveTasks(tasks);
           this.taskService.tasks.set(tasks);
           this.messageDownload.set('success');
         },
