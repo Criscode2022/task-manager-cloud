@@ -10,7 +10,6 @@ import { Task } from '../../shared/types/Task';
 export class TaskService {
   public _storage: Storage | null = null;
   public storageInitialized = new BehaviorSubject<void>(undefined);
-  public nextId = signal<number>(0);
 
   public tasks = signal<Task[]>([]);
   public userId = signal<number | null>(null);

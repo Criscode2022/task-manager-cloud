@@ -8,7 +8,6 @@ import { StatusEnum } from '../tab-list/types/statusEnum';
 })
 export class TabsPage implements OnInit {
   private taskService = inject(TaskService);
-  public nextId = this.taskService.nextId;
   protected filter = signal<StatusEnum>(StatusEnum.All);
   private tasks = this.taskService.tasks;
 
@@ -18,11 +17,6 @@ export class TabsPage implements OnInit {
       this.tasks.set(await this.taskService.getTasks());
       this.taskService.userId.set(
         await this.taskService._storage?.get('userId')
-      );
-      this.nextId.set(
-        this.tasks().length > 0
-          ? Math.max(...this.tasks().map((t: any) => t.id))
-          : 0
       );
     });
   }

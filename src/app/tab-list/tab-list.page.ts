@@ -19,7 +19,6 @@ export class TabListPage extends TaskForm {
   private taskService = inject(TaskService);
   private alertController = inject(AlertController);
 
-  private nextId = this.taskService.nextId;
   protected tasks = this.taskService.tasks;
   protected filter = signal<StatusEnum>(StatusEnum.All);
 
@@ -114,10 +113,8 @@ export class TabListPage extends TaskForm {
     }
 
     if (this.title?.value) {
-      this.nextId.set(this.nextId() + 1);
-
       const task: Task = {
-        id: this.nextId(),
+        id: Date.now(),
         title: this.title?.value,
         description: this.description?.value || '',
         done: false,
