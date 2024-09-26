@@ -85,9 +85,6 @@ export class TaskHttpService {
         error: (error: any) => {
           console.error('Error in auto upload:', error);
         },
-        complete: () => {
-          console.log('Auto upload complete');
-        },
       });
   }
 
@@ -99,8 +96,6 @@ export class TaskHttpService {
       .pipe(
         retry(10),
         catchError((error) => {
-          console.error('Error downloading tasks:', error);
-
           if (error.status == 404) {
             this.messageDownload.set('not found');
           }
@@ -109,17 +104,18 @@ export class TaskHttpService {
             this.messageDownload.set('error');
           }
 
-          console.log(error.status);
-
-          return [];
+          throw new Error('Error downloading tasks');
         })
       )
       .subscribe({
-        next: (response: any) => {
+        next: async (response: any) => {
           const tasks = response.body.map((task: Task) => ({
             ...task,
             done: !!task.done,
           }));
+
+          await this.taskService._storage?.set('userId', userId);
+          await this.taskService.userId.set(userId);
           this.taskService.tasks.set(tasks);
           this.messageDownload.set('success');
         },

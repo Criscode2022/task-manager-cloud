@@ -33,6 +33,27 @@ export class TabOptionsPage {
     },
   ];
 
+  public alertButtonsUpload = [
+    {
+      text: 'Cancel',
+      role: 'cancel',
+    },
+    {
+      text: 'Confirm',
+      role: 'confirm',
+      handler: () => {
+        this.upload();
+      },
+    },
+  ];
+
+  public alertButtonsInfo = [
+    {
+      text: 'Close',
+      role: 'cancel',
+    },
+  ];
+
   public alertInputs = [
     {
       placeholder: 'User ID',

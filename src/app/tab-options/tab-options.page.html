@@ -6,20 +6,41 @@
     <ion-title class="lg:relative lg:left-4 ion-text-center">
       Task Manager
     </ion-title>
-    <ion-button slot="end" class="invisible ion-margin w-20"> </ion-button>
+    <ion-button
+      slot="end"
+      id="info-alert"
+      color="primary"
+      class="ion-margin w-20"
+    >
+      <ion-icon name="information"></ion-icon>
+    </ion-button>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <img
     src="assets/background-image.svg"
-    class="absolute bottom-10 right-2 opacity-25"
+    class="absolute bottom-10 right-2 opacity-20"
     alt="soft background image of a girl and sunflowers"
   />
 
   <p class="m-4 font-bold z-10">Save your tasks to the cloud</p>
 
-  <ion-button color="primary" (click)="upload()" class="p-4">
+  <ion-button
+    color="primary"
+    id="upload-alert"
+    class="p-4"
+    [class.hidden]="!userId()"
+  >
+    <ion-icon name="save"></ion-icon>
+  </ion-button>
+
+  <ion-button
+    color="primary"
+    (click)="upload()"
+    class="p-4"
+    [class.hidden]="userId()"
+  >
     <ion-icon name="save"></ion-icon>
   </ion-button>
 
@@ -48,13 +69,13 @@
   @if (messageDownload() === 'success') {
 
   <div class="p-8">
-    <strong class="text-green-600"> Tasks downloaded correctly! </strong>
+    <strong class="text-green-700"> Tasks downloaded correctly! </strong>
   </div>
 
   } @if (messageDownload() === 'not found') {
 
   <div class="p-8">
-    <strong class="text-red-600"> User ID doesn't exist </strong>
+    <strong class="text-red-700"> User ID doesn't exist </strong>
   </div>
 
   } @if (messageDownload() === 'error') {
@@ -70,5 +91,19 @@
     message="IMPORTANT: This will OVERWRITE your current tasks"
     [buttons]="alertButtonsDownload"
     [inputs]="alertInputs"
+  ></ion-alert>
+
+  <ion-alert
+    trigger="upload-alert"
+    header="Upload tasks"
+    message="IMPORTANT: This will OVERWRITE the tasks saved in the cloud with your user ID"
+    [buttons]="alertButtonsUpload"
+  ></ion-alert>
+
+  <ion-alert
+    trigger="info-alert"
+    header="Information"
+    message="Once you have an user ID tasks are automatically synced when you open the app or make changes, but you can also manually upload and download tasks"
+    [buttons]="alertButtonsInfo"
   ></ion-alert>
 </ion-content>
