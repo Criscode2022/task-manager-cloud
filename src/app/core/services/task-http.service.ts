@@ -12,17 +12,20 @@ export class TaskHttpService {
   private http = inject(HttpClient);
   private taskService = inject(TaskService);
 
-  public messageDownload = signal<string | null>(null);
+  private tasks = this.taskService.tasks;
 
+  public messageDownload = signal<string | null>(null);
   public loading = signal(false);
 
   constructor() {
     effect(() => {
-      if (this.taskService.tasks()) {
+      if (this.tasks()) {
         const userId = this.taskService.userId();
-        if (userId !== null && userId !== undefined) {
-          this.autoUpload(this.taskService.tasks(), userId);
+        if (!userId) {
+          return;
         }
+
+        this.autoUpload(this.tasks(), userId);
       }
     });
   }
@@ -40,8 +43,6 @@ export class TaskHttpService {
       .pipe(
         retry(10),
         catchError((error) => {
-          this.loading.set(false);
-          console.error('Error uploading tasks:', error);
           throw error;
         })
       )
@@ -53,9 +54,9 @@ export class TaskHttpService {
             this.taskService.userId.set(userId);
           }
         },
-        error: (error: any) => {
+
+        error: () => {
           this.loading.set(false);
-          console.error('Error uploading tasks:', error);
         },
         complete: () => {
           this.loading.set(false);
@@ -74,18 +75,10 @@ export class TaskHttpService {
       .pipe(
         retry(10),
         catchError((error) => {
-          console.error('Error uploading tasks:', error);
           throw error;
         })
       )
-      .subscribe({
-        next: (response: any) => {
-          console.log('Auto upload response:', response);
-        },
-        error: (error: any) => {
-          console.error('Error in auto upload:', error);
-        },
-      });
+      .subscribe();
   }
 
   public download(userId: number) {
@@ -104,19 +97,20 @@ export class TaskHttpService {
             this.messageDownload.set('error');
           }
 
-          throw new Error('Error downloading tasks');
+          throw new Error('Error downloading tasks: ' + error);
         })
       )
       .subscribe({
-        next: async (response: any) => {
+        next: (response: any) => {
           const tasks = response.body.map((task: Task) => ({
             ...task,
             done: !!task.done,
           }));
 
-          await this.taskService._storage?.set('userId', userId);
-          await this.taskService.userId.set(userId);
-          this.taskService.tasks.set(tasks);
+          this.taskService._storage?.set('userId', userId);
+          this.taskService.userId.set(userId);
+          this.tasks.set(tasks);
+
           this.messageDownload.set('success');
         },
       });

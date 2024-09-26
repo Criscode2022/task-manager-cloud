@@ -18,16 +18,14 @@ export class TabsPage implements OnInit {
     this.taskService.storageInitialized.subscribe(async () => {
       this.filter.set(await this.taskService.getFilter());
       this.tasks.set(await this.taskService.getTasks());
-      this.taskService.userId.set(
-        await this.taskService._storage?.get('userId')
-      );
 
-      const userId = this.taskService.userId();
-      if (userId !== null && userId !== undefined) {
-        this.http.download(userId);
-      } else {
-        console.error('User ID is null');
+      const userId = await this.taskService._storage?.get('userId');
+
+      if (!userId) {
+        return;
       }
+
+      this.http.download(userId);
     });
   }
 }
