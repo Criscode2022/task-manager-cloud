@@ -29,7 +29,7 @@
     alt="soft background image of a girl and sunflowers"
   />
 
-  <p class="m-4 font-bold">Save your tasks to the cloud</p>
+  <p class="m-4 font-bold">Upload tasks</p>
 
   <ng-container *ngIf="userId(); else btnSave">
     <ng-container *ngTemplateOutlet="btnUpload"></ng-container>
@@ -42,7 +42,10 @@
 
   <div class="px-4 py-6">
     <p class="px-4"><strong>Your user ID : {{userId()}}</strong></p>
-    <p class="px-4">Use this user ID to sync your tasks on any device</p>
+    <p class="px-4">
+      Use this user ID to sync your tasks on any device. Tasks are automatically
+      synced on changes until you delete your user ID
+    </p>
   </div>
   } @if (messageUpload() && !loading()) {
 
@@ -51,7 +54,7 @@
   </div>
   }
 
-  <p class="m-4 font-bold">Get your tasks from the cloud</p>
+  <p class="m-4 font-bold">Download tasks</p>
 
   <ion-button
     aria-label="download button"
@@ -95,6 +98,28 @@
     message="Once you have an user ID, tasks are automatically synced when you open the app or make changes, but you can also manually upload and download tasks"
     [buttons]="alertButtonsInfo"
   ></ion-alert>
+
+  @if (userId()) {
+
+  <p class="m-4 font-bold">Delete your User ID</p>
+
+  <ion-button
+    aria-label="delete button"
+    color="danger"
+    id="delete-user-alert"
+    class="p-4"
+  >
+    <ion-icon name="trash"></ion-icon>
+  </ion-button>
+
+  <ion-alert
+    trigger="delete-user-alert"
+    header="Delete User ID"
+    message="Are you sure you want to delete your User ID? This will delete all your tasks from the cloud but will keep them in this device"
+    [buttons]="alertButtonsDelete"
+  ></ion-alert>
+
+  }
 </ion-content>
 
 <!---------------------------------------------------------------->
@@ -106,7 +131,7 @@
     (click)="upload()"
     class="p-4"
   >
-    <ion-icon name="save"></ion-icon> </ion-button
+    <ion-icon name="cloud-upload"></ion-icon> </ion-button
 ></ng-template>
 
 <ng-template #btnUpload>
@@ -116,7 +141,7 @@
     id="upload-alert"
     class="p-4"
   >
-    <ion-icon name="save"></ion-icon>
+    <ion-icon name="cloud-upload"></ion-icon>
   </ion-button>
 
   <ion-alert

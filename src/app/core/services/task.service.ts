@@ -12,7 +12,7 @@ export class TaskService {
   public storageInitialized = new BehaviorSubject<void>(undefined);
 
   public tasks = signal<Task[]>([]);
-  public userId = signal<number | null>(null);
+  public userId = signal<number>(0);
 
   constructor(private storage: Storage) {
     this.init();

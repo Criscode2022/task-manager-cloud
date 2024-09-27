@@ -51,6 +51,20 @@ export class TabOptionsPage {
     },
   ];
 
+  public alertButtonsDelete = [
+    {
+      text: 'Cancel',
+      role: 'cancel',
+    },
+    {
+      text: 'Confirm',
+      role: 'confirm',
+      handler: () => {
+        this.http.delete(this.userId());
+      },
+    },
+  ];
+
   public alertButtonsInfo = [
     {
       text: 'Close',

@@ -14,18 +14,13 @@ export class TaskHttpService {
 
   private tasks = this.taskService.tasks;
 
-  public messageDownload = signal<string | null>(null);
+  public messageDownload = signal('');
   public loading = signal(false);
 
   constructor() {
     effect(() => {
       if (this.tasks()) {
-        const userId = this.taskService.userId();
-        if (!userId) {
-          return;
-        }
-
-        this.autoUpload(this.tasks(), userId);
+        this.autoUpload(this.tasks(), this.taskService.userId());
       }
     });
   }
@@ -41,7 +36,7 @@ export class TaskHttpService {
     this.http
       .post(`${environment.baseUrl}/insert-tasks`, body)
       .pipe(
-        retry(10),
+        retry(2),
         catchError((error) => {
           throw error;
         })
@@ -73,12 +68,28 @@ export class TaskHttpService {
     this.http
       .post(`${environment.baseUrl}/insert-tasks`, body)
       .pipe(
-        retry(10),
+        retry(2),
         catchError((error) => {
           throw error;
         })
       )
       .subscribe();
+  }
+
+  public delete(userId: number) {
+    this.http
+      .delete(`https://api-task-i35c.onrender.com/tasks/${userId}`)
+      .pipe(
+        retry(2),
+        catchError((error) => {
+          throw new Error('Error deleting user Id: ' + error);
+        })
+      )
+      .subscribe(() => {
+        this.taskService._storage?.remove('userId');
+        this.taskService.userId.set(0);
+        this.messageDownload.set('');
+      });
   }
 
   public download(userId: number) {
@@ -87,9 +98,15 @@ export class TaskHttpService {
         observe: 'response',
       })
       .pipe(
-        retry(10),
-        catchError((error) => {
+        retry(2),
+        catchError(async (error) => {
           if (error.status == 404) {
+            if (!this.taskService.userId()) {
+              // Used to remove the user Id when the app starts if it was deleted from another device
+              await this.taskService._storage?.remove('userId');
+              return;
+            }
+
             this.messageDownload.set('not found');
           }
 
