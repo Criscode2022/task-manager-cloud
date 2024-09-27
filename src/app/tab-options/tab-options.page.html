@@ -29,24 +29,26 @@
     alt="soft background image of a girl and sunflowers"
   />
 
+  @if (!userId() && !loading()) {
+
   <p class="m-4 font-bold">Upload tasks</p>
 
-  <ng-container *ngIf="userId(); else btnSave">
-    <ng-container *ngTemplateOutlet="btnUpload"></ng-container>
-  </ng-container>
+  <ion-button
+    aria-label="upload button"
+    color="primary"
+    class="m-4"
+    (click)="upload()"
+  >
+    <ion-icon name="cloud-upload"></ion-icon>
+  </ion-button>
 
-  @if (loading()) {
+  } @if (loading()) {
   <ion-spinner aria-label="loading spinner" name="crescent"></ion-spinner>
 
   } @if (userId() && !loading()) {
 
-  <div class="px-4 py-6">
-    <p class="px-4"><strong>Your user ID : {{userId()}}</strong></p>
-    <p class="px-4">
-      Use this user ID to sync your tasks on any device. Tasks are automatically
-      synced on changes until you delete your user ID
-    </p>
-  </div>
+  <p class="m-4 float-right"><strong>Your user ID : {{userId()}}</strong></p>
+
   } @if (messageUpload() && !loading()) {
 
   <div class="p-8">
@@ -59,27 +61,27 @@
   <ion-button
     aria-label="download button"
     color="primary"
+    class="m-4"
     id="download-alert"
-    class="p-4"
   >
     <ion-icon name="cloud-download"></ion-icon>
   </ion-button>
 
   @if (messageDownload() === 'success') {
 
-  <div class="p-8">
+  <div class="p-4">
     <strong class="text-green-700"> Tasks downloaded correctly! </strong>
   </div>
 
   } @if (messageDownload() === 'not found') {
 
-  <div class="p-8">
+  <div class="p-4">
     <strong class="text-red-700"> User ID doesn't exist </strong>
   </div>
 
   } @if (messageDownload() === 'error') {
 
-  <div class="p-8">
+  <div class="p-4">
     <strong class="text-red-600"> Server error, please try again </strong>
   </div>
   }
@@ -95,7 +97,8 @@
   <ion-alert
     trigger="info-alert"
     header="Information"
-    message="Once you have an user ID, tasks are automatically synced when you open the app or make changes, but you can also manually upload and download tasks"
+    message="Upload the tasks to get an user ID, which you can use to sync your tasks on any device. Tasks are automatically
+      synced on changes until you delete your user ID"
     [buttons]="alertButtonsInfo"
   ></ion-alert>
 
@@ -106,8 +109,8 @@
   <ion-button
     aria-label="delete button"
     color="danger"
+    class="m-4"
     id="delete-user-alert"
-    class="p-4"
   >
     <ion-icon name="trash"></ion-icon>
   </ion-button>
@@ -115,39 +118,9 @@
   <ion-alert
     trigger="delete-user-alert"
     header="Delete User ID"
-    message="Are you sure you want to delete your User ID? This will delete all your tasks from the cloud but will keep them in this device"
+    message="Are you sure you want to delete your User ID? This will delete all your tasks from the cloud but will keep them in the devices"
     [buttons]="alertButtonsDelete"
   ></ion-alert>
 
   }
 </ion-content>
-
-<!---------------------------------------------------------------->
-
-<ng-template #btnSave>
-  <ion-button
-    aria-label="upload button"
-    color="primary"
-    (click)="upload()"
-    class="p-4"
-  >
-    <ion-icon name="cloud-upload"></ion-icon> </ion-button
-></ng-template>
-
-<ng-template #btnUpload>
-  <ion-button
-    aria-label="upload button"
-    color="primary"
-    id="upload-alert"
-    class="p-4"
-  >
-    <ion-icon name="cloud-upload"></ion-icon>
-  </ion-button>
-
-  <ion-alert
-    trigger="upload-alert"
-    header="Upload tasks"
-    message="IMPORTANT: This will OVERWRITE the tasks saved in the cloud with your user ID"
-    [buttons]="alertButtonsUpload"
-  ></ion-alert>
-</ng-template>

@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { effect, inject, Injectable, signal } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError, retry } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
 import { Task } from '../../tab-list/types/Task';
@@ -10,6 +11,7 @@ import { TaskService } from './task.service';
 })
 export class TaskHttpService {
   private http = inject(HttpClient);
+  private snackbar = inject(MatSnackBar);
   private taskService = inject(TaskService);
 
   private tasks = this.taskService.tasks;
@@ -60,6 +62,11 @@ export class TaskHttpService {
   }
 
   public autoUpload(tasks: Task[], userId?: number) {
+    //This method is needed because you can't assign signals in the effect() function
+    if (!tasks.length || !userId) {
+      return;
+    }
+
     const body = {
       userIdParam: userId,
       tasks: tasks,
@@ -73,7 +80,18 @@ export class TaskHttpService {
           throw error;
         })
       )
-      .subscribe();
+      .subscribe({
+        error: () => {
+          this.snackbar
+            .open('Error uploading tasks', 'Retry', {
+              duration: 5000,
+            })
+            .onAction()
+            .subscribe(() => {
+              this.upload(tasks, userId);
+            });
+        },
+      });
   }
 
   public delete(userId: number) {
