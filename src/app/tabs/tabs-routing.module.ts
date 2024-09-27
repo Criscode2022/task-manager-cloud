@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { TabListPage } from '../tab-list/tab-list.page';
+import { TabOptionsPage } from '../tab-options/tab-options.page';
 import { TabsPage } from './tabs.page';
 
 const routes: Routes = [
@@ -8,24 +10,17 @@ const routes: Routes = [
     component: TabsPage,
     children: [
       {
-        path: 'list',
-        loadChildren: () =>
-          import('../tab-list/tab-list.module').then(
-            (m) => m.TabListPageModule
-          ),
-      },
-      {
-        path: 'tab-options',
-        loadChildren: () =>
-          import('../tab-options/tab-options.module').then(
-            (m) => m.TabOptionsPageModule
-          ),
-      },
-
-      {
         path: '',
         redirectTo: '/tabs/list',
         pathMatch: 'full',
+      },
+      {
+        path: 'list',
+        component: TabListPage,
+      },
+      {
+        path: 'options',
+        component: TabOptionsPage,
       },
     ],
   },

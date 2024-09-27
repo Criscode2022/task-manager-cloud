@@ -1,14 +1,38 @@
+import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import {
+  AlertController,
+  IonicModule,
+  ItemReorderEventDetail,
+} from '@ionic/angular';
 import { TaskService } from '../core/services/task.service';
-import { Task } from '../shared/types/Task';
 import { TaskForm } from './task.form';
 import { StatusEnum, StatusEnumArray } from './types/statusEnum';
+import { Task } from './types/Task';
 
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab-list.page.html',
   styleUrls: ['tab-list.page.scss'],
+  standalone: true,
+  imports: [
+    IonicModule,
+    CommonModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatTooltipModule,
+  ],
 })
 export class TabListPage extends TaskForm {
   protected canClick = signal(true);

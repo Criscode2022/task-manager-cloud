@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
-
-import { TabListPage } from './tab1.page';
+import { TabListPage } from './tab-list.page';
 
 describe('TabListPage', () => {
   let component: TabListPage;

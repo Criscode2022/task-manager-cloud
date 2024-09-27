@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { effect, inject, Injectable, signal } from '@angular/core';
 import { catchError, retry } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
-import { Task } from '../../shared/types/Task';
+import { Task } from '../../tab-list/types/Task';
 import { TaskService } from './task.service';
 
 @Injectable({

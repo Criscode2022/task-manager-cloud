@@ -1,18 +1,22 @@
+import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { IonicModule } from '@ionic/angular';
 import { TaskHttpService } from '../core/services/task-http.service';
 import { TaskService } from '../core/services/task.service';
-import { User } from './types/Task';
+import { User } from './types/User';
 
 @Component({
   selector: 'app-tab-options',
   templateUrl: 'tab-options.page.html',
   styleUrls: ['tab-options.page.scss'],
+  standalone: true,
+  imports: [IonicModule, CommonModule],
 })
 export class TabOptionsPage {
   private http = inject(TaskHttpService);
   private taskService = inject(TaskService);
 
-  protected messageUpload = signal<string | null>(null);
+  protected messageUpload = signal('');
 
   private tasks = this.taskService.tasks;
   protected userId = this.taskService.userId;
@@ -72,7 +76,7 @@ export class TabOptionsPage {
         return;
       }
 
-      this.messageUpload.set(null);
+      this.messageUpload.set('');
       await this.http.upload(this.tasks(), this.userId() || undefined);
     } catch (error) {
       console.error('Error uploading tasks:', error);

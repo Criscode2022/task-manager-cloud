@@ -2,7 +2,7 @@ import { effect, Injectable, signal } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { BehaviorSubject } from 'rxjs';
 import { StatusEnum } from 'src/app/tab-list/types/statusEnum';
-import { Task } from '../../shared/types/Task';
+import { Task } from '../../tab-list/types/Task';
 
 @Injectable({
   providedIn: 'root',
