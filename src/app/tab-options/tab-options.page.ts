@@ -3,7 +3,8 @@ import { Component, inject, signal } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { TaskHttpService } from '../core/services/task-http.service';
 import { TaskService } from '../core/services/task.service';
-import { User } from './types/User';
+import { AlertMessages } from '../shared/types/alert-messages';
+import { User } from './types/user';
 
 @Component({
   selector: 'app-tab-options',
@@ -12,7 +13,7 @@ import { User } from './types/User';
   standalone: true,
   imports: [IonicModule, CommonModule],
 })
-export class TabOptionsPage {
+export class TabOptionsPage extends AlertMessages {
   private http = inject(TaskHttpService);
   private taskService = inject(TaskService);
 
@@ -99,5 +100,10 @@ export class TabOptionsPage {
 
   protected download(id: User['id']) {
     this.http.download(id);
+  }
+
+  protected async offlineMode() {
+    this.taskService.userId.set(0);
+    await this.taskService._storage?.remove('userId');
   }
 }

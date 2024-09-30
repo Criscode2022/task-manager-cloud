@@ -22,8 +22,8 @@
     <ion-alert
       trigger="delete-alert"
       header="Confirmation"
-      message="Are you sure that you want to delete all the tasks? This action CANNOT BE UNDONE"
-      [buttons]="alertButtons"
+      [message]="!this.taskService.userId() ? deleteTasksAlert : deleteTasksAlertOnline"
+      [buttons]="!this.taskService.userId() ? alertButtons : alertButtonsOnline"
     ></ion-alert>
   </ion-toolbar>
 </ion-header>

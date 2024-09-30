@@ -40,7 +40,7 @@ export class TabListPage extends TaskForm {
 
   protected newTask = signal(false);
 
-  private taskService = inject(TaskService);
+  protected taskService = inject(TaskService);
   private alertController = inject(AlertController);
 
   protected tasks = this.taskService.tasks;
@@ -72,6 +72,13 @@ export class TabListPage extends TaskForm {
       handler: () => {
         this.deleteAllTasks();
       },
+    },
+  ];
+
+  protected alertButtonsOnline = [
+    {
+      text: 'Cancel',
+      role: 'cancel',
     },
   ];
 

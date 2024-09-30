@@ -1,7 +1,8 @@
 import { inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { AlertMessages } from '../shared/types/alert-messages';
 
-export class TaskForm {
+export class TaskForm extends AlertMessages {
   private fb = inject(FormBuilder);
 
   private skeleton = {

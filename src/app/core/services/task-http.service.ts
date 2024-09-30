@@ -119,7 +119,10 @@ export class TaskHttpService {
         retry(2),
         catchError(async (error) => {
           if (error.status == 404) {
-            if (!this.taskService.userId()) {
+            if (
+              (await this.taskService._storage?.get('userId')) &&
+              !this.taskService.userId()
+            ) {
               // Used to remove the user Id when the app starts if it was deleted from another device
               await this.taskService._storage?.remove('userId');
               return;
