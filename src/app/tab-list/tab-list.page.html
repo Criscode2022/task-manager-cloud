@@ -21,9 +21,9 @@
     </ion-button>
     <ion-alert
       trigger="delete-alert"
-      header="Confirmation"
-      [message]="!this.taskService.userId() ? deleteTasksAlert : deleteTasksAlertOnline"
-      [buttons]="!this.taskService.userId() ? alertButtons : alertButtonsOnline"
+      [header]="!this.userId() ? 'Confirmation' : ''"
+      [message]="!this.userId() ? deleteTasksAlert : deleteTasksAlertOnline"
+      [buttons]="!this.userId() ? alertButtons : alertButtonsOnline"
     ></ion-alert>
   </ion-toolbar>
 </ion-header>
@@ -118,5 +118,22 @@
       <ion-icon slot="icon-only" name="chevron-down"></ion-icon>
     </ion-button>
   </div>
+
+  } @if(this.userId()) {
+
+  <ion-button
+    shape="round"
+    color="secondary"
+    class="absolute bottom-4 right-4"
+    (click)="refresh()"
+  >
+    <ion-icon
+      slot="icon-only"
+      class="text-black"
+      aria-label="refresh button"
+      *ngIf="this.userId()"
+      name="refresh-outline"
+    ></ion-icon>
+  </ion-button>
   }
 </ion-content>

@@ -12,6 +12,7 @@ import {
   IonicModule,
   ItemReorderEventDetail,
 } from '@ionic/angular';
+import { TaskHttpService } from '../core/services/task-http.service';
 import { TaskService } from '../core/services/task.service';
 import { TaskForm } from './task.form';
 import { StatusEnum, StatusEnumArray } from './types/statusEnum';
@@ -35,14 +36,15 @@ import { Task } from './types/Task';
   ],
 })
 export class TabListPage extends TaskForm {
-  protected canClick = signal(true);
-  protected isDisabled = signal(false);
-
-  protected newTask = signal(false);
-
+  private http = inject(TaskHttpService);
   protected taskService = inject(TaskService);
   private alertController = inject(AlertController);
 
+  protected canClick = signal(true);
+  protected isDisabled = signal(false);
+  protected newTask = signal(false);
+
+  protected userId = this.taskService.userId;
   protected tasks = this.taskService.tasks;
   protected filter = signal<StatusEnum>(StatusEnum.All);
 
@@ -224,5 +226,9 @@ export class TabListPage extends TaskForm {
 
   private toggleReorder() {
     this.isDisabled.set(!this.isDisabled());
+  }
+
+  protected refresh() {
+    this.http.download(this.userId());
   }
 }

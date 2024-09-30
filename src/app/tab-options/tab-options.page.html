@@ -30,7 +30,7 @@
   />
 
   @if (!userId() && !loading()) {
-  <p class="m-4 float-right bg-white p-4 shadow rounded-lg">
+  <p class="m-4 float-right bg-white p-2 shadow rounded-lg">
     <strong>You are in offline mode</strong>
   </p>
   } @if (!userId() && !loading()) {
@@ -52,7 +52,7 @@
   } @if (userId() && !loading()) {
 
   <div
-    class="m-4 bg-white p-4 shadow rounded-lg float-right flex flex-col items-center"
+    class="m-4 bg-white p-2 shadow rounded-lg float-right flex flex-col items-center"
   >
     <p>
       <strong>Your user ID : {{userId()}}</strong>
@@ -95,7 +95,7 @@
   </div>
   } @case ('error') {
   <div class="p-4">
-    <strong class="text-red-600"> Server error, please try again </strong>
+    <strong class="text-red-700"> Server error, please try again </strong>
   </div>
   } }
 
