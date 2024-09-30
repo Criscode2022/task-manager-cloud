@@ -14,6 +14,7 @@ import {
 } from '@ionic/angular';
 import { TaskHttpService } from '../core/services/task-http.service';
 import { TaskService } from '../core/services/task.service';
+import { AlertMessages } from '../shared/types/alert-messages';
 import { TaskForm } from './task.form';
 import { StatusEnum, StatusEnumArray } from './types/statusEnum';
 import { Task } from './types/Task';
@@ -39,6 +40,10 @@ export class TabListPage extends TaskForm {
   private http = inject(TaskHttpService);
   protected taskService = inject(TaskService);
   private alertController = inject(AlertController);
+
+  protected rotated = false;
+
+  protected alertMessages = AlertMessages;
 
   protected canClick = signal(true);
   protected isDisabled = signal(false);
@@ -230,5 +235,12 @@ export class TabListPage extends TaskForm {
 
   protected refresh() {
     this.http.download(this.userId());
+
+    this.rotated = true;
+
+    // Reset the rotation after the animation duration
+    setTimeout(() => {
+      this.rotated = false;
+    }, 500); //
   }
 }

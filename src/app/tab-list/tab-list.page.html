@@ -22,7 +22,7 @@
     <ion-alert
       trigger="delete-alert"
       [header]="!this.userId() ? 'Confirmation' : ''"
-      [message]="!this.userId() ? deleteTasksAlert : deleteTasksAlertOnline"
+      [message]="!this.userId() ? alertMessages.DeleteTasksAlert : alertMessages.DeleteTasksAlertOnline"
       [buttons]="!this.userId() ? alertButtons : alertButtonsOnline"
     ></ion-alert>
   </ion-toolbar>
@@ -31,20 +31,39 @@
 <ion-content [scrollY]="false">
   <form
     [formGroup]="form"
-    class="flex flex-col gap-2 md:w-3/5 lg:w-2/5 mx-auto px-4 pt-8"
+    class="flex flex-col gap-1 md:w-3/5 lg:w-2/5 mx-auto px-4 pt-6"
     (ngSubmit)="addTask()"
   >
     <mat-form-field appearance="outline">
       <mat-label>Title</mat-label>
       <input matInput type="text" formControlName="title" />
+      <button
+        type="button"
+        mat-icon-button
+        matSuffix
+        class="mr-2"
+        (click)="clear('title')"
+      >
+        <mat-icon slot="icon-only">close</mat-icon>
+      </button>
 
       @if (title?.hasError('maxlength')) {
       <mat-error>Text too long, use the description</mat-error>
       }
     </mat-form-field>
-    <mat-form-field appearance="outline" class="">
+
+    <mat-form-field appearance="outline" class="mt-2">
       <mat-label>Description</mat-label>
       <input type="text" matInput formControlName="description" />
+      <button
+        type="button"
+        mat-icon-button
+        matSuffix
+        class="mr-2"
+        (click)="clear('description')"
+      >
+        <mat-icon matSuffix>close</mat-icon>
+      </button>
 
       @if (description?.hasError('maxlength')) {
       <mat-error>Remember, keep it simple! </mat-error>
@@ -54,9 +73,7 @@
     <ion-button type="submit" color="primary"> Add Task </ion-button>
   </form>
 
-  <ion-list
-    class="space-y-4 pb-4 overflow-y-scroll h-64 lg:h-96 scrollbar-always-visible"
-  >
+  <ion-list class="space-y-4 pb-4 overflow-y-scroll h-64 lg:h-96 mt-2">
     <ion-reorder-group
       [disabled]="isDisabled()"
       (ionItemReorder)="handleReorder($any($event))"
@@ -86,7 +103,7 @@
             name="close-circle-outline"
             (dblclick)="deleteTask(task.id)"
             class="hidden sm:block cursor-pointer"
-            matTooltip="Double click to delete the task"
+            matTooltip="Double click to delete"
           ></ion-icon>
         </ion-item>
         <ion-item-options side="start">
@@ -124,15 +141,18 @@
   <ion-button
     shape="round"
     color="secondary"
-    class="absolute bottom-4 right-4"
+    class="absolute bottom-4 right-4 transform transition-transform duration-500"
+    [ngClass]="{'rotate-[270deg]': rotated}"
     (click)="refresh()"
+    matTooltip="Refresh tasks"
+    matTooltipPosition="above"
   >
     <ion-icon
       slot="icon-only"
       class="text-black"
       aria-label="refresh button"
       *ngIf="this.userId()"
-      name="refresh-outline"
+      name="sync"
     ></ion-icon>
   </ion-button>
   }

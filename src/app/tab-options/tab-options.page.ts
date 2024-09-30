@@ -13,9 +13,11 @@ import { User } from './types/user';
   standalone: true,
   imports: [IonicModule, CommonModule],
 })
-export class TabOptionsPage extends AlertMessages {
+export class TabOptionsPage {
   private http = inject(TaskHttpService);
   private taskService = inject(TaskService);
+
+  protected alertMessages = AlertMessages;
 
   protected messageUpload = signal('');
 

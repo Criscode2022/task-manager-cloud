@@ -17,7 +17,7 @@
       color="primary"
       class="ion-margin w-20"
     >
-      <ion-icon name="help-circle-outline"></ion-icon>
+      <ion-icon name="help-circle"></ion-icon>
     </ion-button>
   </ion-toolbar>
 </ion-header>
@@ -25,13 +25,13 @@
 <ion-content [fullscreen]="true">
   <img
     src="assets/background-image.svg"
-    class="absolute bottom-10 right-2 opacity-20"
+    class="absolute bottom-10 right-2 opacity-15"
     alt="soft background image of a girl and sunflowers"
   />
 
   @if (!userId() && !loading()) {
   <p class="m-4 float-right bg-white p-2 shadow rounded-lg">
-    <strong>You are in offline mode</strong>
+    <strong>Offline mode</strong>
   </p>
   } @if (!userId() && !loading()) {
 
@@ -47,7 +47,11 @@
   </ion-button>
 
   } @if (loading()) {
-  <ion-spinner aria-label="loading spinner" name="crescent"></ion-spinner>
+  <ion-spinner
+    aria-label="loading spinner"
+    class="p-6"
+    name="crescent"
+  ></ion-spinner>
 
   } @if (userId() && !loading()) {
 
@@ -102,7 +106,7 @@
   <ion-alert
     trigger="download-alert"
     header="Import tasks"
-    [message]="!userId() ? downloadAlert: '' "
+    [message]="!userId() ? alertMessages.DownloadAlert: '' "
     [buttons]="alertButtonsDownload"
     [inputs]="alertInputs"
   ></ion-alert>
@@ -110,7 +114,7 @@
   <ion-alert
     trigger="info-alert"
     header="Information"
-    [message]="infoAlert"
+    [message]="alertMessages.InfoAlert"
     [buttons]="alertButtonsInfo"
   ></ion-alert>
 
@@ -130,7 +134,7 @@
   <ion-alert
     trigger="delete-user-alert"
     header="Delete User ID"
-    [message]="deleteUserAlert"
+    [message]="alertMessages.DeleteUserAlert"
     [buttons]="alertButtonsDelete"
   ></ion-alert>
 

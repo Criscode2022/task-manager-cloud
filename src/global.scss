@@ -113,10 +113,4 @@ html, body { height: 100%;
    font-size: 0.70rem;
  }
 
- .scrollbar-always-visible {
-  scrollbar-width: thin !important; /* Firefox */
-}
 
-.scrollbar-always-visible::-webkit-scrollbar {
-  width: 12px !important; /* Safari and Chrome */
-}
