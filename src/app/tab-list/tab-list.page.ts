@@ -16,7 +16,7 @@ import { TaskHttpService } from '../core/services/task-http.service';
 import { TaskService } from '../core/services/task.service';
 import { AlertMessages } from '../shared/types/alert-messages';
 import { TaskForm } from './task.form';
-import { StatusEnum, StatusEnumArray } from './types/statusEnum';
+import { StatusEnum } from './types/statusEnum';
 import { Task } from './types/Task';
 
 @Component({
@@ -49,13 +49,9 @@ export class TabListPage extends TaskForm {
   protected isDisabled = signal(false);
   protected newTask = signal(false);
 
+  protected filter = this.taskService.filter;
   protected userId = this.taskService.userId;
   protected tasks = this.taskService.tasks;
-  protected filter = signal<StatusEnum>(StatusEnum.All);
-
-  protected indexStatus = computed(() => {
-    return StatusEnumArray.indexOf(this.filter());
-  });
 
   public filteredTasks = computed(() => {
     switch (this.filter()) {
@@ -110,6 +106,9 @@ export class TabListPage extends TaskForm {
     super();
     effect(() => {
       this.taskService.saveTasks(this.tasks());
+    });
+
+    effect(() => {
       this.taskService.saveFilter(this.filter());
     });
   }
@@ -218,17 +217,6 @@ export class TabListPage extends TaskForm {
     this.tasks.set([]);
   }
 
-  protected changeFilter() {
-    let index = this.indexStatus();
-
-    index += 1;
-    if (index === 3) {
-      index = 0;
-    }
-
-    this.filter.set(StatusEnumArray[index]);
-  }
-
   private toggleReorder() {
     this.isDisabled.set(!this.isDisabled());
   }
@@ -238,9 +226,8 @@ export class TabListPage extends TaskForm {
 
     this.rotated = true;
 
-    // Reset the rotation after the animation duration
     setTimeout(() => {
       this.rotated = false;
-    }, 500); //
+    }, 500);
   }
 }

@@ -1,20 +1,27 @@
-import { effect, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { BehaviorSubject } from 'rxjs';
-import { StatusEnum } from 'src/app/tab-list/types/statusEnum';
+import { StatusEnum, StatusEnumArray } from 'src/app/tab-list/types/statusEnum';
 import { Task } from '../../tab-list/types/Task';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TaskService {
+  private storage = inject(Storage);
   public _storage: Storage | null = null;
+  public filter = signal<StatusEnum>(StatusEnum.All);
+
   public storageInitialized = new BehaviorSubject<void>(undefined);
 
   public tasks = signal<Task[]>([]);
   public userId = signal<number>(0);
 
-  constructor(private storage: Storage) {
+  protected indexStatus = computed(() => {
+    return StatusEnumArray.indexOf(this.filter());
+  });
+
+  constructor() {
     this.init();
 
     effect(() => {
@@ -28,6 +35,7 @@ export class TaskService {
     const storage = await this.storage.create();
     this._storage = storage;
     this.storageInitialized.next();
+    this.filter.set(await this.getFilter());
   }
 
   public async getTasks(): Promise<Task[]> {
@@ -42,11 +50,25 @@ export class TaskService {
     await this._storage?.set('tasks', tasks);
   }
 
+  //=======================================================================================================
+
   public async getFilter(): Promise<StatusEnum> {
-    if (!this._storage) {
+    if (!(await this._storage?.get('filter'))) {
       return StatusEnum.All;
     }
-    return (await this._storage.get('filter')) || StatusEnum.All;
+
+    return await this._storage?.get('filter');
+  }
+
+  public changeFilter() {
+    let index = this.indexStatus();
+
+    index += 1;
+    if (index === 3) {
+      index = 0;
+    }
+
+    this.filter.set(StatusEnumArray[index]);
   }
 
   public async saveFilter(filter: string) {

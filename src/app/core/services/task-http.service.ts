@@ -21,9 +21,7 @@ export class TaskHttpService {
 
   constructor() {
     effect(() => {
-      if (this.tasks()) {
-        this.autoUpload(this.tasks(), this.taskService.userId());
-      }
+      this.autoUpload(this.tasks(), this.taskService.userId());
     });
   }
 
