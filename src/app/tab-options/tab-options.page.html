@@ -46,7 +46,12 @@
     <ion-icon name="cloud-upload"></ion-icon>
   </ion-button>
 
-  } @if (loading()) {
+  @if (messageUpload() && !loading()) {
+
+  <div class="p-8">
+    <strong class="text-red-600">{{messageUpload()}}</strong>
+  </div>
+  } } @if (loading()) {
   <ion-spinner
     aria-label="loading spinner"
     class="p-6"
@@ -71,14 +76,11 @@
     </ion-button>
   </div>
 
-  } @if (messageUpload() && !loading()) {
-
-  <div class="p-8">
-    <strong class="text-red-600">{{messageUpload()}}</strong>
-  </div>
   }
 
-  <p class="m-4 font-bold">Download tasks</p>
+  <p class="m-4 font-bold">
+    {{!userId() ? 'Download tasks' : 'Change User ID'}}
+  </p>
 
   <ion-button
     aria-label="download button"

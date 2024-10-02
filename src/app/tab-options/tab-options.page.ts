@@ -105,6 +105,7 @@ export class TabOptionsPage {
   }
 
   protected async offlineMode() {
+    this.messageDownload.set('');
     this.taskService.userId.set(0);
     await this.taskService._storage?.remove('userId');
   }
