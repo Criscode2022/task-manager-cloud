@@ -98,7 +98,7 @@ export class TaskHttpService {
       .pipe(
         retry(2),
         catchError((error) => {
-          throw new Error('Error deleting user Id: ' + error);
+          throw new Error('Error deleting user Id: ' + error.message);
         })
       )
       .subscribe(() => {
@@ -133,7 +133,7 @@ export class TaskHttpService {
             this.messageDownload.set('error');
           }
 
-          throw new Error('Error downloading tasks: ' + error);
+          throw new Error('Error downloading tasks: ' + error.message);
         })
       )
       .subscribe({

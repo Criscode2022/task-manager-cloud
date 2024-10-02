@@ -32,8 +32,7 @@ export class TaskService {
   }
 
   async init() {
-    const storage = await this.storage.create();
-    this._storage = storage;
+    this._storage = await this.storage.create();
     this.storageInitialized.next();
     this.filter.set(await this.getFilter());
   }

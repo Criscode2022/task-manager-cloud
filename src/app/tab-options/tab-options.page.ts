@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TaskHttpService } from '../core/services/task-http.service';
 import { TaskService } from '../core/services/task.service';
@@ -11,7 +12,7 @@ import { User } from './types/user';
   templateUrl: 'tab-options.page.html',
   styleUrls: ['tab-options.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule],
+  imports: [IonicModule, CommonModule, RouterModule],
 })
 export class TabOptionsPage {
   private http = inject(TaskHttpService);
