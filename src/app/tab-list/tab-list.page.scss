@@ -1,9 +1,10 @@
+.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
 .done {
   text-decoration: line-through;
   opacity: 0.5;
 }
 
-.disabled {
-  pointer-events: none;
-  opacity: 0.5;
-}

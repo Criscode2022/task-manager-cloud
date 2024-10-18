@@ -17,7 +17,7 @@ import { TaskService } from '../core/services/task.service';
 import { AlertMessages } from '../shared/types/alert-messages';
 import { TaskForm } from './task.form';
 import { StatusEnum } from './types/statusEnum';
-import { Task } from './types/Task';
+import { Task } from './types/task';
 
 @Component({
   selector: 'app-tab1',
@@ -38,20 +38,19 @@ import { Task } from './types/Task';
 })
 export class TabListPage extends TaskForm {
   private http = inject(TaskHttpService);
-  protected taskService = inject(TaskService);
   private alertController = inject(AlertController);
-
-  protected rotated = false;
+  protected taskService = inject(TaskService);
 
   protected alertMessages = AlertMessages;
 
   protected canClick = signal(true);
+  protected hasNewTask = signal(false);
   protected isDisabled = signal(false);
-  protected newTask = signal(false);
+  protected mustRotate = signal(false);
 
   protected filter = this.taskService.filter;
-  protected userId = this.taskService.userId;
   protected tasks = this.taskService.tasks;
+  protected userId = this.taskService.userId;
 
   public filteredTasks = computed(() => {
     switch (this.filter()) {
@@ -143,32 +142,39 @@ export class TabListPage extends TaskForm {
     await alert.present();
   }
 
+  protected refresh() {
+    this.http.download(this.userId());
+
+    this.mustRotate.set(true);
+    setTimeout(() => {
+      this.mustRotate.set(false);
+    }, 500);
+  }
+
   protected addTask() {
-    if (this.form.invalid) {
+    if (!(this.form.valid && this.title?.value)) {
       console.error('Invalid form, please check the inputs');
       return;
     }
 
-    if (this.title?.value) {
-      const task: Task = {
-        id: Date.now(),
-        title: this.title?.value,
-        description: this.description?.value || '',
-        done: false,
-      };
+    const task: Task = {
+      id: Date.now(),
+      title: this.title?.value,
+      description: this.description?.value ?? '',
+      done: false,
+    };
 
-      this.tasks.update((tasks) => [...tasks, task]);
+    this.tasks.update((tasks) => [...tasks, task]);
 
-      this.form.reset();
+    this.form.reset();
 
-      this.newTask.set(true);
-      setTimeout(() => {
-        this.newTask.set(false);
-      }, 1000);
-    }
+    this.hasNewTask.set(true);
+    setTimeout(() => {
+      this.hasNewTask.set(false);
+    }, 1000);
   }
 
-  protected toggleTaskCompletion(taskId: number) {
+  protected toggleTaskState(taskId: number) {
     if (!this.canClick) {
       return;
     }
@@ -182,11 +188,26 @@ export class TabListPage extends TaskForm {
     );
 
     setTimeout(() => {
-      const tasksReorder = [...this.tasks()];
-      this.tasks.set(this.reorderTasks(tasksReorder));
+      this.tasks.set(this.reorderTasksByState(this.tasks()));
       this.canClick.set(true);
       this.toggleReorder();
     }, 500);
+  }
+
+  private toggleReorder() {
+    this.isDisabled.set(!this.isDisabled());
+  }
+
+  protected handleManualReorder(event: CustomEvent<ItemReorderEventDetail>) {
+    const items = [...this.tasks()];
+    const movedItem = items.splice(event.detail.from, 1)[0];
+    items.splice(event.detail.to, 0, movedItem);
+    this.tasks.set(items);
+    event.detail.complete();
+  }
+
+  private reorderTasksByState(tasks: Task[]): Task[] {
+    return tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
   }
 
   protected editTask(id: number, title: string, description: string) {
@@ -197,37 +218,11 @@ export class TabListPage extends TaskForm {
     );
   }
 
-  protected handleReorder(event: CustomEvent<ItemReorderEventDetail>) {
-    const items = [...this.tasks()];
-    const movedItem = items.splice(event.detail.from, 1)[0];
-    items.splice(event.detail.to, 0, movedItem);
-    this.tasks.set(items);
-    event.detail.complete();
-  }
-
-  private reorderTasks(tasks: Task[]): Task[] {
-    return tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
-  }
-
   protected deleteTask(taskId: number) {
     this.tasks.update((tasks) => tasks.filter((task) => task.id !== taskId));
   }
 
   protected deleteAllTasks() {
     this.tasks.set([]);
-  }
-
-  private toggleReorder() {
-    this.isDisabled.set(!this.isDisabled());
-  }
-
-  protected refresh() {
-    this.http.download(this.userId());
-
-    this.rotated = true;
-
-    setTimeout(() => {
-      this.rotated = false;
-    }, 500);
   }
 }

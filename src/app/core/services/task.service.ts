@@ -2,14 +2,14 @@ import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { BehaviorSubject } from 'rxjs';
 import { StatusEnum, StatusEnumArray } from 'src/app/tab-list/types/statusEnum';
-import { Task } from '../../tab-list/types/Task';
+import { Task } from '../../tab-list/types/task';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TaskService {
-  private storage = inject(Storage);
-  public _storage: Storage | null = null;
+  private _storage = inject(Storage);
+  public storage: Storage | null = null;
   public filter = signal<StatusEnum>(StatusEnum.All);
 
   public storageInitialized = new BehaviorSubject<void>(undefined);
@@ -26,37 +26,37 @@ export class TaskService {
 
     effect(() => {
       if (this.userId()) {
-        this._storage?.set('userId', this.userId());
+        this.storage?.set('userId', this.userId());
       }
     });
   }
 
   async init() {
-    this._storage = await this.storage.create();
+    this.storage = await this._storage.create();
     this.storageInitialized.next();
     this.filter.set(await this.getFilter());
   }
 
   public async getTasks(): Promise<Task[]> {
-    if (!this._storage) {
+    if (!this.storage) {
       return [];
     }
 
-    return (await this._storage.get('tasks')) || [];
+    return (await this.storage.get('tasks')) || [];
   }
 
   public async saveTasks(tasks: Task[]) {
-    await this._storage?.set('tasks', tasks);
+    await this.storage?.set('tasks', tasks);
   }
 
   //=======================================================================================================
 
   public async getFilter(): Promise<StatusEnum> {
-    if (!(await this._storage?.get('filter'))) {
+    if (!(await this.storage?.get('filter'))) {
       return StatusEnum.All;
     }
 
-    return await this._storage?.get('filter');
+    return await this.storage?.get('filter');
   }
 
   public changeFilter() {
@@ -71,6 +71,6 @@ export class TaskService {
   }
 
   public async saveFilter(filter: string) {
-    await this._storage?.set('filter', filter);
+    await this.storage?.set('filter', filter);
   }
 }

@@ -67,13 +67,14 @@
     class="m-4 bg-white p-2 shadow rounded-lg float-right flex flex-col items-center"
   >
     <p>
-      <strong>Your user ID : {{userId()}}</strong>
+      <strong>User ID : {{userId()}}</strong>
     </p>
     <ion-button
       aria-label="offline button"
       color="primary"
       class="m-4"
-      (click)="offlineMode()"
+      (click)="activateOfflineMode()"
+      matTooltip="Go offline"
     >
       <ion-icon name="cloud-offline"></ion-icon>
     </ion-button>
@@ -125,7 +126,7 @@
 
   @if (userId()) {
 
-  <p class="m-4 font-bold">Delete your User ID</p>
+  <p class="m-4 font-bold">Delete User ID</p>
 
   <ion-button
     aria-label="delete button"

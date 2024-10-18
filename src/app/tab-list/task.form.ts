@@ -11,12 +11,12 @@ export class TaskForm {
 
   protected form = this.fb.group(this.skeleton);
 
-  get title() {
-    return this.form.get('title');
-  }
-
   get description() {
     return this.form.get('description');
+  }
+
+  get title() {
+    return this.form.get('title');
   }
 
   protected clear(element: string): void {

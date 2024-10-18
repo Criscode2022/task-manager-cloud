@@ -79,7 +79,7 @@
   <ion-list class="space-y-4 pb-4 overflow-y-scroll h-64 lg:h-96 mt-2">
     <ion-reorder-group
       [disabled]="isDisabled()"
-      (ionItemReorder)="handleReorder($any($event))"
+      (ionItemReorder)="handleManualReorder($any($event))"
     >
       @for (task of filteredTasks(); track task.id) {
 
@@ -87,12 +87,12 @@
         <ion-item>
           <mat-checkbox
             [checked]="task.done"
-            (change)="canClick() ? toggleTaskCompletion(task.id) : null"
+            (change)="canClick() ? toggleTaskState(task.id) : null"
             class="mr-4"
             [class.disabled]="!canClick()"
           ></mat-checkbox>
           <ion-label
-            (click)="canClick() ? toggleTaskCompletion(task.id) : null"
+            (click)="canClick() ? toggleTaskState(task.id) : null"
             [class.done]="task.done"
             class="cursor-pointer text-sm md:text-base lg:text-lg xl:text-xl"
             [class.disabled]="!canClick()"
@@ -109,11 +109,13 @@
             matTooltip="Double click to delete"
           ></ion-icon>
         </ion-item>
+
         <ion-item-options side="start">
           <ion-item-option color="dark" (click)="presentEditAlert(task)"
             >Edit</ion-item-option
           >
         </ion-item-options>
+
         <ion-item-options side="end">
           <ion-item-option (click)="deleteTask(task.id)" color="danger"
             >Delete</ion-item-option
@@ -131,7 +133,7 @@
     </ion-reorder-group>
   </ion-list>
 
-  @if (newTask()) {
+  @if (hasNewTask()) {
 
   <div class="flex justify-center opacity-50">
     <ion-button shape="round" class="absolute bottom-4 animate-bounce">
@@ -145,7 +147,7 @@
     shape="round"
     color="secondary"
     class="absolute bottom-4 right-4 transform transition-transform duration-500"
-    [ngClass]="{'rotate-[270deg]': rotated}"
+    [ngClass]="{'rotate-[270deg]': mustRotate}"
     (click)="refresh()"
     matTooltip="Refresh tasks"
     matTooltipPosition="above"

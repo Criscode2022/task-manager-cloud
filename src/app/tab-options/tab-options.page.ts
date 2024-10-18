@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { TaskHttpService } from '../core/services/task-http.service';
@@ -12,7 +13,7 @@ import { User } from './types/user';
   templateUrl: 'tab-options.page.html',
   styleUrls: ['tab-options.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, RouterModule],
+  imports: [IonicModule, CommonModule, RouterModule, MatTooltipModule],
 })
 export class TabOptionsPage {
   private http = inject(TaskHttpService);
@@ -105,9 +106,9 @@ export class TabOptionsPage {
     this.http.download(id);
   }
 
-  protected async offlineMode() {
+  protected async activateOfflineMode() {
     this.messageDownload.set('');
     this.taskService.userId.set(0);
-    await this.taskService._storage?.remove('userId');
+    await this.taskService.storage?.remove('userId');
   }
 }

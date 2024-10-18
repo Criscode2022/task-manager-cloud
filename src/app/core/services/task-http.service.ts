@@ -3,7 +3,7 @@ import { effect, inject, Injectable, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError, retry } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
-import { Task } from '../../tab-list/types/Task';
+import { Task } from '../../tab-list/types/task';
 import { TaskService } from './task.service';
 
 @Injectable({
@@ -48,19 +48,18 @@ export class TaskHttpService {
           } else {
             this.taskService.userId.set(userId);
           }
+
+          this.loading.set(false);
         },
 
         error: () => {
-          this.loading.set(false);
-        },
-        complete: () => {
           this.loading.set(false);
         },
       });
   }
 
   public autoUpload(tasks: Task[], userId?: number) {
-    //This method is needed because you can't assign signals in the effect() function
+    //This method is needed because you can't assign signals in an effect() function
     if (!tasks.length || !userId) {
       return;
     }
@@ -102,7 +101,7 @@ export class TaskHttpService {
         })
       )
       .subscribe(() => {
-        this.taskService._storage?.remove('userId');
+        this.taskService.storage?.remove('userId');
         this.taskService.userId.set(0);
         this.messageDownload.set('');
       });
@@ -118,11 +117,11 @@ export class TaskHttpService {
         catchError(async (error) => {
           if (error.status == 404) {
             if (
-              (await this.taskService._storage?.get('userId')) &&
+              (await this.taskService.storage?.get('userId')) &&
               !this.taskService.userId()
             ) {
               // Used to remove the user Id when the app starts if it was deleted from another device
-              await this.taskService._storage?.remove('userId');
+              await this.taskService.storage?.remove('userId');
               return;
             }
 
@@ -143,7 +142,7 @@ export class TaskHttpService {
             done: !!task.done,
           }));
 
-          this.taskService._storage?.set('userId', userId);
+          this.taskService.storage?.set('userId', userId);
           this.taskService.userId.set(userId);
           this.tasks.set(tasks);
 
