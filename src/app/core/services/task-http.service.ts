@@ -3,7 +3,7 @@ import { effect, inject, Injectable, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError, retry } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
-import { Task } from '../../tab-list/types/task';
+import { Task } from '../../tabs/tab-list/types/task';
 import { TaskService } from './task.service';
 
 @Injectable({

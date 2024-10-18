@@ -3,9 +3,9 @@ import { Component, inject, signal } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { TaskHttpService } from '../core/services/task-http.service';
-import { TaskService } from '../core/services/task.service';
-import { AlertMessages } from '../shared/types/alert-messages';
+import { TaskHttpService } from '../../core/services/task-http.service';
+import { TaskService } from '../../core/services/task.service';
+import { AlertMessages } from '../../core/types/alert-messages';
 import { User } from './types/user';
 
 @Component({
@@ -51,7 +51,7 @@ export class TabOptionsPage {
       text: 'Confirm',
       role: 'confirm',
       handler: () => {
-        this.upload();
+        this.uploadTasks();
       },
     },
   ];
@@ -88,7 +88,7 @@ export class TabOptionsPage {
     },
   ];
 
-  protected async upload() {
+  protected async uploadTasks(): Promise<void> {
     try {
       if (!this.tasks().length) {
         this.messageUpload.set('No tasks to upload');
@@ -102,11 +102,11 @@ export class TabOptionsPage {
     }
   }
 
-  protected download(id: User['id']) {
+  protected download(id: User['id']): void {
     this.http.download(id);
   }
 
-  protected async activateOfflineMode() {
+  protected async activateOfflineMode(): Promise<void> {
     this.messageDownload.set('');
     this.taskService.userId.set(0);
     await this.taskService.storage?.remove('userId');

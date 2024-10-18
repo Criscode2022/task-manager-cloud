@@ -12,9 +12,9 @@ import {
   IonicModule,
   ItemReorderEventDetail,
 } from '@ionic/angular';
-import { TaskHttpService } from '../core/services/task-http.service';
-import { TaskService } from '../core/services/task.service';
-import { AlertMessages } from '../shared/types/alert-messages';
+import { TaskHttpService } from '../../core/services/task-http.service';
+import { TaskService } from '../../core/services/task.service';
+import { AlertMessages } from '../../core/types/alert-messages';
 import { TaskForm } from './task.form';
 import { StatusEnum } from './types/statusEnum';
 import { Task } from './types/task';
@@ -112,7 +112,7 @@ export class TabListPage extends TaskForm {
     });
   }
 
-  protected async presentEditAlert(task: Task) {
+  protected async presentEditAlert(task: Task): Promise<void> {
     const alert = await this.alertController.create({
       header: 'Edit Task',
       inputs: [
@@ -142,7 +142,7 @@ export class TabListPage extends TaskForm {
     await alert.present();
   }
 
-  protected refresh() {
+  protected refresh(): void {
     this.http.download(this.userId());
 
     this.mustRotate.set(true);
@@ -151,7 +151,7 @@ export class TabListPage extends TaskForm {
     }, 500);
   }
 
-  protected addTask() {
+  protected addTask(): void {
     if (!(this.form.valid && this.title?.value)) {
       console.error('Invalid form, please check the inputs');
       return;
@@ -174,7 +174,7 @@ export class TabListPage extends TaskForm {
     }, 1000);
   }
 
-  protected toggleTaskState(taskId: number) {
+  protected toggleTaskState(taskId: number): void {
     if (!this.canClick) {
       return;
     }
@@ -194,11 +194,13 @@ export class TabListPage extends TaskForm {
     }, 500);
   }
 
-  private toggleReorder() {
+  private toggleReorder(): void {
     this.isDisabled.set(!this.isDisabled());
   }
 
-  protected handleManualReorder(event: CustomEvent<ItemReorderEventDetail>) {
+  protected handleManualReorder(
+    event: CustomEvent<ItemReorderEventDetail>
+  ): void {
     const items = [...this.tasks()];
     const movedItem = items.splice(event.detail.from, 1)[0];
     items.splice(event.detail.to, 0, movedItem);
@@ -210,7 +212,7 @@ export class TabListPage extends TaskForm {
     return tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
   }
 
-  protected editTask(id: number, title: string, description: string) {
+  protected editTask(id: number, title: string, description: string): void {
     this.tasks.update((tasks) =>
       tasks.map((task) =>
         task.id === id ? { ...task, title, description } : task
@@ -218,11 +220,11 @@ export class TabListPage extends TaskForm {
     );
   }
 
-  protected deleteTask(taskId: number) {
+  protected deleteTask(taskId: number): void {
     this.tasks.update((tasks) => tasks.filter((task) => task.id !== taskId));
   }
 
-  protected deleteAllTasks() {
+  protected deleteAllTasks(): void {
     this.tasks.set([]);
   }
 }

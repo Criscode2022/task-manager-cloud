@@ -1,8 +1,11 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { BehaviorSubject } from 'rxjs';
-import { StatusEnum, StatusEnumArray } from 'src/app/tab-list/types/statusEnum';
-import { Task } from '../../tab-list/types/task';
+import {
+  StatusEnum,
+  StatusEnumArray,
+} from 'src/app/tabs/tab-list/types/statusEnum';
+import { Task } from '../../tabs/tab-list/types/task';
 
 @Injectable({
   providedIn: 'root',

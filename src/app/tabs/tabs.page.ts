@@ -12,7 +12,7 @@ export class TabsPage implements OnInit {
 
   private tasks = this.taskService.tasks;
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.taskService.storageInitialized.subscribe(async () => {
       if (!this.taskService.storage) {
         return;
