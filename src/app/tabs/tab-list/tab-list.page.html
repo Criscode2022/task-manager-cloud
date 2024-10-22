@@ -34,7 +34,7 @@
 <ion-content [scrollY]="false">
   <form
     [formGroup]="form"
-    class="flex flex-col gap-1 md:w-3/5 lg:w-2/5 mx-auto px-4 pt-6"
+    class="flex flex-col gap-1 md:w-3/5 lg:w-2/5 mx-auto px-4 pt-6 animate-fade-down"
     (ngSubmit)="addTask()"
   >
     <mat-form-field appearance="outline">
@@ -146,8 +146,8 @@
   <ion-button
     shape="round"
     color="secondary"
-    class="absolute bottom-4 right-4 transform transition-transform duration-500"
-    [ngClass]="{'rotate-[270deg]': mustRotate}"
+    class="absolute bottom-4 right-4"
+    [class.animate-spin]="mustRotate()"
     (click)="refresh()"
     matTooltip="Refresh tasks"
     matTooltipPosition="above"
