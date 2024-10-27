@@ -18,7 +18,7 @@ export class TaskService {
   public storageInitialized = new BehaviorSubject<void>(undefined);
 
   public tasks = signal<Task[]>([]);
-  public userId = signal<number>(0);
+  public userId = signal(0);
 
   protected indexStatus = computed(() => {
     return StatusEnumArray.indexOf(this.filter());
@@ -34,7 +34,7 @@ export class TaskService {
     });
   }
 
-  async init() {
+  async init(): Promise<void> {
     this.storage = await this._storage.create();
     this.storageInitialized.next();
     this.filter.set(await this.getFilter());
@@ -48,7 +48,7 @@ export class TaskService {
     return (await this.storage.get('tasks')) || [];
   }
 
-  public async saveTasks(tasks: Task[]) {
+  public async saveTasks(tasks: Task[]): Promise<void> {
     await this.storage?.set('tasks', tasks);
   }
 
@@ -62,7 +62,7 @@ export class TaskService {
     return await this.storage?.get('filter');
   }
 
-  public changeFilter() {
+  public changeFilter(): void {
     let index = this.indexStatus();
 
     index += 1;
@@ -73,7 +73,7 @@ export class TaskService {
     this.filter.set(StatusEnumArray[index]);
   }
 
-  public async saveFilter(filter: string) {
+  public async saveFilter(filter: string): Promise<void> {
     await this.storage?.set('filter', filter);
   }
 }

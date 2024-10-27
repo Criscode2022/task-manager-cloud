@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { effect, inject, Injectable, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError, retry } from 'rxjs';
-import { environment } from 'src/environments/environment.prod';
+import { environment } from 'src/environments/environment';
 import { Task } from '../../tabs/tab-list/types/task';
 import { TaskService } from './task.service';
 
@@ -25,7 +25,7 @@ export class TaskHttpService {
     });
   }
 
-  public async upload(tasks: Task[], userId?: number) {
+  public async upload(tasks: Task[], userId?: number): Promise<void> {
     this.loading.set(true);
 
     const body = {
@@ -34,7 +34,7 @@ export class TaskHttpService {
     };
 
     this.http
-      .post(`${environment.baseUrl}/insert-tasks`, body)
+      .post(`${environment.baseUrl}/tasks/insert-tasks`, body)
       .pipe(
         retry(2),
         catchError((error) => {
@@ -58,7 +58,7 @@ export class TaskHttpService {
       });
   }
 
-  public autoUpload(tasks: Task[], userId?: number) {
+  public autoUpload(tasks: Task[], userId?: number): void {
     //This method is needed because you can't assign signals in an effect() function
     if (!tasks.length || !userId) {
       return;
@@ -70,7 +70,7 @@ export class TaskHttpService {
     };
 
     this.http
-      .post(`${environment.baseUrl}/insert-tasks`, body)
+      .post(`${environment.baseUrl}/tasks/insert-tasks`, body)
       .pipe(
         retry(2),
         catchError((error) => {
@@ -91,9 +91,9 @@ export class TaskHttpService {
       });
   }
 
-  public delete(userId: number) {
+  public delete(userId: number): void {
     this.http
-      .delete(`https://api-task-i35c.onrender.com/tasks/${userId}`)
+      .delete(`${environment.baseUrl}/tasks/${userId}`)
       .pipe(
         retry(2),
         catchError((error) => {
@@ -107,9 +107,9 @@ export class TaskHttpService {
       });
   }
 
-  public download(userId: number) {
+  public download(userId: number): void {
     this.http
-      .get(`https://api-task-i35c.onrender.com/tasks/${userId}`, {
+      .get(`${environment.baseUrl}/tasks/${userId}`, {
         observe: 'response',
       })
       .pipe(
