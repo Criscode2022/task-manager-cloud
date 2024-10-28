@@ -34,7 +34,7 @@ export class TaskHttpService {
     };
 
     this.http
-      .post(`${environment.baseUrl}/tasks/insert-tasks`, body)
+      .post(`${environment.baseUrl}/insert-tasks`, body)
       .pipe(
         retry(2),
         catchError((error) => {
@@ -70,7 +70,7 @@ export class TaskHttpService {
     };
 
     this.http
-      .post(`${environment.baseUrl}/tasks/insert-tasks`, body)
+      .post(`${environment.baseUrl}/insert-tasks`, body)
       .pipe(
         retry(2),
         catchError((error) => {

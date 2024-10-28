@@ -1,4 +1,4 @@
 export const environment = {
-  production: false,
+  production: true,
   baseUrl: 'https://api-workspace-wczh.onrender.com/tasks-manager',
 };
