@@ -99,6 +99,7 @@ export class TabOptionsPage {
       await this.http.upload(this.tasks(), this.userId() || undefined);
     } catch (error) {
       console.error('Error uploading tasks:', error);
+      this.messageUpload.set('Error uploading tasks');
     }
   }
 
