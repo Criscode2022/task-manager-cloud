@@ -28,7 +28,7 @@
 <ion-content [fullscreen]="true">
   <img
     src="assets/background-image.svg"
-    class="absolute bottom-10 right-2 opacity-15 animate-fade-up"
+    class="absolute bottom-10 right-2 opacity-15"
     alt="soft background image of a girl and sunflowers"
   />
 
@@ -64,7 +64,7 @@
   } @if (userId() && !loading()) {
 
   <div
-    class="m-4 bg-white p-2 shadow rounded-lg float-right flex flex-col items-center animate-fade"
+    class="m-4 bg-white p-2 shadow rounded-lg float-right flex flex-col items-center animate-fade animate-duration-300"
   >
     <p>
       <strong>User ID : {{userId()}}</strong>

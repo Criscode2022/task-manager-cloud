@@ -34,7 +34,7 @@
 <ion-content [scrollY]="false">
   <form
     [formGroup]="form"
-    class="flex flex-col gap-1 md:w-3/5 lg:w-2/5 mx-auto px-4 pt-6 animate-fade-down"
+    class="flex flex-col gap-1 md:w-3/5 lg:w-2/5 mx-auto px-4 pt-6 animate-fade-down animate-duration-300"
     (ngSubmit)="addTask()"
   >
     <mat-form-field appearance="outline">
@@ -76,7 +76,7 @@
     <ion-button type="submit" color="primary"> Add Task </ion-button>
   </form>
 
-  <ion-list class="space-y-4 pb-4 overflow-y-scroll h-64 lg:h-96 mt-2">
+  <ion-list class="space-y-4 pb-4 overflow-y-auto h-64 lg:h-96 mt-2">
     <ion-reorder-group
       [disabled]="isDisabled()"
       (ionItemReorder)="handleManualReorder($any($event))"
