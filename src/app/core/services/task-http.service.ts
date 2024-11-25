@@ -108,6 +108,8 @@ export class TaskHttpService {
   }
 
   public download(userId: number): void {
+    this.loading.set(true);
+
     this.http
       .get(`${environment.baseUrl}/tasks/${userId}`, {
         observe: 'response',
@@ -122,6 +124,7 @@ export class TaskHttpService {
             ) {
               // Used to remove the user Id when the app starts if it was deleted from another device
               await this.taskService.storage?.remove('userId');
+              this.loading.set(false);
               return;
             }
 
@@ -132,6 +135,7 @@ export class TaskHttpService {
             this.messageDownload.set('error');
           }
 
+          this.loading.set(false);
           throw new Error('Error downloading tasks: ' + error.message);
         })
       )
@@ -146,6 +150,7 @@ export class TaskHttpService {
           this.taskService.userId.set(userId);
           this.tasks.set(tasks);
 
+          this.loading.set(false);
           this.messageDownload.set('success');
         },
       });

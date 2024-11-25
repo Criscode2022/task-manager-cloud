@@ -22,11 +22,11 @@ export class TabOptionsPage {
   protected alertMessages = AlertMessages;
 
   protected messageUpload = signal('');
+  protected messageDownload = this.http.messageDownload;
 
   private tasks = this.taskService.tasks;
   protected userId = this.taskService.userId;
   protected loading = this.http.loading;
-  protected messageDownload = this.http.messageDownload;
 
   public alertButtonsDownload = [
     {
@@ -95,7 +95,9 @@ export class TabOptionsPage {
         return;
       }
 
+      this.messageDownload.set('');
       this.messageUpload.set('');
+
       await this.http.upload(this.tasks(), this.userId() || undefined);
     } catch (error) {
       console.error('Error uploading tasks:', error);
