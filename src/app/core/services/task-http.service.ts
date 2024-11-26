@@ -127,10 +127,18 @@ export class TaskHttpService {
             }
 
             this.messageDownload.set('not found');
+
+            setTimeout(() => {
+              this.messageDownload.set('');
+            }, 5000);
           }
 
           if (error.status == 500) {
             this.messageDownload.set('error');
+
+            setTimeout(() => {
+              this.messageDownload.set('');
+            }, 5000);
           }
 
           this.loading.set(false);
@@ -150,6 +158,10 @@ export class TaskHttpService {
 
           this.loading.set(false);
           this.messageDownload.set('success');
+
+          setTimeout(() => {
+            this.messageDownload.set('');
+          }, 5000);
         },
       });
   }
