@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { effect, inject, Injectable, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { catchError, retry } from 'rxjs';
+import { catchError, firstValueFrom, retry } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { Task } from '../../tabs/tab-list/types/task';
 import { TaskService } from './task.service';
@@ -26,36 +26,34 @@ export class TaskHttpService {
   }
 
   public async upload(tasks: Task[], userId?: number): Promise<void> {
-    this.loading.set(true);
+    try {
+      this.loading.set(true);
 
-    const body = {
-      userIdParam: userId,
-      tasks: tasks,
-    };
+      const body = {
+        userIdParam: userId,
+        tasks: tasks,
+      };
 
-    this.http
-      .post(`${environment.baseUrl}/insert-tasks`, body)
-      .pipe(
-        retry(2),
-        catchError((error) => {
-          throw error;
-        })
-      )
-      .subscribe({
-        next: (response: any) => {
-          if (!userId) {
-            this.taskService.userId.set(response['userid']);
-          } else {
-            this.taskService.userId.set(userId);
-          }
+      const response = await firstValueFrom<{ user_id: number }>(
+        this.http
+          .post<{ user_id: number }>(
+            `${environment.baseUrl}/insert-tasks`,
+            body
+          )
+          .pipe(retry(2))
+      );
 
-          this.loading.set(false);
-        },
+      if (!userId) {
+        this.taskService.userId.set(response['user_id']);
+      } else {
+        this.taskService.userId.set(userId);
+      }
 
-        error: () => {
-          this.loading.set(false);
-        },
-      });
+      this.loading.set(false);
+    } catch (error) {
+      this.loading.set(false);
+      throw error;
+    }
   }
 
   public autoUpload(tasks: Task[], userId?: number): void {
