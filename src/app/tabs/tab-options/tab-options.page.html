@@ -95,20 +95,6 @@
     <ion-icon name="cloud-download"></ion-icon>
   </ion-button>
 
-  @switch (messageDownload()) { @case ('success') {
-  <div class="p-4">
-    <strong class="text-green-700"> Tasks downloaded correctly! </strong>
-  </div>
-  } @case ('not found') {
-  <div class="p-4">
-    <strong class="text-red-700"> User ID doesn't exist </strong>
-  </div>
-  } @case ('error') {
-  <div class="p-4">
-    <strong class="text-red-700"> Server error, please try again </strong>
-  </div>
-  } }
-
   <ion-alert
     trigger="download-alert"
     header="Import tasks"

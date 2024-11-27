@@ -16,7 +16,6 @@ export class TaskHttpService {
 
   private tasks = this.taskService.tasks;
 
-  public messageDownload = signal('');
   public loading = signal(false);
 
   constructor() {
@@ -52,6 +51,11 @@ export class TaskHttpService {
       this.loading.set(false);
     } catch (error) {
       this.loading.set(false);
+
+      this.snackbar.open('Error uploading tasks, try again later', 'Close', {
+        duration: 5000,
+      });
+
       throw error;
     }
   }
@@ -101,7 +105,6 @@ export class TaskHttpService {
       .subscribe(() => {
         this.taskService.storage?.remove('userId');
         this.taskService.userId.set(0);
-        this.messageDownload.set('');
       });
   }
 
@@ -126,23 +129,18 @@ export class TaskHttpService {
               return;
             }
 
-            this.messageDownload.set('not found');
+            this.snackbar.open('User ID not found', 'Close', {
+              duration: 5000,
+            });
+          } else {
+            this.loading.set(false);
 
-            setTimeout(() => {
-              this.messageDownload.set('');
-            }, 5000);
+            this.snackbar.open('Server error, try again later', 'Close', {
+              duration: 5000,
+            });
+
+            throw error;
           }
-
-          if (error.status == 500) {
-            this.messageDownload.set('error');
-
-            setTimeout(() => {
-              this.messageDownload.set('');
-            }, 5000);
-          }
-
-          this.loading.set(false);
-          throw new Error('Error downloading tasks: ' + error.message);
         })
       )
       .subscribe({
@@ -157,11 +155,10 @@ export class TaskHttpService {
           this.tasks.set(tasks);
 
           this.loading.set(false);
-          this.messageDownload.set('success');
 
-          setTimeout(() => {
-            this.messageDownload.set('');
-          }, 5000);
+          this.snackbar.open('Tasks downloaded correctly', 'Close', {
+            duration: 5000,
+          });
         },
       });
   }

@@ -22,8 +22,6 @@ export class TabOptionsPage {
   protected alertMessages = AlertMessages;
 
   protected messageUpload = signal('');
-  protected messageDownload = this.http.messageDownload;
-
   private tasks = this.taskService.tasks;
   protected userId = this.taskService.userId;
   protected loading = this.http.loading;
@@ -89,20 +87,14 @@ export class TabOptionsPage {
   ];
 
   protected async uploadTasks(): Promise<void> {
-    try {
-      if (!this.tasks().length) {
-        this.messageUpload.set('No tasks to upload');
-        return;
-      }
-
-      this.messageDownload.set('');
-      this.messageUpload.set('');
-
-      await this.http.upload(this.tasks(), this.userId() || undefined);
-    } catch (error) {
-      console.error('Error uploading tasks:', error);
-      this.messageUpload.set('Error uploading tasks');
+    if (!this.tasks().length) {
+      this.messageUpload.set('No tasks to upload');
+      return;
     }
+
+    this.messageUpload.set('');
+
+    await this.http.upload(this.tasks(), this.userId() || undefined);
   }
 
   protected download(id: User['id']): void {
@@ -110,7 +102,6 @@ export class TabOptionsPage {
   }
 
   protected async activateOfflineMode(): Promise<void> {
-    this.messageDownload.set('');
     this.taskService.userId.set(0);
     await this.taskService.storage?.remove('userId');
   }
