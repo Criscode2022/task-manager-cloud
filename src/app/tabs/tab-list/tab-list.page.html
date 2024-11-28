@@ -1,22 +1,22 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar class="lg:py-4">
     <ion-button
       slot="start"
-      class="ion-margin"
+      class="ion-margin lg:text-xl"
       id="delete-alert"
       color="danger"
     >
       <ion-icon name="trash"></ion-icon>
     </ion-button>
     <ion-title
-      class="lg:relative lg:left-4 ion-text-center"
+      class="lg:relative lg:left-4 ion-text-center lg:text-3xl"
       (click)="refresh()"
     >
       Task Manager
     </ion-title>
     <ion-button
       slot="end"
-      class="ion-margin w-20"
+      class="ion-margin w-20 lg:w-28 lg:text-xl"
       color="primary"
       (click)="taskService.changeFilter()"
     >
@@ -73,7 +73,9 @@
       }
     </mat-form-field>
 
-    <ion-button type="submit" color="primary"> Add Task </ion-button>
+    <ion-button type="submit" color="primary" class="lg:text-xl">
+      Add Task
+    </ion-button>
   </form>
 
   <ion-list class="space-y-4 pb-4 overflow-y-auto h-64 lg:h-96 mt-2">
@@ -90,6 +92,7 @@
             (change)="canClick() ? toggleTaskState(task.id) : null"
             class="mr-4"
             [class.disabled]="!canClick()"
+            matTooltip="Slide right to edit"
           ></mat-checkbox>
           <ion-label
             (click)="canClick() ? toggleTaskState(task.id) : null"
@@ -125,7 +128,7 @@
 
       } @empty {
 
-      <div class="flex justify-center font-semibold mx-6">
+      <div class="flex justify-center font-semibold mx-6 lg:text-xl">
         I am sure you have something to do... Why don't you add it?
       </div>
 

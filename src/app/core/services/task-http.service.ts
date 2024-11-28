@@ -118,6 +118,8 @@ export class TaskHttpService {
       .pipe(
         retry(2),
         catchError(async (error) => {
+          this.loading.set(false);
+
           if (error.status == 404) {
             if (
               (await this.taskService.storage?.get('userId')) &&
@@ -125,7 +127,6 @@ export class TaskHttpService {
             ) {
               // Used to remove the user Id when the app starts if it was deleted from another device
               await this.taskService.storage?.remove('userId');
-              this.loading.set(false);
               return;
             }
 
@@ -133,8 +134,6 @@ export class TaskHttpService {
               duration: 5000,
             });
           } else {
-            this.loading.set(false);
-
             this.snackbar.open('Server error, try again later', 'Close', {
               duration: 5000,
             });
@@ -157,7 +156,7 @@ export class TaskHttpService {
           this.loading.set(false);
 
           this.snackbar.open('Tasks downloaded correctly', 'Close', {
-            duration: 5000,
+            duration: 2000,
           });
         },
       });
