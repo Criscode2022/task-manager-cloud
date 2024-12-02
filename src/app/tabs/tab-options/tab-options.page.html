@@ -49,12 +49,7 @@
     <ion-icon name="cloud-upload"></ion-icon>
   </ion-button>
 
-  @if (messageUpload() && !loading()) {
-
-  <div class="p-8">
-    <strong class="text-red-600">{{messageUpload()}}</strong>
-  </div>
-  } } @if (loading()) {
+  } @if (loading()) {
   <ion-spinner
     aria-label="loading spinner"
     class="p-6 m-6"

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
@@ -21,7 +21,6 @@ export class TabOptionsPage {
 
   protected alertMessages = AlertMessages;
 
-  protected messageUpload = signal('');
   private tasks = this.taskService.tasks;
   protected userId = this.taskService.userId;
   protected loading = this.http.loading;
@@ -87,13 +86,6 @@ export class TabOptionsPage {
   ];
 
   protected async uploadTasks(): Promise<void> {
-    if (!this.tasks().length) {
-      this.messageUpload.set('No tasks to upload');
-      return;
-    }
-
-    this.messageUpload.set('');
-
     await this.http.upload(this.tasks(), this.userId() || undefined);
   }
 

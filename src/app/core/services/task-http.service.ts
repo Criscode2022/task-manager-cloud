@@ -33,6 +33,16 @@ export class TaskHttpService {
         tasks: tasks,
       };
 
+      if (!tasks.length) {
+        this.loading.set(false);
+
+        this.snackbar.open('There are no tasks to upload', 'Close', {
+          duration: 1000,
+        });
+
+        return;
+      }
+
       const response = await firstValueFrom<{ user_id: number }>(
         this.http
           .post<{ user_id: number }>(
@@ -60,8 +70,8 @@ export class TaskHttpService {
     }
   }
 
+  //This method is needed because you can't assign signals in an effect() function
   public autoUpload(tasks: Task[], userId?: number): void {
-    //This method is needed because you can't assign signals in an effect() function
     if (!tasks.length || !userId) {
       return;
     }
