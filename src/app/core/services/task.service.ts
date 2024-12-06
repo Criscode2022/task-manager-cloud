@@ -49,7 +49,14 @@ export class TaskService {
   }
 
   public async saveTasks(tasks: Task[]): Promise<void> {
-    await this.storage?.set('tasks', tasks);
+    const tasks_userId = tasks.map((task) => {
+      return {
+        ...task,
+        userid: this.userId(),
+      };
+    });
+
+    await this.storage?.set('tasks', tasks_userId);
   }
 
   //=======================================================================================================

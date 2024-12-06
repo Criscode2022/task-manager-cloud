@@ -72,7 +72,7 @@ export class TaskHttpService {
 
   //This method is needed because you can't assign signals in an effect() function
   public autoUpload(tasks: Task[], userId?: number): void {
-    if (!tasks.length || !userId) {
+    if (!userId) {
       return;
     }
 
@@ -154,6 +154,15 @@ export class TaskHttpService {
       )
       .subscribe({
         next: (response: any) => {
+          if (!response) {
+            this.loading.set(false);
+
+            this.taskService.storage?.set('userId', userId);
+            this.taskService.userId.set(userId);
+
+            return;
+          }
+
           const tasks = response.body.map((task: Task) => ({
             ...task,
             done: !!task.done,
