@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { effect, inject, Injectable, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { catchError, firstValueFrom, retry } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { Task } from '../../tabs/tab-list/types/task';
@@ -11,6 +12,7 @@ import { TaskService } from './task.service';
 })
 export class TaskHttpService {
   private http = inject(HttpClient);
+  private router = inject(Router);
   private snackbar = inject(MatSnackBar);
   private taskService = inject(TaskService);
 
@@ -121,6 +123,8 @@ export class TaskHttpService {
   public download(userId: number): void {
     this.loading.set(true);
 
+    console.log(this.router.url);
+
     this.http
       .get(`${environment.baseUrl}/tasks/${userId}`, {
         observe: 'response',
@@ -140,9 +144,11 @@ export class TaskHttpService {
               return;
             }
 
-            this.snackbar.open('User ID not found', 'Close', {
-              duration: 5000,
-            });
+            if (this.router.url !== '/tabs/list') {
+              this.snackbar.open('User ID not found', 'Close', {
+                duration: 5000,
+              });
+            }
           } else {
             this.snackbar.open('Server error, try again later', 'Close', {
               duration: 5000,
