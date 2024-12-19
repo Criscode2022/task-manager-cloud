@@ -81,14 +81,6 @@ $app-theme: mat.define-theme((
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
-:root {
-  --ion-background-color: #f5ede2;
-  --ion-tab-bar-background: #e2c7a2;
-  --ion-toolbar-background: #c2965d;
-  --ion-toolbar-color: white;
-
-}
-
 .mat-mdc-text-field-wrapper {
   background-color: white;
 

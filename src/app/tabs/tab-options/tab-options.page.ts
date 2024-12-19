@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { ThemeService } from 'src/app/core/services/theme.service';
 import { TaskHttpService } from '../../core/services/task-http.service';
 import { TaskService } from '../../core/services/task.service';
 import { AlertMessages } from '../../core/types/alert-messages';
@@ -18,6 +19,7 @@ import { User } from './types/user';
 export class TabOptionsPage {
   private http = inject(TaskHttpService);
   private taskService = inject(TaskService);
+  protected themeService = inject(ThemeService);
 
   protected alertMessages = AlertMessages;
 
