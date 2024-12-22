@@ -181,7 +181,7 @@ export class TaskHttpService {
           this.loading.set(false);
 
           this.snackbar.open('Tasks downloaded correctly', 'Close', {
-            duration: 2000,
+            duration: 1000,
           });
         },
       });

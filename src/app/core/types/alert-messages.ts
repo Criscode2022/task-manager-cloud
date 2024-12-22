@@ -1,5 +1,5 @@
 export enum AlertMessages {
-  DeleteTasksAlert = 'Are you sure that you want to delete all your tasks from the device? This action CANNOT be undone',
+  DeleteTasksAlert = 'Are you sure that you want to delete all your tasks from the device? If you just want to delete a task, slide it to the left',
   DeleteTasksAlertOnline = 'You need to be in OFFLINE mode to delete all your tasks from the device',
   DeleteUserAlert = 'Are you sure that you want to delete your User ID? This will delete all your tasks from the cloud but will keep them on the device',
   DownloadAlert = 'Important: This will OVERWRITE your current offline tasks',

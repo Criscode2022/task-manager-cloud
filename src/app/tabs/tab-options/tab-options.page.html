@@ -61,8 +61,7 @@
     </p>
     <ion-button
       aria-label="offline button"
-      color="secondary"
-      class="m-4 lg:text-xl"
+      class="m-4 lg:text-xl text-white"
       (click)="activateOfflineMode()"
       matTooltip="Go offline"
       fill="clear"
@@ -123,14 +122,11 @@
 
   }
 
-  <p class="m-4 font-bold lg:text-2xl">Change theme</p>
+  <p class="m-4 font-bold lg:text-2xl">Toggle dark mode</p>
 
-  <ion-button
-    aria-label="theme button"
-    color="primary"
-    class="mx-4 mt-0 mb-4 lg:text-xl"
-    (click)="themeService.switchTheme()"
-  >
-    <ion-icon name="color-palette-outline"></ion-icon>
-  </ion-button>
+  <ion-toggle
+    class="mx-2 mt-0"
+    [checked]="isDark()"
+    (ionChange)="themeService.switchTheme()"
+  ></ion-toggle>
 </ion-content>

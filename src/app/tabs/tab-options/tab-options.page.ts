@@ -22,6 +22,7 @@ export class TabOptionsPage {
   protected themeService = inject(ThemeService);
 
   protected alertMessages = AlertMessages;
+  protected isDark = this.themeService.isDark;
 
   private tasks = this.taskService.tasks;
   protected userId = this.taskService.userId;
