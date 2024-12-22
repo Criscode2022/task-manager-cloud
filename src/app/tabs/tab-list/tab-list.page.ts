@@ -1,12 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  AfterViewChecked,
-  Component,
-  computed,
-  effect,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -43,7 +36,7 @@ import { Task } from './types/task';
     MatTooltipModule,
   ],
 })
-export class TabListPage extends TaskForm implements AfterViewChecked {
+export class TabListPage extends TaskForm {
   private http = inject(TaskHttpService);
   private alertController = inject(AlertController);
   protected taskService = inject(TaskService);
@@ -110,17 +103,21 @@ export class TabListPage extends TaskForm implements AfterViewChecked {
 
   constructor() {
     super();
-    effect(() => {
-      this.taskService.saveTasks(this.tasks());
+    effect(async () => {
+      await this.taskService.saveTasks(this.tasks());
+      this.canClick.set(false);
+      this.isDisabled.set(true);
+
+      setTimeout(() => {
+        this.reorderTasksByState(this.tasks());
+        this.canClick.set(true);
+        this.isDisabled.set(false);
+      }, 500);
     });
 
     effect(() => {
       this.taskService.saveFilter(this.filter());
     });
-  }
-
-  ngAfterViewChecked(): void {
-    this.tasks.set(this.reorderTasksByState(this.tasks()));
   }
 
   protected async presentEditAlert(task: Task): Promise<void> {
@@ -190,22 +187,11 @@ export class TabListPage extends TaskForm implements AfterViewChecked {
       return;
     }
 
-    this.canClick.set(false);
-    this.toggleReorder();
     this.tasks.update((tasks) =>
       tasks.map((task) =>
         task.id === taskId ? { ...task, done: !task.done } : task
       )
     );
-
-    setTimeout(() => {
-      this.canClick.set(true);
-      this.toggleReorder();
-    }, 500);
-  }
-
-  private toggleReorder(): void {
-    this.isDisabled.set(!this.isDisabled());
   }
 
   protected handleManualReorder(
