@@ -123,8 +123,6 @@ export class TaskHttpService {
   public download(userId: number): void {
     this.loading.set(true);
 
-    console.log(this.router.url);
-
     this.http
       .get(`${environment.baseUrl}/tasks/${userId}`, {
         observe: 'response',

@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import {
+  AfterViewChecked,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -36,7 +43,7 @@ import { Task } from './types/task';
     MatTooltipModule,
   ],
 })
-export class TabListPage extends TaskForm {
+export class TabListPage extends TaskForm implements AfterViewChecked {
   private http = inject(TaskHttpService);
   private alertController = inject(AlertController);
   protected taskService = inject(TaskService);
@@ -110,6 +117,10 @@ export class TabListPage extends TaskForm {
     effect(() => {
       this.taskService.saveFilter(this.filter());
     });
+  }
+
+  ngAfterViewChecked(): void {
+    this.tasks.set(this.reorderTasksByState(this.tasks()));
   }
 
   protected async presentEditAlert(task: Task): Promise<void> {
@@ -188,7 +199,6 @@ export class TabListPage extends TaskForm {
     );
 
     setTimeout(() => {
-      this.tasks.set(this.reorderTasksByState(this.tasks()));
       this.canClick.set(true);
       this.toggleReorder();
     }, 500);
