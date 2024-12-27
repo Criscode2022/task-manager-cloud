@@ -1,6 +1,6 @@
-# Task Manager
+# Task Manager Cloud
 
-Task Manager is an Angular Ionic application (PWA) designed to help you manage your tasks efficiently. With this app, you can create, update, and delete tasks, filter them by completion status, and even work offline using Ionic Storage. Additionally, you can sync your tasks across all devices by saving them in the cloud. The user-friendly interface, enhanced with Tailwind CSS, makes it easy to stay organized and on top of your tasks.
+Task Manager Cloud is an Angular Ionic application (PWA) designed to help you manage your tasks efficiently. With this app, you can create, update, and delete tasks, filter them by completion status, and even work offline using Ionic Storage. Additionally, you can sync your tasks across all devices by saving them in the cloud. The user-friendly interface, enhanced with Tailwind CSS, makes it easy to stay organized and on top of your tasks.
 
 ## Features
 
