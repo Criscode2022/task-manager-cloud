@@ -17,6 +17,7 @@ export class TaskService {
 
   public storageInitialized = new BehaviorSubject<void>(undefined);
 
+  public shouldShowInstall = signal(true);
   public tasks = signal<Task[]>([]);
   public userId = signal(0);
 

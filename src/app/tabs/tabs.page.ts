@@ -17,6 +17,8 @@ export class TabsPage implements OnInit {
   ngOnInit(): void {
     this.themeService.setTheme();
 
+    this.checkInstallAlert();
+
     this.taskService.storageInitialized.subscribe(async () => {
       if (!this.taskService.storage) {
         return;
@@ -31,5 +33,17 @@ export class TabsPage implements OnInit {
 
       this.http.download(userId);
     });
+  }
+
+  private checkInstallAlert(): void {
+    console.log('install', localStorage.getItem('install'));
+    if (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      localStorage.getItem('install') === 'false'
+    ) {
+      console.log('install', localStorage.getItem('install'));
+      console.log('shouldShowInstall', this.taskService.shouldShowInstall());
+      this.taskService.shouldShowInstall.set(false);
+    }
   }
 }

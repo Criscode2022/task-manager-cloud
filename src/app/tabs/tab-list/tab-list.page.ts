@@ -49,6 +49,7 @@ export class TabListPage extends TaskForm {
   protected mustRotate = signal(false);
 
   protected filter = this.taskService.filter;
+  protected shouldShowInstall = this.taskService.shouldShowInstall;
   protected tasks = this.taskService.tasks;
   protected userId = this.taskService.userId;
 
@@ -97,6 +98,21 @@ export class TabListPage extends TaskForm {
         const updatedTitle = data.title;
         const updatedDescription = data.description;
         this.editTask(id, updatedTitle, updatedDescription);
+      },
+    },
+  ];
+
+  protected installButtons = [
+    {
+      text: 'OK',
+      role: 'cancel',
+    },
+    {
+      text: "Don't show again",
+      role: 'confirm',
+      handler: () => {
+        this.shouldShowInstall.set(false);
+        localStorage.setItem('install', 'false');
       },
     },
   ];

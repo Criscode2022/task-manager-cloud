@@ -20,12 +20,6 @@
     >
       {{filter()}}
     </ion-button>
-    <ion-alert
-      trigger="delete-alert"
-      [header]="!this.userId() ? 'Confirmation' : ''"
-      [message]="!this.userId() ? alertMessages.DeleteTasksAlert : alertMessages.DeleteTasksAlertOnline"
-      [buttons]="!this.userId() ? alertButtons : alertButtonsOnline"
-    ></ion-alert>
   </ion-toolbar>
 </ion-header>
 
@@ -161,7 +155,7 @@
       name="sync"
     ></ion-icon>
   </ion-button>
-  }
+  } @if (shouldShowInstall()) {
 
   <ion-button
     shape="round"
@@ -171,10 +165,21 @@
     <mat-icon slot="icon-only">install_mobile</mat-icon>
   </ion-button>
 
-  <ion-alert
-    trigger="install-alert"
-    [header]="'How to install'"
-    [message]="alertMessages.InstallAlert"
-    [buttons]="alertButtonsOnline"
-  ></ion-alert>
+  }
 </ion-content>
+
+<!-- Alerts -->
+
+<ion-alert
+  trigger="delete-alert"
+  [header]="!this.userId() ? 'Confirmation' : ''"
+  [message]="!this.userId() ? alertMessages.DeleteTasksAlert : alertMessages.DeleteTasksAlertOnline"
+  [buttons]="!this.userId() ? alertButtons : alertButtonsOnline"
+></ion-alert>
+
+<ion-alert
+  trigger="install-alert"
+  [header]="'How to install'"
+  [message]="alertMessages.InstallAlert"
+  [buttons]="installButtons"
+></ion-alert>
