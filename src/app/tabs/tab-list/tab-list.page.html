@@ -162,4 +162,19 @@
     ></ion-icon>
   </ion-button>
   }
+
+  <ion-button
+    shape="round"
+    class="absolute bottom-4 left-4 md:hidden"
+    id="install-alert"
+  >
+    <mat-icon slot="icon-only">install_mobile</mat-icon>
+  </ion-button>
+
+  <ion-alert
+    trigger="install-alert"
+    [header]="'How to install'"
+    [message]="alertMessages.InstallAlert"
+    [buttons]="alertButtonsOnline"
+  ></ion-alert>
 </ion-content>
