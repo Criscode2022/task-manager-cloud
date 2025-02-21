@@ -15,7 +15,7 @@
     >
     <ion-button
       slot="end"
-      class="ion-margin w-20 lg:w-28 lg:text-xl"
+      class="w-20 lg:w-28 lg:text-xl ion-margin"
       color="primary"
       (click)="taskService.changeFilter()"
     >
@@ -27,7 +27,7 @@
 <ion-content [scrollY]="false">
   <form
     [formGroup]="form"
-    class="flex flex-col md:w-3/5 lg:w-2/5 mx-auto px-4 pt-6 animate-fade-down animate-duration-300"
+    class="flex flex-col md:w-[60%] lg:w-[40%] xl:w-[30%] mx-auto animate-fade-down animate-duration-300 px-4 pt-6"
     (ngSubmit)="addTask()"
   >
     <mat-form-field appearance="fill">
@@ -35,8 +35,9 @@
 
       <input matInput type="text" formControlName="title" maxlength="40" />
       <button
-        type="button"
+        *ngIf="this.title?.value?.length"
         mat-icon-button
+        type="button"
         matSuffix
         class="mr-2"
         (click)="clear('title')"
@@ -54,8 +55,9 @@
         maxlength="30"
       />
       <button
-        type="button"
+        *ngIf="this.description?.value?.length"
         mat-icon-button
+        type="button"
         matSuffix
         class="mr-2"
         (click)="clear('description')"

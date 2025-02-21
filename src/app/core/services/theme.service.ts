@@ -10,7 +10,7 @@ export class ThemeService {
     const theme = localStorage.getItem('theme');
 
     if (theme === 'dark') {
-      document.body.classList.add('theme-dark');
+      document.body.classList.add('dark-theme');
       this.isDark.set(true);
     }
   }
@@ -22,11 +22,11 @@ export class ThemeService {
     if (theme === 'dark') {
       this.isDark.set(false);
       localStorage.removeItem('theme');
-      body.classList.remove('theme-dark');
+      body.classList.remove('dark-theme');
     } else {
       this.isDark.set(true);
       localStorage.setItem('theme', 'dark');
-      body.classList.add('theme-dark');
+      body.classList.add('dark-theme');
     }
   }
 }
