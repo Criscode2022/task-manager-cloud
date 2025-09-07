@@ -20,21 +20,20 @@ import { StatusEnum } from './types/statusEnum';
 import { Task } from './types/task';
 
 @Component({
-  selector: 'app-tab1',
-  templateUrl: 'tab-list.page.html',
-  styleUrls: ['tab-list.page.scss'],
-  standalone: true,
-  imports: [
-    IonicModule,
-    CommonModule,
-    ReactiveFormsModule,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    MatTooltipModule,
-  ],
+    selector: 'app-tab1',
+    templateUrl: 'tab-list.page.html',
+    styleUrls: ['tab-list.page.scss'],
+    imports: [
+        IonicModule,
+        CommonModule,
+        ReactiveFormsModule,
+        MatButtonModule,
+        MatCheckboxModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        MatTooltipModule,
+    ]
 })
 export class TabListPage extends TaskForm {
   private http = inject(TaskHttpService);

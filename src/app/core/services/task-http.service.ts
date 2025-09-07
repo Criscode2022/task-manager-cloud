@@ -2,9 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { effect, inject, Injectable, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { catchError, firstValueFrom, retry } from 'rxjs';
-import { environment } from 'src/environments/environment';
-import { Task } from '../../tabs/tab-list/types/task';
+import { firstValueFrom } from 'rxjs';
+import { catchError, retry } from 'rxjs/operators';
+import { Task } from 'src/app/tabs/tab-list/types/task';
+import { environment } from 'src/environments/environment.prod';
 import { TaskService } from './task.service';
 
 @Injectable({

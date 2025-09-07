@@ -10,11 +10,10 @@ import { AlertMessages } from '../../core/types/alert-messages';
 import { User } from './types/user';
 
 @Component({
-  selector: 'app-tab-options',
-  templateUrl: 'tab-options.page.html',
-  styleUrls: ['tab-options.page.scss'],
-  standalone: true,
-  imports: [IonicModule, CommonModule, RouterModule, MatTooltipModule],
+    selector: 'app-tab-options',
+    templateUrl: 'tab-options.page.html',
+    styleUrls: ['tab-options.page.scss'],
+    imports: [IonicModule, CommonModule, RouterModule, MatTooltipModule]
 })
 export class TabOptionsPage {
   private http = inject(TaskHttpService);

@@ -4,8 +4,9 @@ import { TaskService } from '../core/services/task.service';
 import { ThemeService } from '../core/services/theme.service';
 
 @Component({
-  selector: 'app-tabs',
-  templateUrl: 'tabs.page.html',
+    selector: 'app-tabs',
+    templateUrl: 'tabs.page.html',
+    standalone: false
 })
 export class TabsPage implements OnInit {
   private http = inject(TaskHttpService);
