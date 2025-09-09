@@ -12,6 +12,7 @@ import {
   IonicModule,
   ItemReorderEventDetail,
 } from '@ionic/angular';
+import { UserService } from 'src/app/core/services/user-service/user.service';
 import { TaskHttpService } from '../../core/services/task-http.service';
 import { TaskService } from '../../core/services/task.service';
 import { AlertMessages } from '../../core/types/alert-messages';
@@ -20,25 +21,26 @@ import { StatusEnum } from './types/statusEnum';
 import { Task } from './types/task';
 
 @Component({
-    selector: 'app-tab1',
-    templateUrl: 'tab-list.page.html',
-    styleUrls: ['tab-list.page.scss'],
-    imports: [
-        IonicModule,
-        CommonModule,
-        ReactiveFormsModule,
-        MatButtonModule,
-        MatCheckboxModule,
-        MatFormFieldModule,
-        MatIconModule,
-        MatInputModule,
-        MatTooltipModule,
-    ]
+  selector: 'app-tab1',
+  templateUrl: 'tab-list.page.html',
+  styleUrls: ['tab-list.page.scss'],
+  imports: [
+    IonicModule,
+    CommonModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatTooltipModule,
+  ],
 })
 export class TabListPage extends TaskForm {
-  private http = inject(TaskHttpService);
-  private alertController = inject(AlertController);
-  protected taskService = inject(TaskService);
+  private readonly http = inject(TaskHttpService);
+  private readonly alertController = inject(AlertController);
+  protected readonly taskService = inject(TaskService);
+  private readonly userService = inject(UserService);
 
   protected alertMessages = AlertMessages;
 
@@ -166,7 +168,7 @@ export class TabListPage extends TaskForm {
   }
 
   protected refresh(): void {
-    this.http.download(this.userId());
+    this.userService.getUser();
 
     this.mustRotate.set(true);
     setTimeout(() => {

@@ -121,11 +121,11 @@ export class TaskHttpService {
       });
   }
 
-  public download(userId: number): void {
+  public download(pin: number): void {
     this.loading.set(true);
 
     this.http
-      .get(`${environment.baseUrl}/tasks/${userId}`, {
+      .get(`${environment.baseUrl}/tasks/${pin}`, {
         observe: 'response',
       })
       .pipe(
@@ -162,19 +162,23 @@ export class TaskHttpService {
           if (!response) {
             this.loading.set(false);
 
-            this.taskService.storage?.set('userId', userId);
-            this.taskService.userId.set(userId);
+            this.taskService.userId.set(pin);
 
             return;
           }
 
-          const tasks = response.body.map((task: Task) => ({
+          console.log(response);
+
+          const tasks = response?.body?.tasks.map((task: Task) => ({
             ...task,
             done: !!task.done,
           }));
 
-          this.taskService.storage?.set('userId', userId);
-          this.taskService.userId.set(userId);
+          this.taskService.storage?.set('pin', response?.body?.encryptedPin);
+          this.taskService.storage?.set('iv', response?.body?.iv);
+          this.taskService.storage?.set('authTag', response?.body?.authTag);
+
+          this.taskService.userId.set(pin);
           this.tasks.set(tasks);
 
           this.loading.set(false);

@@ -2,16 +2,18 @@ import { Component, inject, OnInit } from '@angular/core';
 import { TaskHttpService } from '../core/services/task-http.service';
 import { TaskService } from '../core/services/task.service';
 import { ThemeService } from '../core/services/theme.service';
+import { UserService } from '../core/services/user-service/user.service';
 
 @Component({
-    selector: 'app-tabs',
-    templateUrl: 'tabs.page.html',
-    standalone: false
+  selector: 'app-tabs',
+  templateUrl: 'tabs.page.html',
+  standalone: false,
 })
 export class TabsPage implements OnInit {
-  private http = inject(TaskHttpService);
-  private themeService = inject(ThemeService);
-  private taskService = inject(TaskService);
+  private readonly http = inject(TaskHttpService);
+  private readonly themeService = inject(ThemeService);
+  private readonly userService = inject(UserService);
+  private readonly taskService = inject(TaskService);
 
   private tasks = this.taskService.tasks;
 
@@ -25,14 +27,9 @@ export class TabsPage implements OnInit {
         return;
       }
 
+      this.userService.getUser();
+
       this.tasks.set(await this.taskService.getTasks());
-      const userId = await this.taskService.storage?.get('userId');
-
-      if (!userId) {
-        return;
-      }
-
-      this.http.download(userId);
     });
   }
 

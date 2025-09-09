@@ -1,4 +1,4 @@
-import { computed, effect, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
 import { BehaviorSubject } from 'rxjs';
 import {
@@ -28,11 +28,11 @@ export class TaskService {
   constructor() {
     this.init();
 
-    effect(() => {
-      if (this.userId()) {
-        this.storage?.set('userId', this.userId());
-      }
-    });
+    // effect(() => {
+    //   if (this.userId()) {
+    //     this.storage?.set('userId', this.userId());
+    //   }
+    // });
   }
 
   async init(): Promise<void> {
