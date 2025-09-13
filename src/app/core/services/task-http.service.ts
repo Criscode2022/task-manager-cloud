@@ -1,10 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { effect, inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
-import { Task } from 'src/app/tabs/tab-list/types/task';
+import { Task, TaskDTO } from 'src/app/tabs/tab-list/types/task';
 import { environment } from 'src/environments/environment.prod';
 import { TaskService } from './task.service';
 
@@ -21,90 +20,128 @@ export class TaskHttpService {
 
   public loading = signal(false);
 
-  constructor() {
-    effect(() => {
-      this.autoUpload(this.tasks(), this.taskService.userId());
-    });
-  }
+  // constructor() {
+  //   effect(() => {
+  //     this.autoUpload(this.tasks(), this.taskService.userId());
+  //   });
+  // }
 
-  public async upload(tasks: Task[], userId?: number): Promise<void> {
+  public async upload(task: TaskDTO, userId: number): Promise<void> {
+    if (!userId) return;
+
     try {
       this.loading.set(true);
 
-      const body = {
-        userIdParam: userId,
-        tasks: tasks,
-      };
+      // if (!tasks.length) {
+      //   this.loading.set(false);
 
-      if (!tasks.length) {
-        this.loading.set(false);
+      //   this.snackbar.open('There are no tasks to upload', 'Close', {
+      //     duration: 1000,
+      //   });
 
-        this.snackbar.open('There are no tasks to upload', 'Close', {
-          duration: 1000,
-        });
+      //   return;
+      // }
 
-        return;
-      }
+      this.http
+        .post<any>(`${environment.baseUrl}/insert-tasks`, task)
+        .pipe(
+          retry(2),
+          catchError((error) => {
+            throw error;
+          })
+        )
+        .subscribe();
 
-      const response = await firstValueFrom<{ user_id: number }>(
-        this.http
-          .post<{ user_id: number }>(
-            `${environment.baseUrl}/insert-tasks`,
-            body
-          )
-          .pipe(retry(2))
-      );
-
-      if (!userId) {
-        this.taskService.userId.set(response['user_id']);
-      } else {
-        this.taskService.userId.set(userId);
-      }
+      // if (!userId) {
+      //   this.taskService.userId.set(response['user_id']);
+      // } else {
+      //   this.taskService.userId.set(userId);
+      // }
 
       this.loading.set(false);
     } catch (error) {
       this.loading.set(false);
 
-      this.snackbar.open('Error uploading tasks, try again later', 'Close', {
-        duration: 5000,
-      });
+      this.snackbar
+        .open('Error uploading tasks, try again later', 'Close', {
+          duration: 5000,
+        })
+        .onAction()
+        .subscribe(() => {
+          this.upload(task, this.taskService.userId());
+        });
 
       throw error;
     }
   }
 
-  //This method is needed because you can't assign signals in an effect() function
-  public autoUpload(tasks: Task[], userId?: number): void {
-    if (!userId) {
-      return;
-    }
-
-    const body = {
-      userIdParam: userId,
-      tasks: tasks,
-    };
-
+  public createUser(): void {
     this.http
-      .post(`${environment.baseUrl}/insert-tasks`, body)
+      .post<any>(`${environment.baseUrl}/create-user`, this.tasks())
       .pipe(
         retry(2),
         catchError((error) => {
+          this.snackbar.open('Error creating user', 'Close', {
+            duration: 5000,
+          });
           throw error;
         })
       )
-      .subscribe({
-        error: () => {
-          this.snackbar
-            .open('Error uploading tasks', 'Retry', {
-              duration: 5000,
-            })
-            .onAction()
-            .subscribe(() => {
-              this.upload(tasks, userId);
-            });
-        },
+      .subscribe((response) => {
+        if (response && response['user_id']) {
+          this.taskService.userId.set(response['user_id']);
+          this.snackbar.open('User created successfully', '', {
+            duration: 850,
+          });
+        } else {
+          this.snackbar.open('Error creating user', 'Close', {
+            duration: 5000,
+          });
+        }
       });
   }
+
+  ///This method is needed because you can't assign signals in an effect() function
+
+  // public autoUpload(tasks: Task[], userId?: number): void {
+  //   if (!userId) {
+  //     return;
+  //   }
+
+  //   const body = {
+  //     userIdParam: userId,
+  //     tasks: tasks,
+  //   };
+
+  //   this.http
+  //     .post(`${environment.baseUrl}/insert-tasks`, body)
+  //     .pipe(
+  //       retry(2),
+  //       catchError((error) => {
+  //         this.snackbar
+  //           .open('Error uploading tasks', 'Retry', {
+  //             duration: 5000,
+  //           })
+  //           .onAction()
+  //           .subscribe(() => {
+  //             this.upload(task);
+  //           });
+  //         throw error;
+  //       })
+  //     )
+  //     .subscribe({
+  //       error: () => {
+  //         this.snackbar
+  //           .open('Error uploading tasks', 'Retry', {
+  //             duration: 5000,
+  //           })
+  //           .onAction()
+  //           .subscribe(() => {
+  //             this.upload(tasks, userId);
+  //           });
+  //       },
+  //     });
+  // }
 
   public delete(userId: number): void {
     this.http
@@ -179,7 +216,11 @@ export class TaskHttpService {
           this.taskService.storage?.set('authTag', response?.body?.authTag);
 
           this.taskService.userId.set(pin);
+
+          console.log(tasks, 'tasks to set');
           this.tasks.set(tasks);
+
+          console.log(tasks);
 
           this.loading.set(false);
 

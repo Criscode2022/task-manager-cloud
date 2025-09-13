@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError, retry, take, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment.prod';
@@ -16,6 +16,46 @@ export class UserService {
   private readonly http = inject(HttpClient);
   private readonly taskService = inject(TaskService);
   private readonly snackbar = inject(MatSnackBar);
+
+  public userId = signal(0);
+
+  public async createUser(): Promise<void> {
+    console.log('Creating new user...');
+
+    const tasks = await this.taskService.getTasks();
+
+    this.http
+      .post<UserResponse>(`${environment.baseUrl}/create-user`, { tasks })
+      .pipe(
+        retry(2),
+        take(1),
+        catchError((error) => {
+          this.snackbar.open('Error creating user', 'Close', {
+            duration: 2000,
+          });
+          return throwError(() => error);
+        })
+      )
+      .subscribe(async (response: UserResponse) => {
+        console.log('response', response);
+
+        if (response && response.userId) {
+          console.log('User created successfully', response);
+
+          const userId = response?.userId;
+
+          console.log('created userId', userId);
+          this.taskService.userId?.set(userId);
+          this.userId.set(userId);
+
+          console.log('set userId', this.taskService.userId());
+        } else {
+          this.snackbar.open('Failed to create user', 'Close', {
+            duration: 2000,
+          });
+        }
+      });
+  }
 
   public async getUser(): Promise<UserResponse | void> {
     console.log('Getting user data...');
@@ -56,8 +96,9 @@ export class UserService {
 
           console.log('fetched userId', userId);
           this.taskService.userId?.set(userId);
+          this.userId.set(userId);
 
-          console.log('setted userId', this.taskService.userId());
+          console.log('set userId', this.taskService.userId());
         } else {
           this.snackbar.open('Failed to fetch user data', 'Close', {
             duration: 2000,

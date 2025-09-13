@@ -1,5 +1,5 @@
 <ion-header>
-  <ion-toolbar class="lg:py-4">
+  <ion-toolbar class="lg:py-1">
     <ion-button
       [disabled]="!this.tasks().length"
       slot="start"
@@ -10,7 +10,7 @@
       <ion-icon name="trash-outline"></ion-icon>
     </ion-button>
     <ion-title
-      class="lg:fixed lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 ion-text-center lg:text-4xl"
+      class="lg:fixed lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 ion-text-center lg:text-4xl font-extrabold"
       >Cloud</ion-title
     >
     <ion-button
@@ -30,10 +30,16 @@
     class="flex flex-col md:w-[60%] lg:w-[40%] xl:w-[30%] mx-auto animate-fade-down animate-duration-300 px-4 pt-6"
     (ngSubmit)="addTask()"
   >
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="outline">
       <mat-label>Title</mat-label>
 
-      <input matInput type="text" formControlName="title" maxlength="40" />
+      <input
+        matInput
+        type="text"
+        placeholder="Title of new task"
+        formControlName="title"
+        maxlength="40"
+      />
       <button
         *ngIf="this.title?.value?.length"
         mat-icon-button
@@ -46,11 +52,12 @@
       </button>
     </mat-form-field>
 
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="outline">
       <mat-label>Description</mat-label>
       <input
-        type="text"
         matInput
+        type="text"
+        placeholder="Description of new task"
         formControlName="description"
         maxlength="30"
       />
@@ -91,7 +98,7 @@
             class="cursor-pointer text-sm md:text-base lg:text-lg xl:text-xl"
             [class.disabled]="!canClick()"
           >
-            {{ task.title }} @if(task.description){- {{ task.description }}}
+            {{ task?.title }} @if(task.description){- {{ task?.description }}}
           </ion-label>
           <ion-reorder slot="end"></ion-reorder>
           <ion-icon

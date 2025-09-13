@@ -10,13 +10,13 @@ import { AlertMessages } from '../../core/types/alert-messages';
 import { User } from './types/user';
 
 @Component({
-    selector: 'app-tab-options',
-    templateUrl: 'tab-options.page.html',
-    styleUrls: ['tab-options.page.scss'],
-    imports: [IonicModule, CommonModule, RouterModule, MatTooltipModule]
+  selector: 'app-tab-options',
+  templateUrl: 'tab-options.page.html',
+  styleUrls: ['tab-options.page.scss'],
+  imports: [IonicModule, CommonModule, RouterModule, MatTooltipModule],
 })
 export class TabOptionsPage {
-  private http = inject(TaskHttpService);
+  private tasksHttpService = inject(TaskHttpService);
   private taskService = inject(TaskService);
   protected themeService = inject(ThemeService);
 
@@ -25,7 +25,7 @@ export class TabOptionsPage {
 
   private tasks = this.taskService.tasks;
   protected userId = this.taskService.userId;
-  protected loading = this.http.loading;
+  protected loading = this.tasksHttpService.loading;
 
   public alertButtonsDownload = [
     {
@@ -64,7 +64,7 @@ export class TabOptionsPage {
       text: 'Confirm',
       role: 'confirm',
       handler: () => {
-        this.http.delete(this.userId());
+        this.tasksHttpService.delete(this.userId());
       },
     },
   ];
@@ -88,11 +88,11 @@ export class TabOptionsPage {
   ];
 
   protected async uploadTasks(): Promise<void> {
-    await this.http.upload(this.tasks(), this.userId() || undefined);
+    // await this.tasksHttpService.upload(this.task());
   }
 
   protected download(id: User['id']): void {
-    this.http.download(id);
+    this.tasksHttpService.download(id);
   }
 
   protected async activateOfflineMode(): Promise<void> {

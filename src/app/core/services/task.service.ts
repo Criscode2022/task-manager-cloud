@@ -50,14 +50,8 @@ export class TaskService {
   }
 
   public async saveTasks(tasks: Task[]): Promise<void> {
-    const tasks_userId = tasks.map((task) => {
-      return {
-        ...task,
-        userid: this.userId(),
-      };
-    });
-
-    await this.storage?.set('tasks', tasks_userId);
+    console.log('Saving tasks to storage:', tasks);
+    await this.storage?.set('tasks', tasks);
   }
 
   //=======================================================================================================

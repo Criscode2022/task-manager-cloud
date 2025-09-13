@@ -18,7 +18,7 @@ import { TaskService } from '../../core/services/task.service';
 import { AlertMessages } from '../../core/types/alert-messages';
 import { TaskForm } from './task.form';
 import { StatusEnum } from './types/statusEnum';
-import { Task } from './types/task';
+import { Task, TaskDTO } from './types/task';
 
 @Component({
   selector: 'app-tab1',
@@ -37,7 +37,7 @@ import { Task } from './types/task';
   ],
 })
 export class TabListPage extends TaskForm {
-  private readonly http = inject(TaskHttpService);
+  private readonly taskHttpService = inject(TaskHttpService);
   private readonly alertController = inject(AlertController);
   protected readonly taskService = inject(TaskService);
   private readonly userService = inject(UserService);
@@ -176,22 +176,33 @@ export class TabListPage extends TaskForm {
     }, 500);
   }
 
-  protected addTask(): void {
+  protected async addTask(): Promise<void> {
     if (!(this.form.valid && this.title?.value)) {
       console.error('Invalid form, please check the inputs');
       return;
     }
 
-    const task: Task = {
-      id: Date.now(),
-      title: this.title?.value,
-      description: this.description?.value ?? '',
+    const task: TaskDTO = {
+      title: this.title?.value ?? '',
+      description: this.description?.value || '',
       done: false,
     };
 
-    this.tasks.update((tasks) => [...tasks, task]);
+    this.tasks.update((tasks) => [...tasks, task as Task]);
 
     this.form.reset();
+
+    const userId = await this.taskService.storage?.get('userId');
+
+    if (!userId) {
+      this.hasNewTask.set(true);
+      setTimeout(() => {
+        this.hasNewTask.set(false);
+      }, 1000);
+      return;
+    }
+
+    this.taskHttpService.upload(task, userId);
 
     this.hasNewTask.set(true);
     setTimeout(() => {
