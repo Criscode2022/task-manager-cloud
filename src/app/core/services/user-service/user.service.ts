@@ -64,9 +64,19 @@ export class UserService {
           this.taskService.userId?.set(userId);
           this.userId.set(userId);
 
-          this.taskService.storage?.set('pin', response?.encryptedPin);
-          this.taskService.storage?.set('iv', response?.iv);
-          this.taskService.storage?.set('authTag', response?.authTag);
+          console.log(response);
+
+          const enctryptedData = {
+            encryptedPin: response.encryptedPin,
+            iv: response.iv,
+            authTag: response.authTag,
+          };
+
+          this.taskService.storage?.set('pin', enctryptedData?.encryptedPin);
+          this.taskService.storage?.set('iv', enctryptedData?.iv);
+          this.taskService.storage?.set('authTag', enctryptedData?.authTag);
+
+          this.enctyptedData.set(enctryptedData);
 
           this.dialog.open(PinDialogComponent, {
             width: '300px',
@@ -144,6 +154,40 @@ export class UserService {
         this.userId.set(userId);
 
         console.log('set userId', this.taskService.userId());
+      });
+  }
+
+  public delete(
+    userId: number,
+    iv: string,
+    authTag: string,
+    encryptedPin: string
+  ): void {
+    this.http
+      .delete(`${environment.baseUrl}/user`, {
+        body: {
+          encryptedPin,
+          iv,
+          authTag,
+          userId,
+        },
+      })
+      .pipe(
+        retry(2),
+        catchError((error) => {
+          throw new Error('Error deleting user Id: ' + error.message);
+        })
+      )
+      .subscribe(async () => {
+        await this.taskService.storage?.remove('authTag');
+        await this.taskService.storage?.remove('iv');
+        await this.taskService.storage?.remove('pin');
+
+        this.taskService.userId.set(0);
+
+        this.snackbar.open('User deleted successfully', 'Close', {
+          duration: 5000,
+        });
       });
   }
 }

@@ -27,11 +27,10 @@
     alt="soft background image of a girl and sunflowers"
   />
 
-  @if (!userId() && !loading()) {
+  @if (!userId() && !isLoading()) {
   <p class="m-4 float-right bg-white p-2 shadow rounded-lg lg:text-2xl">
     <strong class="text-black">Offline mode</strong>
   </p>
-  } @if (!userId() && !loading()) {
 
   <p class="m-4 font-bold lg:text-2xl">Upload tasks</p>
 
@@ -44,14 +43,14 @@
     <ion-icon name="cloud-upload-outline"></ion-icon>
   </ion-button>
 
-  } @if (loading()) {
+  } @if (isLoading()) {
   <ion-spinner
     aria-label="loading spinner"
     class="p-6 m-6"
     name="crescent"
   ></ion-spinner>
 
-  } @if (userId() && !loading()) {
+  } @if (userId() && !isLoading()) {
 
   <ion-card
     class="m-4 p-2 shadow rounded-lg float-right flex flex-col items-center animate-fade animate-duration-300"

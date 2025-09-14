@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { catchError, retry } from 'rxjs/operators';
@@ -18,8 +18,6 @@ export class TaskHttpService {
 
   private tasks = this.taskService.tasks;
 
-  public loading = signal(false);
-
   // constructor() {
   //   effect(() => {
   //     this.autoUpload(this.tasks(), this.taskService.userId());
@@ -36,10 +34,8 @@ export class TaskHttpService {
     if (!userId) return;
 
     try {
-      this.loading.set(true);
-
       // if (!tasks.length) {
-      //   this.loading.set(false);
+      //
 
       //   this.snackbar.open('There are no tasks to upload', 'Close', {
       //     duration: 1000,
@@ -72,11 +68,7 @@ export class TaskHttpService {
       // } else {
       //   this.taskService.userId.set(userId);
       // }
-
-      this.loading.set(false);
     } catch (error) {
-      this.loading.set(false);
-
       this.snackbar
         .open('Error uploading tasks, try again later', 'Close', {
           duration: 5000,
@@ -106,10 +98,8 @@ export class TaskHttpService {
     if (!userId) return;
 
     try {
-      this.loading.set(true);
-
       // if (!tasks.length) {
-      //   this.loading.set(false);
+      //
 
       //   this.snackbar.open('There are no tasks to upload', 'Close', {
       //     duration: 1000,
@@ -142,13 +132,9 @@ export class TaskHttpService {
       // } else {
       //   this.taskService.userId.set(userId);
       // }
-
-      this.loading.set(false);
     } catch (error) {
-      this.loading.set(false);
-
       this.snackbar
-        .open('Error uploading tasks, try again later', 'Close', {
+        .open('Error editing task, please try again later', 'Close', {
           duration: 5000,
         })
         .onAction()
@@ -234,24 +220,7 @@ export class TaskHttpService {
   //     });
   // }
 
-  public delete(userId: number): void {
-    this.http
-      .delete(`${environment.baseUrl}/tasks/${userId}`)
-      .pipe(
-        retry(2),
-        catchError((error) => {
-          throw new Error('Error deleting user Id: ' + error.message);
-        })
-      )
-      .subscribe(() => {
-        this.taskService.storage?.remove('userId');
-        this.taskService.userId.set(0);
-      });
-  }
-
   public download(pin: number): void {
-    this.loading.set(true);
-
     this.http
       .get(`${environment.baseUrl}/tasks/${pin}`, {
         observe: 'response',
@@ -259,8 +228,6 @@ export class TaskHttpService {
       .pipe(
         retry(2),
         catchError(async (error) => {
-          this.loading.set(false);
-
           if (error.status == 404) {
             if (
               (await this.taskService.storage?.get('userId')) &&
@@ -268,6 +235,7 @@ export class TaskHttpService {
             ) {
               // Used to remove the user Id when the app starts if it was deleted from another device
               await this.taskService.storage?.remove('userId');
+
               return;
             }
 
@@ -288,8 +256,6 @@ export class TaskHttpService {
       .subscribe({
         next: (response: any) => {
           if (!response) {
-            this.loading.set(false);
-
             this.taskService.userId.set(pin);
 
             return;
@@ -312,8 +278,6 @@ export class TaskHttpService {
           this.tasks.set(tasks);
 
           console.log(tasks);
-
-          this.loading.set(false);
 
           this.snackbar.open('Tasks downloaded successfully', '', {
             duration: 850,

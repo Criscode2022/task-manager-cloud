@@ -1,4 +1,8 @@
-import { HttpClientModule } from '@angular/common/http';
+import {
+  HttpClientModule,
+  provideHttpClient,
+  withInterceptors,
+} from '@angular/common/http';
 import { NgModule, isDevMode } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -7,6 +11,7 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { LoadingInterceptor } from './core/interceptors/loading-interceptor';
 import { StorageModule } from './storage.module';
 
 @NgModule({
@@ -27,6 +32,7 @@ import { StorageModule } from './storage.module';
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideAnimationsAsync(),
+    provideHttpClient(withInterceptors([LoadingInterceptor])),
   ],
   bootstrap: [AppComponent],
 })

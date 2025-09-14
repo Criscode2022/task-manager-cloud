@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
+import { LoadingService } from 'src/app/core/services/loading.service';
 import { ThemeService } from 'src/app/core/services/theme.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
 import { TaskHttpService } from '../../core/services/task-http.service';
@@ -17,17 +18,17 @@ import { User } from './types/user';
   imports: [IonicModule, CommonModule, RouterModule, MatTooltipModule],
 })
 export class TabOptionsPage {
-  private tasksHttpService = inject(TaskHttpService);
-  private taskService = inject(TaskService);
-  protected themeService = inject(ThemeService);
-  protected usersService = inject(UserService);
+  private readonly tasksHttpService = inject(TaskHttpService);
+  private readonly taskService = inject(TaskService);
+  private readonly loadingService = inject(LoadingService);
+  protected readonly themeService = inject(ThemeService);
+  protected readonly userService = inject(UserService);
 
   protected alertMessages = AlertMessages;
   protected isDark = this.themeService.isDark;
 
-  private tasks = this.taskService.tasks;
   protected userId = this.taskService.userId;
-  protected loading = this.tasksHttpService.loading;
+  protected isLoading = this.loadingService.isLoading;
 
   public alertButtonsDownload = [
     {
@@ -66,7 +67,9 @@ export class TabOptionsPage {
       text: 'Confirm',
       role: 'confirm',
       handler: () => {
-        this.tasksHttpService.delete(this.userId());
+        const { encryptedPin, iv, authTag } = this.userService.enctyptedData()!;
+
+        this.userService.delete(this.userId(), iv, authTag, encryptedPin);
       },
     },
   ];
@@ -104,7 +107,7 @@ export class TabOptionsPage {
   ];
 
   protected async uploadTasks(): Promise<void> {
-    await this.usersService.createUser();
+    await this.userService.createUser();
   }
 
   protected download(id: User['id']): void {
