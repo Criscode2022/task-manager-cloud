@@ -26,7 +26,13 @@ export class TaskHttpService {
   //   });
   // }
 
-  public async upload(task: TaskDTO, userId: number): Promise<void> {
+  public async upload(
+    task: TaskDTO,
+    userId: number,
+    iv: string,
+    authTag: string,
+    encryptedPin: string
+  ): Promise<void> {
     if (!userId) return;
 
     try {
@@ -42,11 +48,20 @@ export class TaskHttpService {
       //   return;
       // }
 
+      console.log('Uploading tasks to server...', task, userId);
+
       this.http
-        .post<any>(`${environment.baseUrl}/insert-tasks`, task)
+        .post<any>(`${environment.baseUrl}/insert-tasks`, {
+          task,
+          iv,
+          authTag,
+          encryptedPin,
+          userId,
+        })
         .pipe(
           retry(2),
           catchError((error) => {
+            console.error('Upload error:', error);
             throw error;
           })
         )
@@ -68,7 +83,83 @@ export class TaskHttpService {
         })
         .onAction()
         .subscribe(() => {
-          this.upload(task, this.taskService.userId());
+          this.upload(
+            task,
+            this.taskService.userId(),
+            iv,
+            authTag,
+            encryptedPin
+          );
+        });
+
+      throw error;
+    }
+  }
+
+  public async editTask(
+    task: TaskDTO,
+    userId: number,
+    iv: string,
+    authTag: string,
+    encryptedPin: string
+  ): Promise<void> {
+    if (!userId) return;
+
+    try {
+      this.loading.set(true);
+
+      // if (!tasks.length) {
+      //   this.loading.set(false);
+
+      //   this.snackbar.open('There are no tasks to upload', 'Close', {
+      //     duration: 1000,
+      //   });
+
+      //   return;
+      // }
+
+      console.log('Uploading tasks to server...', task, userId);
+
+      this.http
+        .put<any>(`${environment.baseUrl}/edit`, {
+          task,
+          iv,
+          authTag,
+          encryptedPin,
+          userId,
+        })
+        .pipe(
+          retry(2),
+          catchError((error) => {
+            console.error('Upload error:', error);
+            throw error;
+          })
+        )
+        .subscribe();
+
+      // if (!userId) {
+      //   this.taskService.userId.set(response['user_id']);
+      // } else {
+      //   this.taskService.userId.set(userId);
+      // }
+
+      this.loading.set(false);
+    } catch (error) {
+      this.loading.set(false);
+
+      this.snackbar
+        .open('Error uploading tasks, try again later', 'Close', {
+          duration: 5000,
+        })
+        .onAction()
+        .subscribe(() => {
+          this.upload(
+            task,
+            this.taskService.userId(),
+            iv,
+            authTag,
+            encryptedPin
+          );
         });
 
       throw error;

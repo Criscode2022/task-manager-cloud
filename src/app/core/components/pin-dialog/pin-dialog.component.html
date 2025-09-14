@@ -1,0 +1,20 @@
+<div
+  class="ion-padding ion-text-center ion-card ion-shadow-lg rounded-lg bg-white max-w-sm p-6"
+>
+  <p class="text-red-600 font-bold text-lg mb-3">IMPORTANT</p>
+
+  <p class="text-gray-700 mb-4">
+    Save this PIN somewhere safe. You will need it to access your tasks on
+    another device. This pin cannot be recovered after closing this message.
+  </p>
+
+  <p class="text-xl font-mono font-bold text-blue-600 mb-6">{{ pin }}</p>
+
+  <ion-button
+    color="primary"
+    (click)="close()"
+    class="ion-button w-full font-bold rounded-md hover:scale-105 transition-transform duration-200"
+  >
+    Close
+  </ion-button>
+</div>

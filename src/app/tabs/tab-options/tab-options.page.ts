@@ -4,6 +4,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { ThemeService } from 'src/app/core/services/theme.service';
+import { UserService } from 'src/app/core/services/user-service/user.service';
 import { TaskHttpService } from '../../core/services/task-http.service';
 import { TaskService } from '../../core/services/task.service';
 import { AlertMessages } from '../../core/types/alert-messages';
@@ -19,6 +20,7 @@ export class TabOptionsPage {
   private tasksHttpService = inject(TaskHttpService);
   private taskService = inject(TaskService);
   protected themeService = inject(ThemeService);
+  protected usersService = inject(UserService);
 
   protected alertMessages = AlertMessages;
   protected isDark = this.themeService.isDark;
@@ -69,6 +71,20 @@ export class TabOptionsPage {
     },
   ];
 
+  public offlineButtons = [
+    {
+      text: 'Cancel',
+      role: 'cancel',
+    },
+    {
+      text: 'Confirm',
+      role: 'confirm',
+      handler: () => {
+        this.activateOfflineMode();
+      },
+    },
+  ];
+
   public alertButtonsInfo = [
     {
       text: 'Close',
@@ -88,7 +104,7 @@ export class TabOptionsPage {
   ];
 
   protected async uploadTasks(): Promise<void> {
-    // await this.tasksHttpService.upload(this.task());
+    await this.usersService.createUser();
   }
 
   protected download(id: User['id']): void {
@@ -97,6 +113,8 @@ export class TabOptionsPage {
 
   protected async activateOfflineMode(): Promise<void> {
     this.taskService.userId.set(0);
-    await this.taskService.storage?.remove('userId');
+    await this.taskService.storage?.remove('authTag');
+    await this.taskService.storage?.remove('iv');
+    await this.taskService.storage?.remove('pin');
   }
 }

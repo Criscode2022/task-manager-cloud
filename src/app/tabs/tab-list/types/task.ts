@@ -3,7 +3,9 @@ export interface Task {
   done: boolean;
   id: number;
   title: string;
-  created_at?: Date;
+  created_at: Date;
+  updated_at?: Date;
+  user_id: number;
 }
 
 export type TaskDTO = Partial<Task>;

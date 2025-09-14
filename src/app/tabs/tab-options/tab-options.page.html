@@ -60,10 +60,18 @@
     <p class="lg:text-2xl lg:mx-2">
       <strong>User ID : {{userId()}}</strong>
     </p>
+
+    <ion-alert
+      trigger="offline-alert"
+      [header]="'Confirmation'"
+      [message]="alertMessages.GoOfflineAlert"
+      [buttons]="alertButtonsDelete"
+    ></ion-alert>
+
     <ion-button
       aria-label="offline button"
       class="m-4 lg:text-xl text-white"
-      (click)="activateOfflineMode()"
+      id="offline-alert"
       matTooltip="Go offline"
       fill="clear"
     >

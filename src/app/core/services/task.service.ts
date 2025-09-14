@@ -27,12 +27,6 @@ export class TaskService {
 
   constructor() {
     this.init();
-
-    // effect(() => {
-    //   if (this.userId()) {
-    //     this.storage?.set('userId', this.userId());
-    //   }
-    // });
   }
 
   async init(): Promise<void> {

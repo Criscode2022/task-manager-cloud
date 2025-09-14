@@ -1,12 +1,26 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError, retry, take, throwError } from 'rxjs';
+import { Task } from 'src/app/tabs/tab-list/types/task';
 import { environment } from 'src/environments/environment.prod';
+import { PinDialogComponent } from '../../components/pin-dialog/pin-dialog.component';
 import { TaskService } from '../task.service';
 
 interface UserResponse {
   userId: number;
+  pin: string;
+  encryptedPin: string;
+  iv: string;
+  authTag: string;
+  tasks: Task[];
+}
+
+interface EncryptedData {
+  encryptedPin: string;
+  iv: string;
+  authTag: string;
 }
 
 @Injectable({
@@ -15,9 +29,11 @@ interface UserResponse {
 export class UserService {
   private readonly http = inject(HttpClient);
   private readonly taskService = inject(TaskService);
+  private readonly dialog = inject(MatDialog);
   private readonly snackbar = inject(MatSnackBar);
 
   public userId = signal(0);
+  public enctyptedData = signal<EncryptedData | null>(null);
 
   public async createUser(): Promise<void> {
     console.log('Creating new user...');
@@ -48,6 +64,16 @@ export class UserService {
           this.taskService.userId?.set(userId);
           this.userId.set(userId);
 
+          this.taskService.storage?.set('pin', response?.encryptedPin);
+          this.taskService.storage?.set('iv', response?.iv);
+          this.taskService.storage?.set('authTag', response?.authTag);
+
+          this.dialog.open(PinDialogComponent, {
+            width: '300px',
+            data: { pin: response?.pin },
+            disableClose: false,
+          });
+
           console.log('set userId', this.taskService.userId());
         } else {
           this.snackbar.open('Failed to create user', 'Close', {
@@ -59,22 +85,29 @@ export class UserService {
 
   public async getUser(): Promise<UserResponse | void> {
     console.log('Getting user data...');
+
     const authTag = await this.taskService.storage?.get('authTag');
     const iv = await this.taskService.storage?.get('iv');
-    const pin = await this.taskService?.storage?.get('pin');
+    const encryptedPin = await this.taskService?.storage?.get('pin');
 
-    if (!authTag || !iv || !pin) {
+    this.enctyptedData.set({ encryptedPin, iv, authTag });
+
+    console.log('encryptedPin,', encryptedPin);
+    console.log('iv,', iv);
+    console.log('authTag,', authTag);
+
+    if (!authTag || !iv || !encryptedPin) {
       console.log('No user data found.');
       return;
     }
 
-    console.log('data found, fetching user...', { authTag, iv, pin });
+    console.log('data found, fetching user...', { authTag, iv, encryptedPin });
 
     this.http
       .post<UserResponse>(`${environment.baseUrl}/get-user`, {
         authTag,
         iv,
-        encryptedPin: pin,
+        encryptedPin: encryptedPin,
       })
       .pipe(
         retry(2),
@@ -83,31 +116,34 @@ export class UserService {
           this.snackbar.open('Error fetching user data', 'Close', {
             duration: 2000,
           });
+
+          this.taskService.storage?.remove('authTag');
+          this.taskService.storage?.remove('iv');
+          this.taskService.storage?.remove('pin');
+
           return throwError(() => error);
         })
       )
       .subscribe((response: UserResponse) => {
         console.log('response', response);
 
-        if (response && response.userId) {
-          console.log('User data fetched successfully', response);
+        console.log('User data fetched successfully', response);
 
-          const userId = response?.userId;
+        const userId = response?.userId;
 
-          console.log('fetched userId', userId);
-          this.taskService.userId?.set(userId);
-          this.userId.set(userId);
+        const tasks = response?.tasks;
 
-          console.log('set userId', this.taskService.userId());
-        } else {
-          this.snackbar.open('Failed to fetch user data', 'Close', {
-            duration: 2000,
-          });
-
-          this.taskService.storage?.remove('authTag');
-          this.taskService.storage?.remove('iv');
-          this.taskService.storage?.remove('pin');
+        if (!tasks.length) {
+          throw new Error('No tasks found for user');
         }
+
+        this.taskService.tasks.set(tasks);
+
+        console.log('fetched userId', userId);
+        this.taskService.userId?.set(userId);
+        this.userId.set(userId);
+
+        console.log('set userId', this.taskService.userId());
       });
   }
 }

@@ -182,7 +182,10 @@ export class TabListPage extends TaskForm {
       return;
     }
 
+    const id = Date.now();
+
     const task: TaskDTO = {
+      id,
       title: this.title?.value ?? '',
       description: this.description?.value || '',
       done: false,
@@ -192,7 +195,7 @@ export class TabListPage extends TaskForm {
 
     this.form.reset();
 
-    const userId = await this.taskService.storage?.get('userId');
+    const userId = this.taskService.userId();
 
     if (!userId) {
       this.hasNewTask.set(true);
@@ -202,7 +205,13 @@ export class TabListPage extends TaskForm {
       return;
     }
 
-    this.taskHttpService.upload(task, userId);
+    task.user_id = userId;
+
+    const { encryptedPin, iv, authTag } = this.userService.enctyptedData()!;
+
+    console.log('task,', task);
+
+    this.taskHttpService.upload(task, userId, iv, authTag, encryptedPin);
 
     this.hasNewTask.set(true);
     setTimeout(() => {
@@ -214,6 +223,8 @@ export class TabListPage extends TaskForm {
     if (!this.canClick) {
       return;
     }
+
+    console.log('Toggling task state for taskId:', taskId); //this logs undefined
 
     this.tasks.update((tasks) =>
       tasks.map((task) =>
@@ -242,6 +253,24 @@ export class TabListPage extends TaskForm {
         task.id === id ? { ...task, title, description } : task
       )
     );
+
+    if (this.userId()) {
+      const task: TaskDTO = {
+        id,
+        title,
+        description,
+      };
+
+      const { encryptedPin, iv, authTag } = this.userService.enctyptedData()!;
+
+      this.taskHttpService.editTask(
+        task,
+        this.userId(),
+        iv,
+        authTag,
+        encryptedPin
+      );
+    }
   }
 
   protected deleteTask(taskId: number): void {

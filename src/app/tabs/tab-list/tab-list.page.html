@@ -78,7 +78,7 @@
 
   <ion-list class="space-y-4 pb-4 overflow-y-auto h-64 lg:h-96 mt-2">
     <ion-reorder-group
-      [disabled]="isDisabled()"
+      [disabled]="isDisabled() || this.taskService.userId()"
       (ionItemReorder)="handleManualReorder($any($event))"
     >
       @for (task of filteredTasks(); track task.id) {
