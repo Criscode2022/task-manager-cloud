@@ -280,4 +280,8 @@ export class TabListPage extends TaskForm {
   protected deleteAllTasks(): void {
     this.tasks.set([]);
   }
+
+  protected isTabletOrDesktop(): boolean {
+    return window.matchMedia('(min-width: 768px)').matches;
+  }
 }

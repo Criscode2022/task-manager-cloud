@@ -110,7 +110,7 @@
       >
         @for (task of filteredTasks(); track task.id; let index = $index) {
 
-        <ion-item-sliding class="task-item-sliding animate-scale-in" [style.animation-delay.ms]="index * 50">
+        <ion-item-sliding class="task-item-sliding animate-scale-in" [style.animation-delay.ms]="index * 50" [disabled]="isTabletOrDesktop()">
           <ion-item class="task-item" [class.task-completed]="task.done">
             <div class="task-checkbox-wrapper">
               <mat-checkbox
@@ -136,6 +136,14 @@
             </div>
 
             <div class="task-actions">
+              <ion-button
+                fill="clear"
+                class="edit-button hidden md:flex"
+                (click)="presentEditAlert(task)"
+                matTooltip="Edit task"
+              >
+                <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+              </ion-button>
               <ion-reorder slot="end" class="reorder-icon"></ion-reorder>
               <ion-icon
                 slot="end"
@@ -148,7 +156,7 @@
             </div>
           </ion-item>
 
-          <ion-item-options side="start" class="item-options-start">
+          <ion-item-options side="start" class="item-options-start md:hidden">
             <ion-item-option color="tertiary" (click)="presentEditAlert(task)">
               <ion-icon slot="start" name="create-outline"></ion-icon>
               Edit
