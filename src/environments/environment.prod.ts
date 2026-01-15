@@ -1,12 +1,15 @@
+// NOTE: This file is only a fallback template
+// The actual configuration is loaded from environment.prod.local.ts (auto-generated from .env)
+// Run 'npm run config' to generate environment.prod.local.ts from your .env file
+
 export const environment = {
   production: true,
   // Legacy API (deprecated)
-  //baseUrl: 'https://api-workspace-wczh.onrender.com/tasks-manager',
-  baseUrl: 'http://localhost:3000/tasks-manager',
+  baseUrl: 'https://api-workspace-wczh.onrender.com/tasks-manager',
 
-  // Supabase Configuration
+  // Supabase Configuration (loaded from .env via environment.prod.local.ts)
   supabase: {
-    url: 'https://eizqvmsubhosvawlbglw.supabase.co',
-    anonKey: 'YOUR_SUPABASE_ANON_KEY_HERE' // TODO: Replace with your actual Supabase anon key
+    url: '',
+    anonKey: ''
   }
 };
