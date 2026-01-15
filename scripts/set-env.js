@@ -41,9 +41,16 @@ envContent.split('\n').forEach(line => {
   }
 });
 
+// Log what was read from .env
+console.log('\n📖 Reading .env file...');
+console.log('   SUPABASE_URL:', envVars.SUPABASE_URL || '(not set)');
+console.log('   SUPABASE_ANON_KEY (first 30 chars):',
+  envVars.SUPABASE_ANON_KEY ? envVars.SUPABASE_ANON_KEY.substring(0, 30) + '...' : '(not set)');
+console.log('   SUPABASE_ANON_KEY length:', envVars.SUPABASE_ANON_KEY ? envVars.SUPABASE_ANON_KEY.length : 0);
+
 // Validate required variables
 if (!envVars.SUPABASE_URL || !envVars.SUPABASE_ANON_KEY) {
-  console.error('❌ Missing required environment variables in .env file:');
+  console.error('\n❌ Missing required environment variables in .env file:');
   if (!envVars.SUPABASE_URL) console.error('  - SUPABASE_URL');
   if (!envVars.SUPABASE_ANON_KEY) console.error('  - SUPABASE_ANON_KEY');
   console.log('\n📝 Please update your .env file with the correct values');

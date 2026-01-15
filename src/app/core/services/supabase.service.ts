@@ -10,10 +10,19 @@ export class SupabaseService {
   private supabase: SupabaseClient;
 
   constructor() {
+    // Log environment configuration for debugging
+    console.log('🔧 Supabase Configuration:');
+    console.log('  URL:', environment.supabase.url);
+    console.log('  Anon Key (first 20 chars):', environment.supabase.anonKey.substring(0, 20) + '...');
+    console.log('  Anon Key Length:', environment.supabase.anonKey.length);
+    console.log('  Is Placeholder?:', environment.supabase.anonKey.includes('placeholder') || environment.supabase.anonKey.includes('your-'));
+
     this.supabase = createClient(
       environment.supabase.url,
       environment.supabase.anonKey
     );
+
+    console.log('✅ Supabase client initialized');
   }
 
   // ===========================
