@@ -174,9 +174,24 @@
         } @empty {
 
         <div class="empty-state">
-          <ion-icon name="checkmark-done-circle-outline" class="empty-icon"></ion-icon>
-          <h3 class="empty-title">No Tasks Yet</h3>
-          <p class="empty-text">Create your first task to get started!</p>
+          @if (alternativeFilterInfo()) {
+            <!-- Smart filter suggestion -->
+            <ion-icon name="funnel-outline" class="empty-icon empty-icon-subtle"></ion-icon>
+            <h3 class="empty-title">No tasks here</h3>
+            <p class="empty-text">But you have {{ alternativeFilterInfo()!.count }} {{ alternativeFilterInfo()!.label }}</p>
+            <button
+              class="filter-suggestion-button"
+              (click)="switchToAlternativeFilter()"
+            >
+              <ion-icon name="arrow-forward-outline"></ion-icon>
+              View {{ alternativeFilterInfo()!.label }}
+            </button>
+          } @else {
+            <!-- Default empty state -->
+            <ion-icon name="checkmark-done-circle-outline" class="empty-icon"></ion-icon>
+            <h3 class="empty-title">No Tasks Yet</h3>
+            <p class="empty-text">Create your first task to get started!</p>
+          }
         </div>
 
         }

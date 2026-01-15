@@ -262,6 +262,23 @@
   }
 }
 
+// Animations
+@keyframes fadeInSubtle {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-subtle {
+  animation: fadeInSubtle 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
 // Dark Theme Adjustments
 .dark-theme {
   .background-decoration {

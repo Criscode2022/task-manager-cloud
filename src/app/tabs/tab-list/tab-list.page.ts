@@ -65,6 +65,49 @@ export class TabListPage extends TaskForm {
     }
   });
 
+  protected alternativeFilterInfo = computed(() => {
+    const currentFilter = this.filter();
+    const allTasks = this.tasks();
+    const hasFilteredTasks = this.filteredTasks().length > 0;
+    const hasTasks = allTasks.length > 0;
+
+    // If there are filtered tasks or no tasks at all, return null
+    if (hasFilteredTasks || !hasTasks) {
+      return null;
+    }
+
+    // Calculate tasks in other filters
+    const doneTasks = allTasks.filter((task) => task.done).length;
+    const undoneTasks = allTasks.filter((task) => !task.done).length;
+
+    // Determine which filter has tasks and suggest it
+    if (currentFilter === StatusEnum.Done && undoneTasks > 0) {
+      return {
+        count: undoneTasks,
+        filter: StatusEnum.Undone,
+        label: undoneTasks === 1 ? 'pending task' : 'pending tasks',
+      };
+    } else if (currentFilter === StatusEnum.Undone && doneTasks > 0) {
+      return {
+        count: doneTasks,
+        filter: StatusEnum.Done,
+        label: doneTasks === 1 ? 'completed task' : 'completed tasks',
+      };
+    } else if (currentFilter === StatusEnum.All) {
+      // This shouldn't happen since All shows all tasks
+      return null;
+    }
+
+    return null;
+  });
+
+  protected switchToAlternativeFilter(): void {
+    const info = this.alternativeFilterInfo();
+    if (info) {
+      this.taskService.filter.set(info.filter);
+    }
+  }
+
   protected alertButtons = [
     {
       text: 'Cancel',

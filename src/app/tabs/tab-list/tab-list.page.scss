@@ -305,6 +305,11 @@
   color: var(--ion-color-primary);
   opacity: 0.5;
   margin-bottom: 1rem;
+
+  &.empty-icon-subtle {
+    font-size: 4rem;
+    opacity: 0.3;
+  }
 }
 
 .empty-title {
@@ -317,7 +322,38 @@
 .empty-text {
   font-size: 1rem;
   color: var(--ion-text-color-secondary);
-  margin: 0;
+  margin: 0 0 1.5rem;
+}
+
+.filter-suggestion-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, var(--ion-color-secondary) 0%, var(--ion-color-secondary-shade) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-lg);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+  }
+
+  ion-icon {
+    font-size: 1.25rem;
+  }
 }
 
 // Scroll Indicator

@@ -32,7 +32,7 @@
 
   <div class="settings-container">
     <!-- Status Badge -->
-    <div class="status-badge animate-slide-in-up">
+    <div class="status-badge fade-in-subtle">
       @if (!userId() && !isLoading()) {
         <ion-chip color="warning" class="status-chip">
           <ion-icon name="cloud-offline-outline"></ion-icon>
@@ -57,7 +57,7 @@
 
     @if (!isLoading()) {
       <!-- Cloud Sync Section -->
-      <div class="settings-section animate-slide-in-up" style="animation-delay: 0.1s">
+      <div class="settings-section fade-in-subtle" style="animation-delay: 0.05s">
         <div class="section-header">
           <ion-icon name="cloud-outline" class="section-icon"></ion-icon>
           <h2 class="section-title">Cloud Sync</h2>
@@ -121,7 +121,7 @@
 
       <!-- Account Management Section -->
       @if (userId()) {
-        <div class="settings-section animate-slide-in-up" style="animation-delay: 0.2s">
+        <div class="settings-section fade-in-subtle" style="animation-delay: 0.1s">
           <div class="section-header">
             <ion-icon name="person-outline" class="section-icon"></ion-icon>
             <h2 class="section-title">Account</h2>
@@ -147,7 +147,7 @@
       }
 
       <!-- Appearance Section -->
-      <div class="settings-section animate-slide-in-up" style="animation-delay: 0.3s">
+      <div class="settings-section fade-in-subtle" style="animation-delay: 0.15s">
         <div class="section-header">
           <ion-icon name="color-palette-outline" class="section-icon"></ion-icon>
           <h2 class="section-title">Appearance</h2>
