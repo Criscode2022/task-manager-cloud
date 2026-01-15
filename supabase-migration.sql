@@ -2,12 +2,11 @@
 -- Run this SQL in your Supabase SQL Editor to set up the database
 
 -- Create users table
+-- Using pin_hash to store securely hashed PIN (SHA-256)
 CREATE TABLE IF NOT EXISTS public.users (
     id BIGSERIAL PRIMARY KEY,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
-    encrypted_pin TEXT,
-    iv TEXT,
-    auth_tag TEXT
+    pin_hash TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
 -- Create tasks table

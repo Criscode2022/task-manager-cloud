@@ -136,15 +136,13 @@ export class SupabaseService {
   // ===========================
 
   /**
-   * Create a new user with encryption data
+   * Create a new user with hashed PIN
    */
-  async createUser(encryptedPin: string, iv: string, authTag: string): Promise<number> {
+  async createUser(pinHash: string): Promise<number> {
     const { data, error } = await this.supabase
       .from('users')
       .insert({
-        encrypted_pin: encryptedPin,
-        iv: iv,
-        auth_tag: authTag,
+        pin_hash: pinHash,
       })
       .select()
       .single();
@@ -176,29 +174,21 @@ export class SupabaseService {
   }
 
   /**
-   * Verify user credentials
+   * Verify user PIN
    */
-  async verifyUser(
-    userId: number,
-    iv: string,
-    authTag: string,
-    encryptedPin: string
-  ): Promise<boolean> {
+  async verifyUserPin(userId: number, pinHash: string): Promise<boolean> {
     const { data, error } = await this.supabase
       .from('users')
-      .select('*')
+      .select('pin_hash')
       .eq('id', userId)
-      .eq('iv', iv)
-      .eq('auth_tag', authTag)
-      .eq('encrypted_pin', encryptedPin)
       .single();
 
     if (error) {
-      console.error('Error verifying user:', error);
+      console.error('Error verifying user PIN:', error);
       return false;
     }
 
-    return !!data;
+    return data.pin_hash === pinHash;
   }
 
   /**

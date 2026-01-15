@@ -250,11 +250,15 @@ export class TabListPage extends TaskForm {
 
     task.user_id = userId;
 
-    const { encryptedPin, iv, authTag } = this.userService.enctyptedData()!;
+    const pinHash = this.userService.pinHash();
+    if (!pinHash) {
+      console.error('No PIN hash found');
+      return;
+    }
 
     console.log('task,', task);
 
-    this.taskSupabaseService.upload(task, userId, iv, authTag, encryptedPin);
+    this.taskSupabaseService.upload(task, userId, pinHash);
 
     this.hasNewTask.set(true);
     setTimeout(() => {
@@ -304,14 +308,16 @@ export class TabListPage extends TaskForm {
         description,
       };
 
-      const { encryptedPin, iv, authTag } = this.userService.enctyptedData()!;
+      const pinHash = this.userService.pinHash();
+      if (!pinHash) {
+        console.error('No PIN hash found');
+        return;
+      }
 
       this.taskSupabaseService.editTask(
         task,
         this.userId(),
-        iv,
-        authTag,
-        encryptedPin
+        pinHash
       );
     }
   }

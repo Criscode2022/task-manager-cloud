@@ -69,9 +69,7 @@ export class TabOptionsPage {
       text: 'Confirm',
       role: 'confirm',
       handler: () => {
-        const { encryptedPin, iv, authTag } = this.userService.enctyptedData()!;
-
-        this.userService.delete(this.userId(), iv, authTag, encryptedPin);
+        this.userService.delete(this.userId());
       },
     },
   ];
@@ -113,25 +111,22 @@ export class TabOptionsPage {
   }
 
   protected async download(id: User['id']): Promise<void> {
-    // Get stored credentials
-    const encryptedPin = await this.taskService.storage?.get('pin');
-    const iv = await this.taskService.storage?.get('iv');
-    const authTag = await this.taskService.storage?.get('authTag');
+    // Get stored PIN hash
+    const pinHash = await this.taskService.storage?.get('pinHash');
 
-    if (!encryptedPin || !iv || !authTag) {
+    if (!pinHash) {
       this.snackbar.open('No credentials found. Please create a user first.', 'Close', {
         duration: 5000,
       });
       return;
     }
 
-    await this.tasksSupabaseService.download(id, encryptedPin, iv, authTag);
+    await this.tasksSupabaseService.download(id, pinHash);
   }
 
   protected async activateOfflineMode(): Promise<void> {
     this.taskService.userId.set(0);
-    await this.taskService.storage?.remove('authTag');
-    await this.taskService.storage?.remove('iv');
-    await this.taskService.storage?.remove('pin');
+    await this.taskService.storage?.remove('pinHash');
+    await this.taskService.storage?.remove('userId');
   }
 }

@@ -1,26 +1,10 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Task } from 'src/app/tabs/tab-list/types/task';
 import { PinDialogComponent } from '../../components/pin-dialog/pin-dialog.component';
 import { TaskService } from '../task.service';
 import { TaskSupabaseService } from '../task-supabase.service';
-import { SupabaseService } from '../supabase.service';
-
-interface UserResponse {
-  userId: number;
-  pin: string;
-  encryptedPin: string;
-  iv: string;
-  authTag: string;
-  tasks: Task[];
-}
-
-interface EncryptedData {
-  encryptedPin: string;
-  iv: string;
-  authTag: string;
-}
+import { PinHashService } from '../pin-hash.service';
 
 @Injectable({
   providedIn: 'root',
@@ -28,34 +12,30 @@ interface EncryptedData {
 export class UserService {
   private readonly taskService = inject(TaskService);
   private readonly taskSupabaseService = inject(TaskSupabaseService);
-  private readonly supabaseService = inject(SupabaseService);
+  private readonly pinHashService = inject(PinHashService);
   private readonly dialog = inject(MatDialog);
   private readonly snackbar = inject(MatSnackBar);
 
   public userId = signal(0);
-  public enctyptedData = signal<EncryptedData | null>(null);
+  public pinHash = signal<string | null>(null);
 
+  /**
+   * Create a new user with a securely hashed PIN
+   */
   public async createUser(): Promise<void> {
     console.log('Creating new user with Supabase...');
 
     try {
       const tasks = await this.taskService.getTasks();
 
-      // Generate a random PIN (4-6 digits)
-      const pin = Math.floor(1000 + Math.random() * 9000).toString();
+      // Generate a random 4-digit PIN
+      const pin = this.pinHashService.generatePin();
 
-      // In a production app, you would encrypt this PIN properly
-      // For now, we'll use a simple approach
-      const encryptedPin = btoa(pin); // Base64 encoding (NOT secure for production!)
-      const iv = btoa(Date.now().toString());
-      const authTag = btoa(Math.random().toString());
+      // Hash the PIN securely using SHA-256
+      const hashedPin = await this.pinHashService.hashPin(pin);
 
       // Create user in Supabase
-      const userId = await this.taskSupabaseService.createUser(
-        encryptedPin,
-        iv,
-        authTag
-      );
+      const userId = await this.taskSupabaseService.createUser(hashedPin);
 
       if (userId) {
         console.log('User created successfully', userId);
@@ -63,31 +43,23 @@ export class UserService {
         this.taskService.userId?.set(userId);
         this.userId.set(userId);
 
-        const enctryptedData = {
-          encryptedPin,
-          iv,
-          authTag,
-        };
-
-        await this.taskService.storage?.set('pin', encryptedPin);
-        await this.taskService.storage?.set('iv', iv);
-        await this.taskService.storage?.set('authTag', authTag);
-
-        this.enctyptedData.set(enctryptedData);
+        // Store PIN hash locally
+        await this.taskService.storage?.set('pinHash', hashedPin);
+        this.pinHash.set(hashedPin);
 
         // Upload existing tasks if any
         if (tasks.length > 0) {
           await this.taskSupabaseService.bulkUpload(tasks, userId);
         }
 
-        // Show PIN to user
+        // Show PIN to user (they need to save this!)
         this.dialog.open(PinDialogComponent, {
           width: '300px',
           data: { pin },
           disableClose: false,
         });
 
-        console.log('set userId', this.taskService.userId());
+        console.log('User ID set:', this.taskService.userId());
       } else {
         this.snackbar.open('Failed to create user', 'Close', {
           duration: 2000,
@@ -101,26 +73,21 @@ export class UserService {
     }
   }
 
+  /**
+   * Get user data and download tasks from Supabase
+   */
   public async getUser(): Promise<void> {
     console.log('Getting user data from Supabase...');
 
     try {
-      const authTag = await this.taskService.storage?.get('authTag');
-      const iv = await this.taskService.storage?.get('iv');
-      const encryptedPin = await this.taskService?.storage?.get('pin');
+      const storedPinHash = await this.taskService.storage?.get('pinHash');
 
-      this.enctyptedData.set({ encryptedPin, iv, authTag });
-
-      console.log('encryptedPin,', encryptedPin);
-      console.log('iv,', iv);
-      console.log('authTag,', authTag);
-
-      if (!authTag || !iv || !encryptedPin) {
-        console.log('No user data found.');
+      if (!storedPinHash) {
+        console.log('No PIN hash found in storage.');
         return;
       }
 
-      console.log('data found, fetching user...', { authTag, iv, encryptedPin });
+      console.log('PIN hash found, fetching user...');
 
       // Get stored user ID
       const storedUserId = await this.taskService.storage?.get('userId');
@@ -130,13 +97,9 @@ export class UserService {
       }
 
       // Download tasks from Supabase
-      await this.taskSupabaseService.download(
-        storedUserId,
-        encryptedPin,
-        iv,
-        authTag
-      );
+      await this.taskSupabaseService.download(storedUserId, storedPinHash);
 
+      this.pinHash.set(storedPinHash);
       console.log('User data fetched successfully');
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -144,28 +107,25 @@ export class UserService {
         duration: 2000,
       });
 
-      await this.taskService.storage?.remove('authTag');
-      await this.taskService.storage?.remove('iv');
-      await this.taskService.storage?.remove('pin');
+      // Clean up invalid stored data
+      await this.taskService.storage?.remove('pinHash');
     }
   }
 
-  public async delete(
-    userId: number,
-    iv: string,
-    authTag: string,
-    encryptedPin: string
-  ): Promise<void> {
+  /**
+   * Delete user account and all associated data
+   */
+  public async delete(userId: number): Promise<void> {
     try {
       await this.taskSupabaseService.deleteUser(userId);
 
-      await this.taskService.storage?.remove('authTag');
-      await this.taskService.storage?.remove('iv');
-      await this.taskService.storage?.remove('pin');
+      // Clean up all stored data
+      await this.taskService.storage?.remove('pinHash');
       await this.taskService.storage?.remove('userId');
 
       this.taskService.userId.set(0);
       this.userId.set(0);
+      this.pinHash.set(null);
 
       this.snackbar.open('User deleted successfully', 'Close', {
         duration: 5000,

@@ -22,22 +22,15 @@ export class TaskSupabaseService {
   public async upload(
     task: TaskDTO,
     userId: number,
-    iv: string,
-    authTag: string,
-    encryptedPin: string
+    pinHash: string
   ): Promise<void> {
     if (!userId) return;
 
     try {
       console.log('Uploading task to Supabase...', task, userId);
 
-      // Verify user credentials first
-      const isValidUser = await this.supabase.verifyUser(
-        userId,
-        iv,
-        authTag,
-        encryptedPin
-      );
+      // Verify user PIN first
+      const isValidUser = await this.supabase.verifyUserPin(userId, pinHash);
 
       if (!isValidUser) {
         this.snackbar.open('Invalid user credentials', 'Close', {
@@ -64,7 +57,7 @@ export class TaskSupabaseService {
         })
         .onAction()
         .subscribe(() => {
-          this.upload(task, userId, iv, authTag, encryptedPin);
+          this.upload(task, userId, pinHash);
         });
 
       throw error;
@@ -77,22 +70,15 @@ export class TaskSupabaseService {
   public async editTask(
     task: TaskDTO,
     userId: number,
-    iv: string,
-    authTag: string,
-    encryptedPin: string
+    pinHash: string
   ): Promise<void> {
     if (!userId || !task.id) return;
 
     try {
       console.log('Editing task in Supabase...', task, userId);
 
-      // Verify user credentials first
-      const isValidUser = await this.supabase.verifyUser(
-        userId,
-        iv,
-        authTag,
-        encryptedPin
-      );
+      // Verify user PIN first
+      const isValidUser = await this.supabase.verifyUserPin(userId, pinHash);
 
       if (!isValidUser) {
         this.snackbar.open('Invalid user credentials', 'Close', {
@@ -118,7 +104,7 @@ export class TaskSupabaseService {
         })
         .onAction()
         .subscribe(() => {
-          this.editTask(task, userId, iv, authTag, encryptedPin);
+          this.editTask(task, userId, pinHash);
         });
 
       throw error;
@@ -126,15 +112,11 @@ export class TaskSupabaseService {
   }
 
   /**
-   * Create a new user with encrypted credentials
+   * Create a new user with hashed PIN
    */
-  public async createUser(
-    encryptedPin: string,
-    iv: string,
-    authTag: string
-  ): Promise<number | null> {
+  public async createUser(pinHash: string): Promise<number | null> {
     try {
-      const userId = await this.supabase.createUser(encryptedPin, iv, authTag);
+      const userId = await this.supabase.createUser(pinHash);
 
       this.taskService.userId.set(userId);
       this.snackbar.open('User created successfully', '', {
@@ -154,20 +136,10 @@ export class TaskSupabaseService {
   /**
    * Download all tasks for a user from Supabase
    */
-  public async download(
-    userId: number,
-    encryptedPin: string,
-    iv: string,
-    authTag: string
-  ): Promise<void> {
+  public async download(userId: number, pinHash: string): Promise<void> {
     try {
-      // Verify user credentials
-      const isValidUser = await this.supabase.verifyUser(
-        userId,
-        iv,
-        authTag,
-        encryptedPin
-      );
+      // Verify user PIN
+      const isValidUser = await this.supabase.verifyUserPin(userId, pinHash);
 
       if (!isValidUser) {
         // Check if user exists but credentials don't match
@@ -198,10 +170,8 @@ export class TaskSupabaseService {
       // Get all tasks for the user
       const tasks = await this.supabase.getTasks(userId);
 
-      // Store credentials
-      await this.taskService.storage?.set('pin', encryptedPin);
-      await this.taskService.storage?.set('iv', iv);
-      await this.taskService.storage?.set('authTag', authTag);
+      // Store PIN hash
+      await this.taskService.storage?.set('pinHash', pinHash);
 
       // Update task service
       this.taskService.userId.set(userId);
