@@ -68,3 +68,11 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+src/environments/environment.local.ts
+src/environments/environment.prod.local.ts
+src/environments/*.local.ts
