@@ -1,176 +1,219 @@
-<ion-header>
-  <ion-toolbar class="lg:py-1">
+<ion-header class="ion-no-border">
+  <ion-toolbar class="toolbar-gradient lg:py-2">
     <ion-button
       [disabled]="!this.tasks().length"
       slot="start"
-      class="ion-margin lg:text-xl"
+      class="ion-margin lg:text-xl toolbar-button"
       id="delete-alert"
       color="danger"
+      fill="clear"
+      matTooltip="Delete all tasks"
+      matTooltipPosition="below"
     >
-      <ion-icon name="trash-outline"></ion-icon>
+      <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
     </ion-button>
     <ion-title
-      class="lg:fixed lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 ion-text-center lg:text-4xl font-extrabold"
-      >Cloud</ion-title
+      class="lg:fixed lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 ion-text-center text-2xl lg:text-4xl font-extrabold tracking-tight"
     >
+      <span class="title-gradient">Task Manager</span>
+    </ion-title>
     <ion-button
       slot="end"
-      class="w-20 lg:w-28 lg:text-xl ion-margin"
-      color="primary"
+      class="filter-button lg:text-xl ion-margin px-4"
+      color="light"
       (click)="taskService.changeFilter()"
+      matTooltip="Filter tasks"
+      matTooltipPosition="below"
     >
+      <ion-icon slot="start" name="filter-outline" class="mr-1"></ion-icon>
       {{filter()}}
     </ion-button>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [scrollY]="false">
-  <form
-    [formGroup]="form"
-    class="flex flex-col md:w-[60%] lg:w-[40%] xl:w-[30%] mx-auto animate-fade-down animate-duration-300 px-4 pt-6"
-    (ngSubmit)="addTask()"
-  >
-    <mat-form-field appearance="outline">
-      <mat-label>Title</mat-label>
-
-      <input
-        matInput
-        type="text"
-        placeholder="Title of new task"
-        formControlName="title"
-        maxlength="40"
-      />
-      <button
-        *ngIf="this.title?.value?.length"
-        mat-icon-button
-        type="button"
-        matSuffix
-        class="mr-2"
-        (click)="clear('title')"
-      >
-        <mat-icon slot="icon-only">close</mat-icon>
-      </button>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Description</mat-label>
-      <input
-        matInput
-        type="text"
-        placeholder="Description of new task"
-        formControlName="description"
-        maxlength="30"
-      />
-      <button
-        *ngIf="this.description?.value?.length"
-        mat-icon-button
-        type="button"
-        matSuffix
-        class="mr-2"
-        (click)="clear('description')"
-      >
-        <mat-icon matSuffix>close</mat-icon>
-      </button>
-    </mat-form-field>
-
-    <ion-button type="submit" color="primary"> Add Task </ion-button>
-  </form>
-
-  <ion-list class="space-y-4 pb-4 overflow-y-auto h-64 lg:h-96 mt-2">
-    <ion-reorder-group
-      [disabled]="isDisabled() || this.taskService.userId()"
-      (ionItemReorder)="handleManualReorder($any($event))"
+<ion-content [scrollY]="false" class="content-background">
+  <div class="form-container">
+    <form
+      [formGroup]="form"
+      class="task-form animate-slide-in-up"
+      (ngSubmit)="addTask()"
     >
-      @for (task of filteredTasks(); track task.id) {
-
-      <ion-item-sliding>
-        <ion-item>
-          <mat-checkbox
-            [checked]="task.done"
-            (change)="canClick() ? toggleTaskState(task.id) : null"
-            class="mr-4"
-            [class.disabled]="!canClick()"
-            matTooltip="Slide right to edit"
-          ></mat-checkbox>
-          <ion-label
-            (click)="canClick() ? toggleTaskState(task.id) : null"
-            [class.done]="task.done"
-            class="cursor-pointer text-sm md:text-base lg:text-lg xl:text-xl"
-            [class.disabled]="!canClick()"
-          >
-            {{ task?.title }} @if(task.description){- {{ task?.description }}}
-          </ion-label>
-          <ion-reorder slot="end"></ion-reorder>
-          <ion-icon
-            slot="end"
-            color="danger"
-            name="close-circle-outline"
-            (dblclick)="deleteTask(task.id)"
-            class="hidden sm:block cursor-pointer"
-            matTooltip="Double click to delete"
-          ></ion-icon>
-        </ion-item>
-
-        <ion-item-options side="start">
-          <ion-item-option color="dark" (click)="presentEditAlert(task)"
-            >Edit</ion-item-option
-          >
-        </ion-item-options>
-
-        <ion-item-options side="end">
-          <ion-item-option (click)="deleteTask(task.id)" color="danger"
-            >Delete</ion-item-option
-          >
-        </ion-item-options>
-      </ion-item-sliding>
-
-      } @empty {
-
-      <div class="flex justify-center font-semibold mx-6 lg:text-xl">
-        I am sure you have something to do... Why don't you add it?
+      <div class="form-header">
+        <ion-icon name="add-circle-outline" class="header-icon"></ion-icon>
+        <h2 class="form-title">Create New Task</h2>
       </div>
 
-      }
-    </ion-reorder-group>
-  </ion-list>
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Task Title</mat-label>
+        <input
+          matInput
+          type="text"
+          placeholder="What do you need to do?"
+          formControlName="title"
+          maxlength="40"
+        />
+        <mat-hint align="end">{{this.title?.value?.length || 0}}/40</mat-hint>
+        <button
+          *ngIf="this.title?.value?.length"
+          mat-icon-button
+          type="button"
+          matSuffix
+          class="clear-button"
+          (click)="clear('title')"
+          matTooltip="Clear title"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Description (Optional)</mat-label>
+        <input
+          matInput
+          type="text"
+          placeholder="Add more details..."
+          formControlName="description"
+          maxlength="30"
+        />
+        <mat-hint align="end">{{this.description?.value?.length || 0}}/30</mat-hint>
+        <button
+          *ngIf="this.description?.value?.length"
+          mat-icon-button
+          type="button"
+          matSuffix
+          class="clear-button"
+          (click)="clear('description')"
+          matTooltip="Clear description"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <ion-button
+        type="submit"
+        expand="block"
+        color="primary"
+        class="submit-button"
+        [disabled]="!form.valid"
+      >
+        <ion-icon slot="start" name="add-outline"></ion-icon>
+        Add Task
+      </ion-button>
+    </form>
+  </div>
+
+  <div class="tasks-container">
+    <ion-list class="task-list">
+      <ion-reorder-group
+        [disabled]="isDisabled() || this.taskService.userId()"
+        (ionItemReorder)="handleManualReorder($any($event))"
+      >
+        @for (task of filteredTasks(); track task.id; let index = $index) {
+
+        <ion-item-sliding class="task-item-sliding animate-scale-in" [style.animation-delay.ms]="index * 50">
+          <ion-item class="task-item" [class.task-completed]="task.done">
+            <div class="task-checkbox-wrapper">
+              <mat-checkbox
+                [checked]="task.done"
+                (change)="canClick() ? toggleTaskState(task.id) : null"
+                [class.disabled]="!canClick()"
+                matTooltip="Mark as complete"
+                color="primary"
+              ></mat-checkbox>
+            </div>
+
+            <div
+              class="task-content"
+              (click)="canClick() ? toggleTaskState(task.id) : null"
+              [class.disabled]="!canClick()"
+            >
+              <ion-label class="task-label" [class.done]="task.done">
+                <div class="task-title">{{ task?.title }}</div>
+                @if(task.description){
+                  <div class="task-description">{{ task?.description }}</div>
+                }
+              </ion-label>
+            </div>
+
+            <div class="task-actions">
+              <ion-reorder slot="end" class="reorder-icon"></ion-reorder>
+              <ion-icon
+                slot="end"
+                color="danger"
+                name="trash-outline"
+                (dblclick)="deleteTask(task.id)"
+                class="delete-icon hidden sm:block"
+                matTooltip="Double click to delete"
+              ></ion-icon>
+            </div>
+          </ion-item>
+
+          <ion-item-options side="start" class="item-options-start">
+            <ion-item-option color="tertiary" (click)="presentEditAlert(task)">
+              <ion-icon slot="start" name="create-outline"></ion-icon>
+              Edit
+            </ion-item-option>
+          </ion-item-options>
+
+          <ion-item-options side="end" class="item-options-end">
+            <ion-item-option (click)="deleteTask(task.id)" color="danger">
+              <ion-icon slot="start" name="trash-outline"></ion-icon>
+              Delete
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+
+        } @empty {
+
+        <div class="empty-state">
+          <ion-icon name="checkmark-done-circle-outline" class="empty-icon"></ion-icon>
+          <h3 class="empty-title">No Tasks Yet</h3>
+          <p class="empty-text">Create your first task to get started!</p>
+        </div>
+
+        }
+      </ion-reorder-group>
+    </ion-list>
+  </div>
 
   @if (hasNewTask()) {
-
-  <div class="flex justify-center opacity-50">
-    <ion-button shape="round" class="absolute bottom-4 animate-bounce">
+  <div class="scroll-indicator">
+    <ion-button shape="round" class="scroll-button" fill="clear">
       <ion-icon slot="icon-only" name="chevron-down-outline"></ion-icon>
     </ion-button>
   </div>
+  }
 
-  } @if(this.userId()) {
-
+  @if(this.userId()) {
   <ion-button
     shape="round"
-    class="absolute bottom-4 right-4"
+    class="fab-button fab-refresh"
     [class.animate-spin]="mustRotate()"
     [class.animate-duration-500]="mustRotate()"
     (click)="refresh()"
-    matTooltip="Refresh tasks"
+    matTooltip="Sync tasks with cloud"
     matTooltipPosition="above"
+    color="secondary"
   >
     <ion-icon
       slot="icon-only"
-      class="text-white"
       aria-label="refresh button"
-      *ngIf="this.userId()"
       name="sync"
     ></ion-icon>
   </ion-button>
-  } @if (shouldShowInstall()) {
+  }
 
+  @if (shouldShowInstall()) {
   <ion-button
     shape="round"
-    class="absolute bottom-4 left-4 md:hidden"
+    class="fab-button fab-install"
     id="install-alert"
+    color="primary"
+    matTooltip="Install app"
+    matTooltipPosition="above"
   >
     <mat-icon slot="icon-only">install_mobile</mat-icon>
   </ion-button>
-
   }
 </ion-content>
 

@@ -1,20 +1,54 @@
-<div
-  class="ion-padding ion-text-center ion-card ion-shadow-lg rounded-lg bg-white max-w-sm p-6"
->
-  <p class="text-red-600 font-bold text-lg mb-3">IMPORTANT</p>
+<div class="pin-dialog-container">
+  <div class="dialog-header">
+    <ion-icon name="shield-checkmark" class="header-icon warning-icon"></ion-icon>
+    <h2 class="dialog-title">Important Security Information</h2>
+  </div>
 
-  <p class="text-gray-700 mb-4">
-    Save this PIN somewhere safe. You will need it to access your tasks on
-    another device. This pin cannot be recovered after closing this message.
-  </p>
+  <div class="dialog-content">
+    <div class="warning-banner">
+      <ion-icon name="warning" class="banner-icon"></ion-icon>
+      <p class="warning-text">
+        Save this PIN in a secure location. You'll need it to access your tasks on other devices.
+      </p>
+    </div>
 
-  <p class="text-xl font-mono font-bold text-blue-600 mb-6">{{ pin }}</p>
+    <div class="pin-container">
+      <p class="pin-label">Your Encryption PIN</p>
+      <div class="pin-display-wrapper">
+        <p class="pin-display">{{ pin }}</p>
+        <ion-button
+          fill="clear"
+          class="copy-button"
+          (click)="copyPin()"
+          matTooltip="Copy to clipboard"
+        >
+          <ion-icon slot="icon-only" [name]="copied ? 'checkmark-circle' : 'copy-outline'"></ion-icon>
+        </ion-button>
+      </div>
+      @if (copied) {
+        <p class="copy-success">PIN copied to clipboard!</p>
+      }
+    </div>
 
-  <ion-button
-    color="primary"
-    (click)="close()"
-    class="ion-button w-full font-bold rounded-md hover:scale-105 transition-transform duration-200"
-  >
-    Close
-  </ion-button>
+    <div class="info-box">
+      <ion-icon name="information-circle-outline" class="info-icon"></ion-icon>
+      <p class="info-text">
+        This PIN cannot be recovered after closing this dialog. Make sure to save it before continuing.
+      </p>
+    </div>
+  </div>
+
+  <div class="dialog-actions">
+    <ion-button
+      expand="block"
+      color="primary"
+      (click)="close()"
+      class="close-button"
+      [disabled]="!copied"
+    >
+      <ion-icon slot="start" name="checkmark"></ion-icon>
+      I've Saved My PIN
+    </ion-button>
+    <p class="action-hint" *ngIf="!copied">Copy your PIN before closing</p>
+  </div>
 </div>
