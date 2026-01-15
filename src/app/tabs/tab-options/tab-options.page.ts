@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { ThemeService } from 'src/app/core/services/theme.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
-import { TaskHttpService } from '../../core/services/task-http.service';
+import { TaskSupabaseService } from '../../core/services/task-supabase.service';
 import { TaskService } from '../../core/services/task.service';
 import { AlertMessages } from '../../core/types/alert-messages';
 import { User } from './types/user';
@@ -18,9 +19,10 @@ import { User } from './types/user';
   imports: [IonicModule, CommonModule, RouterModule, MatTooltipModule],
 })
 export class TabOptionsPage {
-  private readonly tasksHttpService = inject(TaskHttpService);
+  private readonly tasksSupabaseService = inject(TaskSupabaseService);
   private readonly taskService = inject(TaskService);
   private readonly loadingService = inject(LoadingService);
+  private readonly snackbar = inject(MatSnackBar);
   protected readonly themeService = inject(ThemeService);
   protected readonly userService = inject(UserService);
 
@@ -110,8 +112,20 @@ export class TabOptionsPage {
     await this.userService.createUser();
   }
 
-  protected download(id: User['id']): void {
-    this.tasksHttpService.download(id);
+  protected async download(id: User['id']): Promise<void> {
+    // Get stored credentials
+    const encryptedPin = await this.taskService.storage?.get('pin');
+    const iv = await this.taskService.storage?.get('iv');
+    const authTag = await this.taskService.storage?.get('authTag');
+
+    if (!encryptedPin || !iv || !authTag) {
+      this.snackbar.open('No credentials found. Please create a user first.', 'Close', {
+        duration: 5000,
+      });
+      return;
+    }
+
+    await this.tasksSupabaseService.download(id, encryptedPin, iv, authTag);
   }
 
   protected async activateOfflineMode(): Promise<void> {

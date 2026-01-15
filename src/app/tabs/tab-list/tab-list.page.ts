@@ -13,7 +13,7 @@ import {
   ItemReorderEventDetail,
 } from '@ionic/angular';
 import { UserService } from 'src/app/core/services/user-service/user.service';
-import { TaskHttpService } from '../../core/services/task-http.service';
+import { TaskSupabaseService } from '../../core/services/task-supabase.service';
 import { TaskService } from '../../core/services/task.service';
 import { AlertMessages } from '../../core/types/alert-messages';
 import { TaskForm } from './task.form';
@@ -37,7 +37,7 @@ import { Task, TaskDTO } from './types/task';
   ],
 })
 export class TabListPage extends TaskForm {
-  private readonly taskHttpService = inject(TaskHttpService);
+  private readonly taskSupabaseService = inject(TaskSupabaseService);
   private readonly alertController = inject(AlertController);
   protected readonly taskService = inject(TaskService);
   private readonly userService = inject(UserService);
@@ -254,7 +254,7 @@ export class TabListPage extends TaskForm {
 
     console.log('task,', task);
 
-    this.taskHttpService.upload(task, userId, iv, authTag, encryptedPin);
+    this.taskSupabaseService.upload(task, userId, iv, authTag, encryptedPin);
 
     this.hasNewTask.set(true);
     setTimeout(() => {
@@ -306,7 +306,7 @@ export class TabListPage extends TaskForm {
 
       const { encryptedPin, iv, authTag } = this.userService.enctyptedData()!;
 
-      this.taskHttpService.editTask(
+      this.taskSupabaseService.editTask(
         task,
         this.userId(),
         iv,

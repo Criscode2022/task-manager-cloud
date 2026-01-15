@@ -1,5 +1,4 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { TaskHttpService } from '../core/services/task-http.service';
 import { TaskService } from '../core/services/task.service';
 import { ThemeService } from '../core/services/theme.service';
 import { UserService } from '../core/services/user-service/user.service';
@@ -10,7 +9,6 @@ import { UserService } from '../core/services/user-service/user.service';
   standalone: false,
 })
 export class TabsPage implements OnInit {
-  private readonly http = inject(TaskHttpService);
   private readonly themeService = inject(ThemeService);
   private readonly userService = inject(UserService);
   private readonly taskService = inject(TaskService);
