@@ -3,7 +3,7 @@ import { Component, inject } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, AlertController } from '@ionic/angular';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { ThemeService } from 'src/app/core/services/theme.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
@@ -25,6 +25,7 @@ export class TabOptionsPage {
   private readonly loadingService = inject(LoadingService);
   private readonly snackbar = inject(MatSnackBar);
   private readonly pinHashService = inject(PinHashService);
+  private readonly alertController = inject(AlertController);
   protected readonly themeService = inject(ThemeService);
   protected readonly userService = inject(UserService);
 
@@ -152,5 +153,110 @@ export class TabOptionsPage {
     this.taskService.userId.set(0);
     await this.taskService.storage?.remove('pinHash');
     await this.taskService.storage?.remove('userId');
+  }
+
+  /**
+   * Show login alert
+   */
+  protected async showLoginAlert(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Login with PIN',
+      message: 'Enter your 4-digit PIN to sync your tasks',
+      inputs: [
+        {
+          name: 'pin',
+          type: 'number',
+          placeholder: 'Enter your 4-digit PIN',
+          min: 1000,
+          max: 9999,
+          attributes: {
+            inputmode: 'numeric',
+          },
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        },
+        {
+          text: 'Login',
+          role: 'confirm',
+          handler: (data) => {
+            this.download(data.pin);
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Show go offline confirmation alert
+   */
+  protected async showGoOfflineAlert(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Confirmation',
+      message: this.alertMessages.GoOfflineAlert,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        },
+        {
+          text: 'Confirm',
+          role: 'confirm',
+          handler: () => {
+            this.activateOfflineMode();
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Show delete user confirmation alert
+   */
+  protected async showDeleteUserAlert(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Delete User ID',
+      message: this.alertMessages.DeleteUserAlert,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        },
+        {
+          text: 'Confirm',
+          role: 'confirm',
+          handler: () => {
+            this.userService.delete(this.userId());
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Show info/help alert
+   */
+  protected async showInfoAlert(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Information',
+      message: this.alertMessages.InfoAlert,
+      buttons: [
+        {
+          text: 'Close',
+          role: 'cancel',
+        },
+      ],
+    });
+
+    await alert.present();
   }
 }

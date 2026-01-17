@@ -12,11 +12,11 @@
     <ion-button
       aria-label="information button"
       slot="end"
-      id="info-alert"
       fill="clear"
       class="ion-margin toolbar-button lg:text-xl"
       matTooltip="Help & Information"
       matTooltipPosition="below"
+      (click)="showInfoAlert()"
     >
       <ion-icon name="help-circle-outline"></ion-icon>
     </ion-button>
@@ -91,10 +91,10 @@
               </div>
               <ion-button
                 aria-label="offline button"
-                id="offline-alert"
                 fill="clear"
                 class="action-button"
                 matTooltip="Go offline"
+                (click)="showGoOfflineAlert()"
               >
                 <ion-icon name="cloud-offline-outline"></ion-icon>
               </ion-button>
@@ -110,8 +110,8 @@
             <ion-button
               aria-label="login button"
               color="primary"
-              id="download-alert"
               class="action-button"
+              (click)="showLoginAlert()"
             >
               <ion-icon slot="icon-only" name="{{!userId() ? 'log-in-outline' : 'swap-horizontal-outline'}}"></ion-icon>
             </ion-button>
@@ -136,8 +136,8 @@
               <ion-button
                 aria-label="delete button"
                 color="danger"
-                id="delete-user-alert"
                 class="action-button"
+                (click)="showDeleteUserAlert()"
               >
                 <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
               </ion-button>
@@ -169,34 +169,4 @@
       </div>
     }
   </div>
-
-  <!-- Alerts -->
-  <ion-alert
-    trigger="offline-alert"
-    [header]="'Confirmation'"
-    [message]="alertMessages.GoOfflineAlert"
-    [buttons]="offlineButtons"
-  ></ion-alert>
-
-  <ion-alert
-    trigger="download-alert"
-    header="Login with PIN"
-    message="Enter your 4-digit PIN to sync your tasks"
-    [buttons]="alertButtonsDownload"
-    [inputs]="alertInputs"
-  ></ion-alert>
-
-  <ion-alert
-    trigger="info-alert"
-    header="Information"
-    [message]="alertMessages.InfoAlert"
-    [buttons]="alertButtonsInfo"
-  ></ion-alert>
-
-  <ion-alert
-    trigger="delete-user-alert"
-    header="Delete User ID"
-    [message]="alertMessages.DeleteUserAlert"
-    [buttons]="alertButtonsDelete"
-  ></ion-alert>
 </ion-content>
