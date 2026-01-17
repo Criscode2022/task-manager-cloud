@@ -123,8 +123,11 @@ export class TabOptionsPage {
 
   protected async download(id: User['id'], pin: User['pin']): Promise<void> {
     try {
+      // Convert PIN to string (alert input returns number)
+      const pinString = String(pin);
+
       // Validate PIN format
-      if (!pin || pin.length !== 4) {
+      if (!pinString || pinString.length !== 4) {
         this.snackbar.open('PIN must be exactly 4 digits', 'Close', {
           duration: 5000,
         });
@@ -132,9 +135,11 @@ export class TabOptionsPage {
       }
 
       // Hash the PIN using SHA-256
-      const pinHash = await this.pinHashService.hashPin(pin);
+      const pinHash = await this.pinHashService.hashPin(pinString);
 
       console.log('Attempting to download tasks with User ID:', id);
+      console.log('PIN string:', pinString);
+      console.log('PIN hash (first 20 chars):', pinHash.substring(0, 20) + '...');
 
       // Download tasks (this also verifies the PIN)
       await this.tasksSupabaseService.download(id, pinHash);

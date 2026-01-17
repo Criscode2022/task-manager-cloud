@@ -139,6 +139,8 @@ export class SupabaseService {
    * Create a new user with hashed PIN
    */
   async createUser(pinHash: string): Promise<number> {
+    console.log('👤 Creating new user with PIN hash (first 20 chars):', pinHash.substring(0, 20) + '...');
+
     const { data, error } = await this.supabase
       .from('users')
       .insert({
@@ -148,9 +150,12 @@ export class SupabaseService {
       .single();
 
     if (error) {
-      console.error('Error creating user:', error);
+      console.error('❌ Error creating user:', error);
       throw error;
     }
+
+    console.log('✅ User created successfully with ID:', data.id);
+    console.log('✅ Stored PIN hash (first 20 chars):', data.pin_hash.substring(0, 20) + '...');
 
     return data.id;
   }
@@ -177,6 +182,9 @@ export class SupabaseService {
    * Verify user PIN
    */
   async verifyUserPin(userId: number, pinHash: string): Promise<boolean> {
+    console.log('🔐 Verifying PIN for User ID:', userId);
+    console.log('🔐 Provided PIN hash (first 20 chars):', pinHash.substring(0, 20) + '...');
+
     const { data, error } = await this.supabase
       .from('users')
       .select('pin_hash')
@@ -184,11 +192,16 @@ export class SupabaseService {
       .single();
 
     if (error) {
-      console.error('Error verifying user PIN:', error);
+      console.error('❌ Error verifying user PIN:', error);
+      console.error('❌ This usually means the user does not exist in the database');
       return false;
     }
 
-    return data.pin_hash === pinHash;
+    console.log('🔐 Stored PIN hash (first 20 chars):', data.pin_hash.substring(0, 20) + '...');
+    const matches = data.pin_hash === pinHash;
+    console.log('🔐 PIN hashes match:', matches);
+
+    return matches;
   }
 
   /**
