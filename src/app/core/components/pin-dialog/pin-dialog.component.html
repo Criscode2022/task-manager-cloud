@@ -13,28 +13,38 @@
     </div>
 
     <div class="pin-container">
-      <p class="pin-label">Your Encryption PIN</p>
+      <p class="pin-label">Your Login PIN</p>
       <div class="pin-display-wrapper">
         <p class="pin-display">{{ pin }}</p>
         <ion-button
           fill="clear"
           class="copy-button"
           (click)="copyPin()"
-          matTooltip="Copy to clipboard"
+          matTooltip="Copy to clipboard (optional)"
         >
           <ion-icon slot="icon-only" [name]="copied ? 'checkmark-circle' : 'copy-outline'"></ion-icon>
         </ion-button>
       </div>
       @if (copied) {
-        <p class="copy-success">PIN copied to clipboard!</p>
+        <p class="copy-success">✓ PIN copied to clipboard!</p>
       }
     </div>
 
     <div class="info-box">
       <ion-icon name="information-circle-outline" class="info-icon"></ion-icon>
       <p class="info-text">
-        This PIN cannot be recovered after closing this dialog. Make sure to save it before continuing.
+        This PIN cannot be recovered after closing this dialog. Write it down on paper or copy it to a secure location.
       </p>
+    </div>
+
+    <div class="confirmation-checkbox">
+      <ion-checkbox
+        [(ngModel)]="confirmed"
+        class="custom-checkbox"
+        labelPlacement="end"
+      >
+        <span class="checkbox-label">I have saved my PIN securely</span>
+      </ion-checkbox>
     </div>
   </div>
 
@@ -44,11 +54,11 @@
       color="primary"
       (click)="close()"
       class="close-button"
-      [disabled]="!copied"
+      [disabled]="!confirmed"
     >
       <ion-icon slot="start" name="checkmark"></ion-icon>
-      I've Saved My PIN
+      Continue
     </ion-button>
-    <p class="action-hint" *ngIf="!copied">Copy your PIN before closing</p>
+    <p class="action-hint" *ngIf="!confirmed">Please confirm you've saved your PIN</p>
   </div>
 </div>

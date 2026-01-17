@@ -1,13 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { IonButton, IonIcon, IonCheckbox } from '@ionic/angular/standalone';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-pin-dialog',
   templateUrl: './pin-dialog.component.html',
-  imports: [IonButton, IonIcon, MatTooltipModule, CommonModule],
+  imports: [IonButton, IonIcon, IonCheckbox, MatTooltipModule, CommonModule, FormsModule],
   styleUrls: ['./pin-dialog.component.scss'],
 })
 export class PinDialogComponent {
@@ -16,6 +17,7 @@ export class PinDialogComponent {
 
   protected readonly pin = this.dialogData?.pin;
   protected copied = false;
+  protected confirmed = false;
 
   protected async copyPin(): Promise<void> {
     try {

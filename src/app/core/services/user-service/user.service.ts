@@ -54,9 +54,10 @@ export class UserService {
 
         // Show PIN to user (they need to save this!)
         this.dialog.open(PinDialogComponent, {
-          width: '300px',
+          width: '90vw',
+          maxWidth: '500px',
           data: { pin },
-          disableClose: false,
+          disableClose: true,
         });
 
         console.log('User ID set:', this.taskService.userId());

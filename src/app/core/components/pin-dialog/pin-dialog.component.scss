@@ -161,6 +161,32 @@
   line-height: 1.5;
 }
 
+// Confirmation Checkbox
+.confirmation-checkbox {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(16, 185, 129, 0.05);
+  border-radius: var(--border-radius-md);
+  border: 2px dashed var(--ion-color-primary-tint);
+
+  .custom-checkbox {
+    --size: 24px;
+    --checkbox-background-checked: var(--ion-color-primary);
+    --border-color: var(--ion-color-primary);
+    --border-width: 2px;
+    margin: 0;
+  }
+
+  .checkbox-label {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--ion-text-color);
+    margin-left: 0.75rem;
+    line-height: 1.4;
+  }
+}
+
 // Dialog Actions
 .dialog-actions {
   margin-top: 1rem;
