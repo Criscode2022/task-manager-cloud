@@ -9,6 +9,7 @@ import { ThemeService } from 'src/app/core/services/theme.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
 import { TaskSupabaseService } from '../../core/services/task-supabase.service';
 import { TaskService } from '../../core/services/task.service';
+import { PinHashService } from '../../core/services/pin-hash.service';
 import { AlertMessages } from '../../core/types/alert-messages';
 import { User } from './types/user';
 
@@ -23,6 +24,7 @@ export class TabOptionsPage {
   private readonly taskService = inject(TaskService);
   private readonly loadingService = inject(LoadingService);
   private readonly snackbar = inject(MatSnackBar);
+  private readonly pinHashService = inject(PinHashService);
   protected readonly themeService = inject(ThemeService);
   protected readonly userService = inject(UserService);
 
@@ -41,7 +43,7 @@ export class TabOptionsPage {
       text: 'Confirm',
       role: 'confirm',
       handler: (user: User) => {
-        this.download(user.id);
+        this.download(user.id, user.pin);
       },
     },
   ];
@@ -100,8 +102,17 @@ export class TabOptionsPage {
       placeholder: 'User ID',
       type: 'number',
       name: 'id',
-      min: 1000,
+      min: 1,
       label: 'User ID',
+      required: true,
+    },
+    {
+      placeholder: '4-digit PIN',
+      type: 'number',
+      name: 'pin',
+      min: 1000,
+      max: 9999,
+      label: 'PIN',
       required: true,
     },
   ];
@@ -110,18 +121,34 @@ export class TabOptionsPage {
     await this.userService.createUser();
   }
 
-  protected async download(id: User['id']): Promise<void> {
-    // Get stored PIN hash
-    const pinHash = await this.taskService.storage?.get('pinHash');
+  protected async download(id: User['id'], pin: User['pin']): Promise<void> {
+    try {
+      // Validate PIN format
+      if (!pin || pin.length !== 4) {
+        this.snackbar.open('PIN must be exactly 4 digits', 'Close', {
+          duration: 5000,
+        });
+        return;
+      }
 
-    if (!pinHash) {
-      this.snackbar.open('No credentials found. Please create a user first.', 'Close', {
+      // Hash the PIN using SHA-256
+      const pinHash = await this.pinHashService.hashPin(pin);
+
+      console.log('Attempting to download tasks with User ID:', id);
+
+      // Download tasks (this also verifies the PIN)
+      await this.tasksSupabaseService.download(id, pinHash);
+
+      // Store credentials locally for future use
+      this.userService.pinHash.set(pinHash);
+
+      console.log('Login successful, tasks downloaded');
+    } catch (error) {
+      console.error('Login error:', error);
+      this.snackbar.open('Login failed. Please check your credentials.', 'Close', {
         duration: 5000,
       });
-      return;
     }
-
-    await this.tasksSupabaseService.download(id, pinHash);
   }
 
   protected async activateOfflineMode(): Promise<void> {
