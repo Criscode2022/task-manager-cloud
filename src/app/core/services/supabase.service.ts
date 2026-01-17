@@ -179,6 +179,29 @@ export class SupabaseService {
   }
 
   /**
+   * Get user by PIN hash (for PIN-only login)
+   */
+  async getUserByPinHash(pinHash: string) {
+    console.log('🔍 Looking up user by PIN hash...');
+    console.log('🔍 PIN hash (first 20 chars):', pinHash.substring(0, 20) + '...');
+
+    const { data, error } = await this.supabase
+      .from('users')
+      .select('*')
+      .eq('pin_hash', pinHash)
+      .single();
+
+    if (error) {
+      console.error('❌ Error fetching user by PIN hash:', error);
+      console.error('❌ This means no user exists with this PIN');
+      throw error;
+    }
+
+    console.log('✅ User found with ID:', data.id);
+    return data;
+  }
+
+  /**
    * Verify user PIN
    */
   async verifyUserPin(userId: number, pinHash: string): Promise<boolean> {

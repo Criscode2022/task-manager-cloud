@@ -134,56 +134,42 @@ export class TaskSupabaseService {
   }
 
   /**
-   * Download all tasks for a user from Supabase
+   * Download all tasks for a user from Supabase (PIN-only login)
    */
-  public async download(userId: number, pinHash: string): Promise<void> {
+  public async download(pinHash: string): Promise<void> {
     try {
-      // Verify user PIN
-      const isValidUser = await this.supabase.verifyUserPin(userId, pinHash);
+      console.log('🔐 Logging in with PIN...');
 
-      if (!isValidUser) {
-        // Check if user exists but credentials don't match
-        try {
-          await this.supabase.getUser(userId);
-          this.snackbar.open('Invalid credentials', 'Close', {
-            duration: 5000,
-          });
-        } catch {
-          // User doesn't exist
-          if (
-            (await this.taskService.storage?.get('userId')) &&
-            !this.taskService.userId()
-          ) {
-            // Remove the user ID if it was deleted from another device
-            await this.taskService.storage?.remove('userId');
-          }
+      // Get user by PIN hash
+      const user = await this.supabase.getUserByPinHash(pinHash);
 
-          if (this.router.url !== '/tabs/list') {
-            this.snackbar.open('User ID not found', 'Close', {
-              duration: 5000,
-            });
-          }
-        }
+      if (!user) {
+        this.snackbar.open('Invalid PIN. Please try again.', 'Close', {
+          duration: 5000,
+        });
         return;
       }
 
-      // Get all tasks for the user
-      const tasks = await this.supabase.getTasks(userId);
+      console.log('✅ User authenticated:', user.id);
 
-      // Store PIN hash
+      // Get all tasks for the user
+      const tasks = await this.supabase.getTasks(user.id);
+
+      // Store PIN hash and user ID locally (session data)
       await this.taskService.storage?.set('pinHash', pinHash);
+      await this.taskService.storage?.set('userId', user.id);
 
       // Update task service
-      this.taskService.userId.set(userId);
+      this.taskService.userId.set(user.id);
       this.tasks.set(tasks);
 
-      console.log('Tasks downloaded successfully:', tasks);
-      this.snackbar.open('Tasks downloaded successfully', '', {
+      console.log('✅ Tasks downloaded successfully:', tasks.length, 'tasks');
+      this.snackbar.open(`Logged in! ${tasks.length} tasks synced`, '', {
         duration: 850,
       });
     } catch (error) {
-      console.error('Download error:', error);
-      this.snackbar.open('Server error, try again later', 'Close', {
+      console.error('❌ Login error:', error);
+      this.snackbar.open('Invalid PIN or server error', 'Close', {
         duration: 5000,
       });
       throw error;

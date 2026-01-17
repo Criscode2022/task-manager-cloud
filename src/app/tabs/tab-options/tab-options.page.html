@@ -101,19 +101,19 @@
             </div>
           }
 
-          <!-- Download/Change User -->
+          <!-- Login/Switch Account -->
           <div class="card-item">
             <div class="card-content">
-              <h3 class="card-title">{{!userId() ? 'Download Tasks' : 'Change User ID'}}</h3>
-              <p class="card-description">{{!userId() ? 'Import tasks from cloud' : 'Switch to different account'}}</p>
+              <h3 class="card-title">{{!userId() ? 'Login with PIN' : 'Switch Account'}}</h3>
+              <p class="card-description">{{!userId() ? 'Sign in to sync your tasks' : 'Login with a different PIN'}}</p>
             </div>
             <ion-button
-              aria-label="download button"
+              aria-label="login button"
               color="primary"
               id="download-alert"
               class="action-button"
             >
-              <ion-icon slot="icon-only" name="cloud-download-outline"></ion-icon>
+              <ion-icon slot="icon-only" name="{{!userId() ? 'log-in-outline' : 'swap-horizontal-outline'}}"></ion-icon>
             </ion-button>
           </div>
         </ion-card>
@@ -180,8 +180,8 @@
 
   <ion-alert
     trigger="download-alert"
-    header="Import tasks"
-    [message]="!userId() ? alertMessages.DownloadAlert: '' "
+    header="Login with PIN"
+    message="Enter your 4-digit PIN to sync your tasks"
     [buttons]="alertButtonsDownload"
     [inputs]="alertInputs"
   ></ion-alert>

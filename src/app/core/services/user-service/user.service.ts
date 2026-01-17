@@ -74,41 +74,34 @@ export class UserService {
   }
 
   /**
-   * Get user data and download tasks from Supabase
+   * Get user data and download tasks from Supabase (auto-login on page load)
    */
   public async getUser(): Promise<void> {
-    console.log('Getting user data from Supabase...');
+    console.log('🔄 Checking for existing session...');
 
     try {
       const storedPinHash = await this.taskService.storage?.get('pinHash');
 
       if (!storedPinHash) {
-        console.log('No PIN hash found in storage.');
+        console.log('❌ No session found (PIN hash not in storage)');
         return;
       }
 
-      console.log('PIN hash found, fetching user...');
+      console.log('✅ Session found, logging in automatically...');
 
-      // Get stored user ID
-      const storedUserId = await this.taskService.storage?.get('userId');
-      if (!storedUserId) {
-        console.log('No user ID found in storage');
-        return;
-      }
-
-      // Download tasks from Supabase
-      await this.taskSupabaseService.download(storedUserId, storedPinHash);
+      // Download tasks using stored PIN hash (this validates the session)
+      await this.taskSupabaseService.download(storedPinHash);
 
       this.pinHash.set(storedPinHash);
-      console.log('User data fetched successfully');
+      console.log('✅ Auto-login successful');
     } catch (error) {
-      console.error('Error fetching user data:', error);
-      this.snackbar.open('Error fetching user data', 'Close', {
-        duration: 2000,
-      });
+      console.error('❌ Auto-login failed:', error);
 
-      // Clean up invalid stored data
+      // Clean up invalid session data
       await this.taskService.storage?.remove('pinHash');
+      await this.taskService.storage?.remove('userId');
+
+      console.log('🧹 Session cleared due to error');
     }
   }
 

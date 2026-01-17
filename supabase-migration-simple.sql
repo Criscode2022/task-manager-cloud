@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS public.users CASCADE;
 -- Create users table with pin_hash
 CREATE TABLE public.users (
     id BIGSERIAL PRIMARY KEY,
-    pin_hash TEXT NOT NULL,
+    pin_hash TEXT NOT NULL UNIQUE,  -- UNIQUE constraint added
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
@@ -24,6 +24,7 @@ CREATE TABLE public.tasks (
 );
 
 -- Create indexes
+CREATE INDEX idx_users_pin_hash ON public.users(pin_hash);  -- Index for fast PIN lookup
 CREATE INDEX idx_tasks_user_id ON public.tasks(user_id);
 CREATE INDEX idx_tasks_done ON public.tasks(done);
 CREATE INDEX idx_tasks_created_at ON public.tasks(created_at DESC);

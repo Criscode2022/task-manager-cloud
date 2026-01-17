@@ -40,10 +40,10 @@ export class TabOptionsPage {
       role: 'cancel',
     },
     {
-      text: 'Confirm',
+      text: 'Login',
       role: 'confirm',
       handler: (user: User) => {
-        this.download(user.id, user.pin);
+        this.download(user.pin);
       },
     },
   ];
@@ -99,15 +99,7 @@ export class TabOptionsPage {
 
   public alertInputs = [
     {
-      placeholder: 'User ID',
-      type: 'number',
-      name: 'id',
-      min: 1,
-      label: 'User ID',
-      required: true,
-    },
-    {
-      placeholder: '4-digit PIN',
+      placeholder: 'Enter your 4-digit PIN',
       type: 'number',
       name: 'pin',
       min: 1000,
@@ -121,7 +113,7 @@ export class TabOptionsPage {
     await this.userService.createUser();
   }
 
-  protected async download(id: User['id'], pin: User['pin']): Promise<void> {
+  protected async download(pin: User['pin']): Promise<void> {
     try {
       // Convert PIN to string (alert input returns number)
       const pinString = String(pin);
@@ -134,23 +126,23 @@ export class TabOptionsPage {
         return;
       }
 
+      console.log('🔐 Logging in with PIN...');
+      console.log('📌 PIN string:', pinString);
+
       // Hash the PIN using SHA-256
       const pinHash = await this.pinHashService.hashPin(pinString);
+      console.log('🔒 PIN hash (first 20 chars):', pinHash.substring(0, 20) + '...');
 
-      console.log('Attempting to download tasks with User ID:', id);
-      console.log('PIN string:', pinString);
-      console.log('PIN hash (first 20 chars):', pinHash.substring(0, 20) + '...');
+      // Download tasks (this looks up user by PIN and downloads tasks)
+      await this.tasksSupabaseService.download(pinHash);
 
-      // Download tasks (this also verifies the PIN)
-      await this.tasksSupabaseService.download(id, pinHash);
-
-      // Store credentials locally for future use
+      // Store PIN hash locally for session persistence
       this.userService.pinHash.set(pinHash);
 
-      console.log('Login successful, tasks downloaded');
+      console.log('✅ Login successful!');
     } catch (error) {
-      console.error('Login error:', error);
-      this.snackbar.open('Login failed. Please check your credentials.', 'Close', {
+      console.error('❌ Login error:', error);
+      this.snackbar.open('Invalid PIN. Please try again.', 'Close', {
         duration: 5000,
       });
     }
