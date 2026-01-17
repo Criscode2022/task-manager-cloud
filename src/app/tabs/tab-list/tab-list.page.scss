@@ -130,6 +130,11 @@
   overflow-y: auto;
   padding: 0.5rem;
 
+  // Expand max-width for tablet+ to accommodate two columns
+  @media (min-width: 768px) {
+    max-width: 1400px;
+  }
+
   // Custom scrollbar
   &::-webkit-scrollbar {
     width: 8px;
@@ -148,11 +153,26 @@
       background: var(--ion-color-primary-shade);
     }
   }
+
+  // Grid layout for tablets and larger
+  ion-reorder-group {
+    @media (min-width: 768px) {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      width: 100%;
+    }
+  }
 }
 
 // Task Item Styles
 .task-item-sliding {
   margin-bottom: 0.75rem;
+
+  // Remove bottom margin on tablet+ since grid gap handles spacing
+  @media (min-width: 768px) {
+    margin-bottom: 0;
+  }
 }
 
 .task-item {
@@ -298,6 +318,11 @@
   padding: 3rem 2rem;
   text-align: center;
   animation: fadeIn 0.5s ease-in;
+
+  // Span both columns on tablet+
+  @media (min-width: 768px) {
+    grid-column: 1 / -1;
+  }
 }
 
 .empty-icon {
