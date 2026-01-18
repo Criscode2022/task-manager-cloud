@@ -33,6 +33,7 @@ export class TabOptionsPage {
   protected isDark = this.themeService.isDark;
 
   protected userId = this.taskService.userId;
+  protected tasks = this.taskService.tasks;
   protected isLoading = this.loadingService.isLoading;
 
   public alertButtonsDownload = [
@@ -258,5 +259,39 @@ export class TabOptionsPage {
     });
 
     await alert.present();
+  }
+
+  /**
+   * Show delete all tasks confirmation alert
+   */
+  protected async showDeleteAllTasksAlert(): Promise<void> {
+    const alert = await this.alertController.create({
+      header: 'Confirmation',
+      message: !this.userId()
+        ? this.alertMessages.DeleteTasksAlert
+        : this.alertMessages.DeleteTasksAlertOnline,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        },
+        {
+          text: 'Confirm',
+          role: 'confirm',
+          handler: () => {
+            this.deleteAllTasks();
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Delete all tasks
+   */
+  protected deleteAllTasks(): void {
+    this.taskService.tasks.set([]);
   }
 }

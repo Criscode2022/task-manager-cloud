@@ -109,27 +109,6 @@ export class TabListPage extends TaskForm {
     }
   }
 
-  protected alertButtons = [
-    {
-      text: 'Cancel',
-      role: 'cancel',
-    },
-    {
-      text: 'Confirm',
-      role: 'confirm',
-      handler: () => {
-        this.deleteAllTasks();
-      },
-    },
-  ];
-
-  protected alertButtonsOnline = [
-    {
-      text: 'Cancel',
-      role: 'cancel',
-    },
-  ];
-
   protected alertEditButtons = [
     {
       text: 'Cancel',
@@ -325,10 +304,6 @@ export class TabListPage extends TaskForm {
 
   protected deleteTask(taskId: number): void {
     this.tasks.update((tasks) => tasks.filter((task) => task.id !== taskId));
-  }
-
-  protected deleteAllTasks(): void {
-    this.tasks.set([]);
   }
 
   protected isTabletOrDesktop(): boolean {

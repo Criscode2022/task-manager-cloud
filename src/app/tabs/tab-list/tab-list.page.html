@@ -1,18 +1,7 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="toolbar-gradient lg:py-2">
-    <ion-button
-      [disabled]="!this.tasks().length"
-      slot="start"
-      class="ion-margin lg:text-xl toolbar-button delete-all-button"
-      id="delete-alert"
-      color="danger"
-      matTooltip="Delete all tasks"
-      matTooltipPosition="below"
-    >
-      <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-    </ion-button>
     <ion-title
-      class="lg:fixed lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 ion-text-center text-2xl lg:text-4xl font-extrabold tracking-tight"
+      class="ion-text-center text-2xl lg:text-4xl font-extrabold tracking-tight"
     >
       <span class="title-gradient">Task Manager</span>
     </ion-title>
@@ -252,13 +241,6 @@
 </ion-content>
 
 <!-- Alerts -->
-
-<ion-alert
-  trigger="delete-alert"
-  [header]="!this.userId() ? 'Confirmation' : ''"
-  [message]="!this.userId() ? alertMessages.DeleteTasksAlert : alertMessages.DeleteTasksAlertOnline"
-  [buttons]="!this.userId() ? alertButtons : alertButtonsOnline"
-></ion-alert>
 
 <ion-alert
   trigger="install-alert"

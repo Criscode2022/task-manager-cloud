@@ -119,22 +119,40 @@
         </ion-card>
       </div>
 
-      <!-- Account Management Section -->
-      @if (userId()) {
-        <div class="settings-section fade-in-subtle" style="animation-delay: 0.1s">
-          <div class="section-header">
-            <ion-icon name="person-outline" class="section-icon"></ion-icon>
-            <h2 class="section-title">Account</h2>
+      <!-- Danger Zone Section -->
+      <div class="settings-section fade-in-subtle" style="animation-delay: 0.1s">
+        <div class="section-header">
+          <ion-icon name="warning-outline" class="section-icon"></ion-icon>
+          <h2 class="section-title">Danger Zone</h2>
+        </div>
+
+        <ion-card class="settings-card danger-card">
+          <!-- Delete All Tasks -->
+          <div class="card-item">
+            <div class="card-content">
+              <h3 class="card-title text-danger">Delete All Tasks</h3>
+              <p class="card-description">Permanently remove all tasks from your list</p>
+            </div>
+            <ion-button
+              aria-label="delete all tasks button"
+              color="danger"
+              class="action-button"
+              [disabled]="!tasks().length"
+              (click)="showDeleteAllTasksAlert()"
+            >
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
           </div>
 
-          <ion-card class="settings-card danger-card">
+          @if (userId()) {
+            <!-- Delete Account -->
             <div class="card-item">
               <div class="card-content">
                 <h3 class="card-title text-danger">Delete Account</h3>
                 <p class="card-description">Permanently remove your user ID and cloud data</p>
               </div>
               <ion-button
-                aria-label="delete button"
+                aria-label="delete account button"
                 color="danger"
                 class="action-button"
                 (click)="showDeleteUserAlert()"
@@ -142,9 +160,9 @@
                 <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
               </ion-button>
             </div>
-          </ion-card>
-        </div>
-      }
+          }
+        </ion-card>
+      </div>
 
       <!-- Appearance Section -->
       <div class="settings-section fade-in-subtle" style="animation-delay: 0.15s">
