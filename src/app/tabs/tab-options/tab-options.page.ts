@@ -265,33 +265,113 @@ export class TabOptionsPage {
    * Show delete all tasks confirmation alert
    */
   protected async showDeleteAllTasksAlert(): Promise<void> {
+    // Different options for online vs offline mode
+    const buttons = !this.userId()
+      ? [
+          {
+            text: 'Cancel',
+            role: 'cancel',
+          },
+          {
+            text: 'Delete All',
+            role: 'destructive',
+            handler: () => {
+              this.deleteAllTasksLocal();
+            },
+          },
+        ]
+      : [
+          {
+            text: 'Cancel',
+            role: 'cancel',
+          },
+          {
+            text: 'Delete from Cloud Only',
+            role: 'destructive',
+            handler: () => {
+              this.deleteAllTasksCloudOnly();
+            },
+          },
+          {
+            text: 'Delete from Both',
+            role: 'destructive',
+            handler: () => {
+              this.deleteAllTasksBoth();
+            },
+          },
+        ];
+
     const alert = await this.alertController.create({
-      header: 'Confirmation',
+      header: 'Delete All Tasks',
       message: !this.userId()
         ? this.alertMessages.DeleteTasksAlert
-        : this.alertMessages.DeleteTasksAlertOnline,
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-        },
-        {
-          text: 'Confirm',
-          role: 'confirm',
-          handler: () => {
-            this.deleteAllTasks();
-          },
-        },
-      ],
+        : 'Choose where to delete your tasks from:',
+      buttons,
     });
 
     await alert.present();
   }
 
   /**
-   * Delete all tasks
+   * Delete all tasks locally only
    */
-  protected deleteAllTasks(): void {
+  protected deleteAllTasksLocal(): void {
     this.taskService.tasks.set([]);
+  }
+
+  /**
+   * Delete all tasks from cloud only (keep local, go offline)
+   */
+  protected async deleteAllTasksCloudOnly(): Promise<void> {
+    const userId = this.userId();
+    if (!userId) return;
+
+    const pinHash = this.userService.pinHash();
+    if (!pinHash) return;
+
+    // Delete all tasks from cloud
+    const tasks = this.taskService.tasks();
+    for (const task of tasks) {
+      if (task.user_id) {
+        await this.tasksSupabaseService.delete(task.id, userId, pinHash);
+      }
+    }
+
+    // Go offline mode (keeps local tasks)
+    await this.activateOfflineMode();
+
+    this.snackbar.open('Tasks deleted from cloud. Now in offline mode.', 'Close', {
+      duration: 3000,
+    });
+  }
+
+  /**
+   * Delete all tasks from both cloud and device
+   */
+  protected async deleteAllTasksBoth(): Promise<void> {
+    const userId = this.userId();
+    if (!userId) {
+      // If somehow offline, just delete local
+      this.deleteAllTasksLocal();
+      return;
+    }
+
+    const pinHash = this.userService.pinHash();
+    if (!pinHash) return;
+
+    // Delete all tasks from cloud
+    const tasks = this.taskService.tasks();
+    for (const task of tasks) {
+      if (task.user_id) {
+        await this.tasksSupabaseService.delete(task.id, userId, pinHash);
+      }
+    }
+
+    // Delete all local tasks
+    this.taskService.tasks.set([]);
+
+    this.snackbar.open('All tasks deleted from cloud and device.', 'Close', {
+      duration: 3000,
+    });
   }
 }
