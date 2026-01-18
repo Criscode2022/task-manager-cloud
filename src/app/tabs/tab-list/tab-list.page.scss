@@ -181,6 +181,7 @@
 // Task Item Styles
 .task-item-sliding {
   margin-bottom: 0.75rem;
+  height: 100%;
 
   // Remove bottom margin on tablet+ since grid gap handles spacing
   @media (min-width: 768px) {
@@ -194,6 +195,7 @@
   --padding-start: 1rem;
   --padding-end: 1rem;
   --min-height: 70px;
+  height: 100%;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--ion-border-color);
@@ -305,12 +307,22 @@
 }
 
 // Item Options
-.item-options-start ion-item-option {
-  --background: var(--ion-color-secondary);
+.item-options-start {
+  height: 100%;
+
+  ion-item-option {
+    --background: var(--ion-color-secondary);
+    height: 100%;
+  }
 }
 
-.item-options-end ion-item-option {
-  --background: var(--ion-color-danger);
+.item-options-end {
+  height: 100%;
+
+  ion-item-option {
+    --background: var(--ion-color-danger);
+    height: 100%;
+  }
 }
 
 // Empty State
