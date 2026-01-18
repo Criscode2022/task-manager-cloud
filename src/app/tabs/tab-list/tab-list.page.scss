@@ -305,30 +305,14 @@
 }
 
 // Item Options
-.item-options-start {
-  display: flex;
-  align-items: stretch;
-
-  ion-item-option {
-    --background: var(--ion-color-secondary);
-    min-height: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.item-options-start ion-item-option {
+  --background: var(--ion-color-secondary);
+  height: 70px;
 }
 
-.item-options-end {
-  display: flex;
-  align-items: stretch;
-
-  ion-item-option {
-    --background: var(--ion-color-danger);
-    min-height: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+.item-options-end ion-item-option {
+  --background: var(--ion-color-danger);
+  height: 70px;
 }
 
 // Empty State
