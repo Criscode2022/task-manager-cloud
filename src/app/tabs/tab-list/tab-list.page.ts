@@ -48,6 +48,7 @@ export class TabListPage extends TaskForm {
   protected hasNewTask = signal(false);
   protected isDisabled = signal(false);
   protected mustRotate = signal(false);
+  protected isFormVisible = signal(false);
 
   protected filter = this.taskService.filter;
   protected shouldShowInstall = this.taskService.shouldShowInstall;

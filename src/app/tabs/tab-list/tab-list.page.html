@@ -1,17 +1,26 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="toolbar-gradient lg:py-2">
-    <ion-button
-      [disabled]="!this.tasks().length"
-      slot="start"
-      class="ion-margin lg:text-xl toolbar-button"
-      id="delete-alert"
-      color="danger"
-      fill="clear"
-      matTooltip="Delete all tasks"
-      matTooltipPosition="below"
-    >
-      <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-    </ion-button>
+    <div slot="start" class="flex items-center gap-2 ion-margin">
+      <ion-button
+        [disabled]="!this.tasks().length"
+        class="lg:text-xl toolbar-button delete-all-button"
+        id="delete-alert"
+        color="danger"
+        matTooltip="Delete all tasks"
+        matTooltipPosition="below"
+      >
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+      <ion-button
+        class="lg:text-xl toolbar-button"
+        color="primary"
+        (click)="isFormVisible.set(!isFormVisible())"
+        [matTooltip]="isFormVisible() ? 'Hide form' : 'Show form'"
+        matTooltipPosition="below"
+      >
+        <ion-icon slot="icon-only" [name]="isFormVisible() ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+      </ion-button>
+    </div>
     <ion-title
       class="lg:fixed lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 ion-text-center text-2xl lg:text-4xl font-extrabold tracking-tight"
     >
@@ -32,6 +41,7 @@
 </ion-header>
 
 <ion-content [scrollY]="false" class="content-background">
+  @if (isFormVisible()) {
   <div class="form-container">
     <form
       [formGroup]="form"
@@ -101,6 +111,7 @@
       </ion-button>
     </form>
   </div>
+  }
 
   <div class="tasks-container">
     <ion-list class="task-list">

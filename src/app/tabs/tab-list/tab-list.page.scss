@@ -20,6 +20,15 @@
   }
 }
 
+.delete-all-button {
+  --background: rgba(var(--ion-color-danger-rgb), 0.15);
+  --color: var(--ion-color-danger);
+
+  &:hover:not([disabled]) {
+    --background: rgba(var(--ion-color-danger-rgb), 0.25);
+  }
+}
+
 .filter-button {
   --border-radius: 20px;
   --background: rgba(255, 255, 255, 0.2);
