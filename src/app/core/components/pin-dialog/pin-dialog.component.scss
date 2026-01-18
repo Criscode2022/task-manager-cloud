@@ -43,6 +43,32 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+  padding-right: 0.5rem;
+
+  // Custom scrollbar
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--ion-border-color-light);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--ion-color-primary);
+    border-radius: 3px;
+
+    &:hover {
+      background: var(--ion-color-primary-shade);
+    }
+  }
+
+  @media (max-height: 600px) {
+    max-height: calc(100vh - 250px);
+  }
 }
 
 // Warning Banner
