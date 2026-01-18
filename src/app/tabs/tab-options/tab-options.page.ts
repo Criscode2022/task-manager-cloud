@@ -10,6 +10,7 @@ import { UserService } from 'src/app/core/services/user-service/user.service';
 import { TaskSupabaseService } from '../../core/services/task-supabase.service';
 import { TaskService } from '../../core/services/task.service';
 import { PinHashService } from '../../core/services/pin-hash.service';
+import { SupabaseService } from '../../core/services/supabase.service';
 import { AlertMessages } from '../../core/types/alert-messages';
 import { User } from './types/user';
 
@@ -26,6 +27,7 @@ export class TabOptionsPage {
   private readonly snackbar = inject(MatSnackBar);
   private readonly pinHashService = inject(PinHashService);
   private readonly alertController = inject(AlertController);
+  private readonly supabase = inject(SupabaseService);
   protected readonly themeService = inject(ThemeService);
   protected readonly userService = inject(UserService);
 
@@ -329,20 +331,29 @@ export class TabOptionsPage {
     const pinHash = this.userService.pinHash();
     if (!pinHash) return;
 
-    // Delete all tasks from cloud
-    const tasks = this.taskService.tasks();
-    for (const task of tasks) {
-      if (task.user_id) {
-        await this.tasksSupabaseService.delete(task.id, userId, pinHash);
+    try {
+      // Verify user PIN first
+      const isValidUser = await this.supabase.verifyUserPin(userId, pinHash);
+      if (!isValidUser) {
+        this.snackbar.open('Invalid credentials', 'Close', { duration: 5000 });
+        return;
       }
+
+      // Delete all tasks from cloud
+      await this.supabase.deleteAllTasks(userId);
+
+      // Go offline mode (keeps local tasks)
+      await this.activateOfflineMode();
+
+      this.snackbar.open('Tasks deleted from cloud. Now in offline mode.', 'Close', {
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Error deleting tasks from cloud:', error);
+      this.snackbar.open('Error deleting tasks from cloud', 'Close', {
+        duration: 5000,
+      });
     }
-
-    // Go offline mode (keeps local tasks)
-    await this.activateOfflineMode();
-
-    this.snackbar.open('Tasks deleted from cloud. Now in offline mode.', 'Close', {
-      duration: 3000,
-    });
   }
 
   /**
@@ -359,19 +370,28 @@ export class TabOptionsPage {
     const pinHash = this.userService.pinHash();
     if (!pinHash) return;
 
-    // Delete all tasks from cloud
-    const tasks = this.taskService.tasks();
-    for (const task of tasks) {
-      if (task.user_id) {
-        await this.tasksSupabaseService.delete(task.id, userId, pinHash);
+    try {
+      // Verify user PIN first
+      const isValidUser = await this.supabase.verifyUserPin(userId, pinHash);
+      if (!isValidUser) {
+        this.snackbar.open('Invalid credentials', 'Close', { duration: 5000 });
+        return;
       }
+
+      // Delete all tasks from cloud
+      await this.supabase.deleteAllTasks(userId);
+
+      // Delete all local tasks
+      this.taskService.tasks.set([]);
+
+      this.snackbar.open('All tasks deleted from cloud and device.', 'Close', {
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Error deleting tasks:', error);
+      this.snackbar.open('Error deleting tasks', 'Close', {
+        duration: 5000,
+      });
     }
-
-    // Delete all local tasks
-    this.taskService.tasks.set([]);
-
-    this.snackbar.open('All tasks deleted from cloud and device.', 'Close', {
-      duration: 3000,
-    });
   }
 }
