@@ -56,8 +56,10 @@ export class UserService {
         this.dialog.open(PinDialogComponent, {
           width: '90vw',
           maxWidth: '500px',
+          maxHeight: '90vh',
           data: { pin },
           disableClose: true,
+          autoFocus: false,
         });
 
         console.log('User ID set:', this.taskService.userId());
