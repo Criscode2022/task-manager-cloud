@@ -172,8 +172,8 @@ export class TabOptionsPage {
         {
           name: 'pin',
           type: 'number',
-          placeholder: 'Enter your 4-digit PIN',
-          min: 1000,
+          placeholder: 'PIN',
+          min: 0,
           max: 9999,
           attributes: {
             inputmode: 'numeric',
