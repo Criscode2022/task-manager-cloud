@@ -174,7 +174,7 @@
   }
 
   // Grid layout for tablets and larger
-  ion-reorder-group {
+  .task-grid {
     @media (min-width: 768px) {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -297,15 +297,6 @@
 
   ion-icon {
     font-size: 1.25rem;
-  }
-}
-
-.reorder-icon {
-  opacity: 0.5;
-  transition: opacity 0.2s ease;
-
-  &:hover {
-    opacity: 1;
   }
 }
 
