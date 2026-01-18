@@ -1,7 +1,7 @@
 export enum StatusEnum {
   All = 'All',
   Done = 'Done',
-  Undone = 'Undone',
+  Undone = 'Pending',
 }
 
 export const StatusEnumArray = Object.values(StatusEnum);

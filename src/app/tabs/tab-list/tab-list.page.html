@@ -1,25 +1,24 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar class="toolbar-gradient lg:py-2">
-    <ion-button slot="start" class="hidden md:block invisible ion-margin px-4">
-      <ion-icon name="filter-outline" class="mr-1"></ion-icon>
+  <ion-toolbar class="toolbar-gradient">
+    <button slot="start" class="!hidden md:!block !invisible px-4">
+      <mat-icon class="mr-1">filter_list</mat-icon>
       Filter
-    </ion-button>
-    <ion-title
-      class="ion-text-center text-lg md:text-xl lg:text-4xl font-extrabold tracking-tight"
+    </button>
+    <h1
+      class="ion-text-center text-lg md:text-xl lg:text-4xl md:ml-16 xl:ml-24 font-extrabold tracking-tight"
     >
       <span>Task Manager</span>
-    </ion-title>
-    <ion-button
+    </h1>
+    <button
       slot="end"
-      class="filter-button lg:text-xl ion-margin px-4"
-      color="light"
+      class="filter-button lg:text-xl ion-margin px-4 py-2 bg-white text-black rounded-full shadow-md flex justify-center items-center hover:bg-gray-200 focus:bg-gray-300"
       (click)="taskService.changeFilter()"
       matTooltip="Filter tasks"
       matTooltipPosition="below"
     >
-      <ion-icon slot="start" name="filter-outline" class="mr-1"></ion-icon>
+      <mat-icon class="mr-1">filter_list</mat-icon>
       {{filter()}}
-    </ion-button>
+    </button>
   </ion-toolbar>
 </ion-header>
 
