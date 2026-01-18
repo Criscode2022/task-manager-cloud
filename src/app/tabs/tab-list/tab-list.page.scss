@@ -49,7 +49,7 @@
   justify-content: center;
   padding: 1.5rem 1rem;
   width: 100%;
-  animation: fadeInSubtle 0.4s ease-out;
+  animation: fadeInSubtle 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   animation-fill-mode: both;
 }
 
@@ -138,7 +138,7 @@
   justify-content: center;
   padding: 0 1rem 5rem;
   width: 100%;
-  animation: fadeInSubtle 0.4s ease-out 0.1s;
+  animation: fadeInSubtle 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.15s;
   animation-fill-mode: both;
 }
 
@@ -336,7 +336,7 @@
   justify-content: center;
   padding: 3rem 2rem;
   text-align: center;
-  animation: fadeInSubtle 0.5s ease-out;
+  animation: fadeInSubtle 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   animation-fill-mode: both;
 
   // Span both columns on tablet+
@@ -458,7 +458,7 @@
 @keyframes fadeInSubtle {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -469,7 +469,7 @@
 @keyframes slideInUp {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -480,7 +480,7 @@
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.98);
   }
   to {
     opacity: 1;
@@ -489,17 +489,17 @@
 }
 
 .fade-in-subtle {
-  animation: fadeInSubtle 0.4s ease-out;
+  animation: fadeInSubtle 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   animation-fill-mode: both;
 }
 
 .animate-slide-in-up {
-  animation: slideInUp 0.5s ease-out;
+  animation: slideInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   animation-fill-mode: both;
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.3s ease-out;
+  animation: scaleIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   animation-fill-mode: both;
 }
 
