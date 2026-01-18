@@ -49,6 +49,8 @@
   justify-content: center;
   padding: 1.5rem 1rem;
   width: 100%;
+  animation: fadeInSubtle 0.4s ease-out;
+  animation-fill-mode: both;
 }
 
 .task-form {
@@ -136,6 +138,8 @@
   justify-content: center;
   padding: 0 1rem 5rem;
   width: 100%;
+  animation: fadeInSubtle 0.4s ease-out 0.1s;
+  animation-fill-mode: both;
 }
 
 .task-list {
@@ -332,7 +336,8 @@
   justify-content: center;
   padding: 3rem 2rem;
   text-align: center;
-  animation: fadeIn 0.5s ease-in;
+  animation: fadeInSubtle 0.5s ease-out;
+  animation-fill-mode: both;
 
   // Span both columns on tablet+
   @media (min-width: 768px) {
@@ -450,15 +455,52 @@
 }
 
 // Animations
-@keyframes fadeIn {
+@keyframes fadeInSubtle {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fade-in-subtle {
+  animation: fadeInSubtle 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out;
+  animation-fill-mode: both;
 }
 
 @keyframes bounce {
