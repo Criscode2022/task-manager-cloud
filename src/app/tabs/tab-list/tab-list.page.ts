@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AlertController, IonicModule } from '@ionic/angular';
-import { filter, take } from 'rxjs';
+import { skip, take } from 'rxjs';
 import { UserService } from 'src/app/core/services/user-service/user.service';
 import { TaskSupabaseService } from '../../core/services/task-supabase.service';
 import { TaskService } from '../../core/services/task.service';
@@ -142,9 +142,9 @@ export class TabListPage extends TaskForm {
     super();
     this.taskService.storageInitialized
       .pipe(
-        takeUntilDestroyed(),
-        filter(() => !!this.taskService.storage),
-        take(1)
+        skip(1),
+        take(1),
+        takeUntilDestroyed()
       )
       .subscribe(async () => {
         try {
