@@ -349,7 +349,7 @@ export class TabOptionsPage {
       await this.activateOfflineMode();
 
       this.snackbar.open(
-        'Tasks deleted from cloud, now you are in offline mode and can log in again later.',
+        'Tasks deleted from cloud, now you are in offline mode',
         'Close',
         {
           duration: 3000,
