@@ -27,6 +27,11 @@
   font-weight: 600;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+  min-width: 120px;
+
+  @media (min-width: 1024px) {
+    min-width: 140px;
+  }
 
   &:hover {
     --background: rgba(255, 255, 255, 0.3);
