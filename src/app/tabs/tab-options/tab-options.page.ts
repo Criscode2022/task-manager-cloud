@@ -3,14 +3,14 @@ import { Component, inject } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
-import { IonicModule, AlertController } from '@ionic/angular';
+import { AlertController, IonicModule } from '@ionic/angular';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { ThemeService } from 'src/app/core/services/theme.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
-import { TaskSupabaseService } from '../../core/services/task-supabase.service';
-import { TaskService } from '../../core/services/task.service';
 import { PinHashService } from '../../core/services/pin-hash.service';
 import { SupabaseService } from '../../core/services/supabase.service';
+import { TaskSupabaseService } from '../../core/services/task-supabase.service';
+import { TaskService } from '../../core/services/task.service';
 import { AlertMessages } from '../../core/types/alert-messages';
 import { User } from './types/user';
 
@@ -135,7 +135,10 @@ export class TabOptionsPage {
 
       // Hash the PIN using SHA-256
       const pinHash = await this.pinHashService.hashPin(pinString);
-      console.log('🔒 PIN hash (first 20 chars):', pinHash.substring(0, 20) + '...');
+      console.log(
+        '🔒 PIN hash (first 20 chars):',
+        pinHash.substring(0, 20) + '...',
+      );
 
       // Download tasks (this looks up user by PIN and downloads tasks)
       await this.tasksSupabaseService.download(pinHash);
@@ -295,7 +298,7 @@ export class TabOptionsPage {
             },
           },
           {
-            text: 'Delete from Both',
+            text: 'Delete from Both Cloud and Device',
             role: 'destructive',
             handler: () => {
               this.deleteAllTasksBoth();
@@ -345,9 +348,13 @@ export class TabOptionsPage {
       // Go offline mode (keeps local tasks)
       await this.activateOfflineMode();
 
-      this.snackbar.open('Tasks deleted from cloud. Now in offline mode.', 'Close', {
-        duration: 3000,
-      });
+      this.snackbar.open(
+        'Tasks deleted from cloud, now you are in offline mode and can log in again later.',
+        'Close',
+        {
+          duration: 3000,
+        },
+      );
     } catch (error) {
       console.error('Error deleting tasks from cloud:', error);
       this.snackbar.open('Error deleting tasks from cloud', 'Close', {

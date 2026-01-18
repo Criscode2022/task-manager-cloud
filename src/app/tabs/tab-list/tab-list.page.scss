@@ -55,7 +55,7 @@
   background: var(--ion-surface-color);
   border-radius: var(--border-radius-xl);
   box-shadow: var(--shadow-lg);
-  padding: 2rem;
+  padding: 1rem 1.5rem 0 1.5rem;
   width: 100%;
   max-width: 600px;
 
@@ -101,11 +101,6 @@
   }
 }
 
-.form-field {
-  margin-bottom: 1rem;
-  width: 100%;
-}
-
 .clear-button {
   color: var(--ion-text-color-secondary);
   transition: all 0.2s ease;
@@ -117,12 +112,13 @@
 }
 
 .submit-button {
-  margin-top: 1rem;
   --border-radius: var(--border-radius-md);
   --box-shadow: var(--shadow-md);
   font-weight: 600;
   text-transform: none;
   height: 48px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 
   &:hover:not([disabled]) {
     --box-shadow: var(--shadow-lg);
@@ -374,13 +370,17 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, var(--ion-color-secondary) 0%, var(--ion-color-secondary-shade) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--ion-color-secondary) 0%,
+    var(--ion-color-secondary-shade) 100%
+  );
   color: white;
   border: none;
   border-radius: var(--border-radius-lg);
   font-size: 0.9375rem;
   font-weight: 600;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   cursor: pointer;
   box-shadow: var(--shadow-md);
   transition: all 0.3s ease;
@@ -462,7 +462,8 @@
 }
 
 @keyframes bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -489,4 +490,3 @@
     }
   }
 }
-

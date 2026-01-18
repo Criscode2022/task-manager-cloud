@@ -30,7 +30,11 @@
       class="task-form animate-slide-in-up"
       (ngSubmit)="addTask()"
     >
-      <div class="form-header" (click)="isFormVisible.set(!isFormVisible())" style="cursor: pointer;">
+      <div
+        class="form-header"
+        (click)="isFormVisible.set(!isFormVisible())"
+        style="cursor: pointer"
+      >
         <div class="flex items-center gap-3">
           <ion-icon name="add-circle-outline" class="header-icon"></ion-icon>
           <h2 class="form-title">Create New Task</h2>
@@ -41,7 +45,10 @@
           class="toggle-button"
           [matTooltip]="isFormVisible() ? 'Collapse form' : 'Expand form'"
         >
-          <ion-icon slot="icon-only" [name]="isFormVisible() ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
+          <ion-icon
+            slot="icon-only"
+            [name]="isFormVisible() ? 'chevron-up-outline' : 'chevron-down-outline'"
+          ></ion-icon>
         </ion-button>
       </div>
 
@@ -78,7 +85,9 @@
           formControlName="description"
           maxlength="30"
         />
-        <mat-hint align="end">{{this.description?.value?.length || 0}}/30</mat-hint>
+        <mat-hint align="end"
+          >{{this.description?.value?.length || 0}}/30</mat-hint
+        >
         <button
           *ngIf="this.description?.value?.length"
           mat-icon-button
@@ -114,7 +123,11 @@
       >
         @for (task of filteredTasks(); track task.id; let index = $index) {
 
-        <ion-item-sliding class="task-item-sliding animate-scale-in" [style.animation-delay.ms]="index * 50" [disabled]="isTabletOrDesktop()">
+        <ion-item-sliding
+          class="task-item-sliding animate-scale-in"
+          [style.animation-delay.ms]="index * 50"
+          [disabled]="isTabletOrDesktop()"
+        >
           <ion-item class="task-item" [class.task-completed]="task.done">
             <div class="task-checkbox-wrapper">
               <mat-checkbox
@@ -134,7 +147,7 @@
               <ion-label class="task-label" [class.done]="task.done">
                 <div class="task-title">{{ task?.title }}</div>
                 @if(task.description){
-                  <div class="task-description">{{ task?.description }}</div>
+                <div class="task-description">{{ task?.description }}</div>
                 }
               </ion-label>
             </div>
@@ -179,22 +192,31 @@
 
         <div class="empty-state">
           @if (alternativeFilterInfo()) {
-            <!-- Smart filter suggestion -->
-            <ion-icon name="funnel-outline" class="empty-icon empty-icon-subtle"></ion-icon>
-            <h3 class="empty-title">No tasks here</h3>
-            <p class="empty-text">But you have {{ alternativeFilterInfo()!.count }} {{ alternativeFilterInfo()!.label }}</p>
-            <button
-              class="filter-suggestion-button"
-              (click)="switchToAlternativeFilter()"
-            >
-              <ion-icon name="arrow-forward-outline"></ion-icon>
-              View {{ alternativeFilterInfo()!.label }}
-            </button>
+          <!-- Smart filter suggestion -->
+          <ion-icon
+            name="funnel-outline"
+            class="empty-icon empty-icon-subtle"
+          ></ion-icon>
+          <h3 class="empty-title">No tasks here</h3>
+          <p class="empty-text">
+            But you have {{ alternativeFilterInfo()!.count }} {{
+            alternativeFilterInfo()!.label }}
+          </p>
+          <button
+            class="filter-suggestion-button"
+            (click)="switchToAlternativeFilter()"
+          >
+            <ion-icon name="arrow-forward-outline"></ion-icon>
+            View {{ alternativeFilterInfo()!.label }}
+          </button>
           } @else {
-            <!-- Default empty state -->
-            <ion-icon name="checkmark-done-circle-outline" class="empty-icon"></ion-icon>
-            <h3 class="empty-title">No Tasks Yet</h3>
-            <p class="empty-text">Create your first task to get started!</p>
+          <!-- Default empty state -->
+          <ion-icon
+            name="checkmark-done-circle-outline"
+            class="empty-icon"
+          ></ion-icon>
+          <h3 class="empty-title">No Tasks Yet</h3>
+          <p class="empty-text">Create your first task to get started!</p>
           }
         </div>
 
@@ -209,9 +231,7 @@
       <ion-icon slot="icon-only" name="chevron-down-outline"></ion-icon>
     </ion-button>
   </div>
-  }
-
-  @if(this.userId()) {
+  } @if(this.userId()) {
   <ion-button
     shape="round"
     class="fab-button fab-refresh"
@@ -228,9 +248,7 @@
       name="sync"
     ></ion-icon>
   </ion-button>
-  }
-
-  @if (shouldShowInstall()) {
+  } @if (shouldShowInstall()) {
   <ion-button
     shape="round"
     class="fab-button fab-install"
