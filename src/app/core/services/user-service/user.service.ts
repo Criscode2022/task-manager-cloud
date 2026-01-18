@@ -1,193 +1,135 @@
-import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { catchError, retry, take, throwError } from 'rxjs';
-import { Task } from 'src/app/tabs/tab-list/types/task';
-import { environment } from 'src/environments/environment.prod';
 import { PinDialogComponent } from '../../components/pin-dialog/pin-dialog.component';
 import { TaskService } from '../task.service';
-
-interface UserResponse {
-  userId: number;
-  pin: string;
-  encryptedPin: string;
-  iv: string;
-  authTag: string;
-  tasks: Task[];
-}
-
-interface EncryptedData {
-  encryptedPin: string;
-  iv: string;
-  authTag: string;
-}
+import { TaskSupabaseService } from '../task-supabase.service';
+import { PinHashService } from '../pin-hash.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
-  private readonly http = inject(HttpClient);
   private readonly taskService = inject(TaskService);
+  private readonly taskSupabaseService = inject(TaskSupabaseService);
+  private readonly pinHashService = inject(PinHashService);
   private readonly dialog = inject(MatDialog);
   private readonly snackbar = inject(MatSnackBar);
 
   public userId = signal(0);
-  public enctyptedData = signal<EncryptedData | null>(null);
+  public pinHash = signal<string | null>(null);
 
+  /**
+   * Create a new user with a securely hashed PIN
+   */
   public async createUser(): Promise<void> {
-    console.log('Creating new user...');
+    console.log('Creating new user with Supabase...');
 
-    const tasks = await this.taskService.getTasks();
+    try {
+      const tasks = await this.taskService.getTasks();
 
-    this.http
-      .post<UserResponse>(`${environment.baseUrl}/create-user`, { tasks })
-      .pipe(
-        retry(2),
-        take(1),
-        catchError((error) => {
-          this.snackbar.open('Error creating user', 'Close', {
-            duration: 2000,
-          });
-          return throwError(() => error);
-        })
-      )
-      .subscribe(async (response: UserResponse) => {
-        console.log('response', response);
+      // Generate a random 4-digit PIN
+      const pin = this.pinHashService.generatePin();
 
-        if (response && response.userId) {
-          console.log('User created successfully', response);
+      // Hash the PIN securely using SHA-256
+      const hashedPin = await this.pinHashService.hashPin(pin);
 
-          const userId = response?.userId;
+      // Create user in Supabase
+      const userId = await this.taskSupabaseService.createUser(hashedPin);
 
-          console.log('created userId', userId);
-          this.taskService.userId?.set(userId);
-          this.userId.set(userId);
+      if (userId) {
+        console.log('User created successfully', userId);
 
-          console.log(response);
-
-          const enctryptedData = {
-            encryptedPin: response.encryptedPin,
-            iv: response.iv,
-            authTag: response.authTag,
-          };
-
-          this.taskService.storage?.set('pin', enctryptedData?.encryptedPin);
-          this.taskService.storage?.set('iv', enctryptedData?.iv);
-          this.taskService.storage?.set('authTag', enctryptedData?.authTag);
-
-          this.enctyptedData.set(enctryptedData);
-
-          this.dialog.open(PinDialogComponent, {
-            width: '300px',
-            data: { pin: response?.pin },
-            disableClose: false,
-          });
-
-          console.log('set userId', this.taskService.userId());
-        } else {
-          this.snackbar.open('Failed to create user', 'Close', {
-            duration: 2000,
-          });
-        }
-      });
-  }
-
-  public async getUser(): Promise<UserResponse | void> {
-    console.log('Getting user data...');
-
-    const authTag = await this.taskService.storage?.get('authTag');
-    const iv = await this.taskService.storage?.get('iv');
-    const encryptedPin = await this.taskService?.storage?.get('pin');
-
-    this.enctyptedData.set({ encryptedPin, iv, authTag });
-
-    console.log('encryptedPin,', encryptedPin);
-    console.log('iv,', iv);
-    console.log('authTag,', authTag);
-
-    if (!authTag || !iv || !encryptedPin) {
-      console.log('No user data found.');
-      return;
-    }
-
-    console.log('data found, fetching user...', { authTag, iv, encryptedPin });
-
-    this.http
-      .post<UserResponse>(`${environment.baseUrl}/get-user`, {
-        authTag,
-        iv,
-        encryptedPin: encryptedPin,
-      })
-      .pipe(
-        retry(2),
-        take(1),
-        catchError((error) => {
-          this.snackbar.open('Error fetching user data', 'Close', {
-            duration: 2000,
-          });
-
-          this.taskService.storage?.remove('authTag');
-          this.taskService.storage?.remove('iv');
-          this.taskService.storage?.remove('pin');
-
-          return throwError(() => error);
-        })
-      )
-      .subscribe((response: UserResponse) => {
-        console.log('response', response);
-
-        console.log('User data fetched successfully', response);
-
-        const userId = response?.userId;
-
-        const tasks = response?.tasks;
-
-        if (!tasks.length) {
-          throw new Error('No tasks found for user');
-        }
-
-        this.taskService.tasks.set(tasks);
-
-        console.log('fetched userId', userId);
         this.taskService.userId?.set(userId);
         this.userId.set(userId);
 
-        console.log('set userId', this.taskService.userId());
+        // Store PIN hash locally
+        await this.taskService.storage?.set('pinHash', hashedPin);
+        this.pinHash.set(hashedPin);
+
+        // Upload existing tasks if any
+        if (tasks.length > 0) {
+          await this.taskSupabaseService.bulkUpload(tasks, userId);
+        }
+
+        // Show PIN to user (they need to save this!)
+        this.dialog.open(PinDialogComponent, {
+          width: '90vw',
+          maxWidth: '500px',
+          data: { pin },
+          disableClose: true,
+        });
+
+        console.log('User ID set:', this.taskService.userId());
+      } else {
+        this.snackbar.open('Failed to create user', 'Close', {
+          duration: 2000,
+        });
+      }
+    } catch (error) {
+      console.error('Error creating user:', error);
+      this.snackbar.open('Error creating user', 'Close', {
+        duration: 2000,
       });
+    }
   }
 
-  public delete(
-    userId: number,
-    iv: string,
-    authTag: string,
-    encryptedPin: string
-  ): void {
-    this.http
-      .delete(`${environment.baseUrl}/user`, {
-        body: {
-          encryptedPin,
-          iv,
-          authTag,
-          userId,
-        },
-      })
-      .pipe(
-        retry(2),
-        catchError((error) => {
-          throw new Error('Error deleting user Id: ' + error.message);
-        })
-      )
-      .subscribe(async () => {
-        await this.taskService.storage?.remove('authTag');
-        await this.taskService.storage?.remove('iv');
-        await this.taskService.storage?.remove('pin');
+  /**
+   * Get user data and download tasks from Supabase (auto-login on page load)
+   */
+  public async getUser(): Promise<void> {
+    console.log('🔄 Checking for existing session...');
 
-        this.taskService.userId.set(0);
+    try {
+      const storedPinHash = await this.taskService.storage?.get('pinHash');
 
-        this.snackbar.open('User deleted successfully', 'Close', {
-          duration: 5000,
-        });
+      if (!storedPinHash) {
+        console.log('❌ No session found (PIN hash not in storage)');
+        return;
+      }
+
+      console.log('✅ Session found, logging in automatically...');
+
+      // Download tasks using stored PIN hash (this validates the session)
+      await this.taskSupabaseService.download(storedPinHash);
+
+      this.pinHash.set(storedPinHash);
+      console.log('✅ Auto-login successful');
+    } catch (error) {
+      console.error('❌ Auto-login failed:', error);
+
+      // Clean up invalid session data
+      await this.taskService.storage?.remove('pinHash');
+      await this.taskService.storage?.remove('userId');
+
+      console.log('🧹 Session cleared due to error');
+    }
+  }
+
+  /**
+   * Delete user account and all associated data
+   */
+  public async delete(userId: number): Promise<void> {
+    try {
+      await this.taskSupabaseService.deleteUser(userId);
+
+      // Clean up all stored data
+      await this.taskService.storage?.remove('pinHash');
+      await this.taskService.storage?.remove('userId');
+
+      this.taskService.userId.set(0);
+      this.userId.set(0);
+      this.pinHash.set(null);
+
+      this.snackbar.open('User deleted successfully', 'Close', {
+        duration: 5000,
       });
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      this.snackbar.open('Error deleting user', 'Close', {
+        duration: 5000,
+      });
+      throw new Error('Error deleting user Id: ' + error);
+    }
   }
 }

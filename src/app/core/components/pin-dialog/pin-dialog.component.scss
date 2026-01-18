@@ -1,0 +1,262 @@
+.pin-dialog-container {
+  background: var(--ion-surface-color);
+  border-radius: var(--border-radius-xl);
+  padding: 2rem;
+  max-width: 500px;
+  width: 90vw;
+  box-shadow: var(--shadow-xl);
+  animation: slideInUp 0.3s ease-out;
+}
+
+// Dialog Header
+.dialog-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.header-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+
+  &.warning-icon {
+    color: var(--ion-color-warning);
+  }
+}
+
+.dialog-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ion-text-color);
+  line-height: 1.3;
+
+  @media (min-width: 768px) {
+    font-size: 1.75rem;
+  }
+}
+
+// Dialog Content
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+// Warning Banner
+.warning-banner {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+  border-left: 4px solid var(--ion-color-warning);
+  border-radius: var(--border-radius-md);
+}
+
+.banner-icon {
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  color: var(--ion-color-warning);
+  margin-top: 0.125rem;
+}
+
+.warning-text {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--ion-text-color);
+  line-height: 1.5;
+}
+
+// PIN Container
+.pin-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+  border: 2px solid var(--ion-color-primary);
+  border-radius: var(--border-radius-lg);
+}
+
+.pin-label {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ion-text-color-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pin-display-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pin-display {
+  flex: 1;
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--ion-color-primary);
+  letter-spacing: 0.1em;
+  word-break: break-all;
+  line-height: 1.4;
+
+  @media (min-width: 768px) {
+    font-size: 2rem;
+  }
+}
+
+.copy-button {
+  flex-shrink: 0;
+  --color: var(--ion-color-primary);
+  --padding-start: 0.5rem;
+  --padding-end: 0.5rem;
+  height: 40px;
+  min-width: 40px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  ion-icon {
+    font-size: 1.5rem;
+  }
+}
+
+.copy-success {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ion-color-success);
+  animation: fadeIn 0.3s ease-in;
+}
+
+// Info Box
+.info-box {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(59, 130, 246, 0.1);
+  border-left: 4px solid var(--ion-color-info);
+  border-radius: var(--border-radius-md);
+}
+
+.info-icon {
+  flex-shrink: 0;
+  font-size: 1.5rem;
+  color: var(--ion-color-info);
+  margin-top: 0.125rem;
+}
+
+.info-text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ion-text-color-secondary);
+  line-height: 1.5;
+}
+
+// Confirmation Checkbox
+.confirmation-checkbox {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(16, 185, 129, 0.05);
+  border-radius: var(--border-radius-md);
+  border: 2px dashed var(--ion-color-primary-tint);
+
+  .custom-checkbox {
+    --size: 24px;
+    --checkbox-background-checked: var(--ion-color-primary);
+    --border-color: var(--ion-color-primary);
+    --border-width: 2px;
+    margin: 0;
+  }
+
+  .checkbox-label {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--ion-text-color);
+    margin-left: 0.75rem;
+    line-height: 1.4;
+  }
+}
+
+// Dialog Actions
+.dialog-actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.close-button {
+  --border-radius: var(--border-radius-md);
+  --box-shadow: var(--shadow-md);
+  font-weight: 600;
+  text-transform: none;
+  height: 48px;
+  font-size: 1rem;
+
+  &:hover:not([disabled]) {
+    --box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+.action-hint {
+  margin: 0;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--ion-text-color-tertiary);
+  font-style: italic;
+}
+
+// Animations
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Dark Theme Adjustments
+.dark-theme {
+  .pin-dialog-container {
+    background: var(--ion-card-background);
+  }
+
+  .warning-banner {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(251, 191, 36, 0.08) 100%);
+  }
+
+  .pin-container {
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.15) 0%, rgba(52, 211, 153, 0.08) 100%);
+  }
+
+  .info-box {
+    background: rgba(96, 165, 250, 0.15);
+  }
+}

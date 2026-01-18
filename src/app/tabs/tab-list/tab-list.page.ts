@@ -13,7 +13,7 @@ import {
   ItemReorderEventDetail,
 } from '@ionic/angular';
 import { UserService } from 'src/app/core/services/user-service/user.service';
-import { TaskHttpService } from '../../core/services/task-http.service';
+import { TaskSupabaseService } from '../../core/services/task-supabase.service';
 import { TaskService } from '../../core/services/task.service';
 import { AlertMessages } from '../../core/types/alert-messages';
 import { TaskForm } from './task.form';
@@ -37,7 +37,7 @@ import { Task, TaskDTO } from './types/task';
   ],
 })
 export class TabListPage extends TaskForm {
-  private readonly taskHttpService = inject(TaskHttpService);
+  private readonly taskSupabaseService = inject(TaskSupabaseService);
   private readonly alertController = inject(AlertController);
   protected readonly taskService = inject(TaskService);
   private readonly userService = inject(UserService);
@@ -48,6 +48,7 @@ export class TabListPage extends TaskForm {
   protected hasNewTask = signal(false);
   protected isDisabled = signal(false);
   protected mustRotate = signal(false);
+  protected isFormVisible = signal(false);
 
   protected filter = this.taskService.filter;
   protected shouldShowInstall = this.taskService.shouldShowInstall;
@@ -65,26 +66,48 @@ export class TabListPage extends TaskForm {
     }
   });
 
-  protected alertButtons = [
-    {
-      text: 'Cancel',
-      role: 'cancel',
-    },
-    {
-      text: 'Confirm',
-      role: 'confirm',
-      handler: () => {
-        this.deleteAllTasks();
-      },
-    },
-  ];
+  protected alternativeFilterInfo = computed(() => {
+    const currentFilter = this.filter();
+    const allTasks = this.tasks();
+    const hasFilteredTasks = this.filteredTasks().length > 0;
+    const hasTasks = allTasks.length > 0;
 
-  protected alertButtonsOnline = [
-    {
-      text: 'Cancel',
-      role: 'cancel',
-    },
-  ];
+    // If there are filtered tasks or no tasks at all, return null
+    if (hasFilteredTasks || !hasTasks) {
+      return null;
+    }
+
+    // Calculate tasks in other filters
+    const doneTasks = allTasks.filter((task) => task.done).length;
+    const undoneTasks = allTasks.filter((task) => !task.done).length;
+
+    // Determine which filter has tasks and suggest it
+    if (currentFilter === StatusEnum.Done && undoneTasks > 0) {
+      return {
+        count: undoneTasks,
+        filter: StatusEnum.Undone,
+        label: undoneTasks === 1 ? 'pending task' : 'pending tasks',
+      };
+    } else if (currentFilter === StatusEnum.Undone && doneTasks > 0) {
+      return {
+        count: doneTasks,
+        filter: StatusEnum.Done,
+        label: doneTasks === 1 ? 'completed task' : 'completed tasks',
+      };
+    } else if (currentFilter === StatusEnum.All) {
+      // This shouldn't happen since All shows all tasks
+      return null;
+    }
+
+    return null;
+  });
+
+  protected switchToAlternativeFilter(): void {
+    const info = this.alternativeFilterInfo();
+    if (info) {
+      this.taskService.filter.set(info.filter);
+    }
+  }
 
   protected alertEditButtons = [
     {
@@ -207,11 +230,15 @@ export class TabListPage extends TaskForm {
 
     task.user_id = userId;
 
-    const { encryptedPin, iv, authTag } = this.userService.enctyptedData()!;
+    const pinHash = this.userService.pinHash();
+    if (!pinHash) {
+      console.error('No PIN hash found');
+      return;
+    }
 
     console.log('task,', task);
 
-    this.taskHttpService.upload(task, userId, iv, authTag, encryptedPin);
+    this.taskSupabaseService.upload(task, userId, pinHash);
 
     this.hasNewTask.set(true);
     setTimeout(() => {
@@ -261,14 +288,16 @@ export class TabListPage extends TaskForm {
         description,
       };
 
-      const { encryptedPin, iv, authTag } = this.userService.enctyptedData()!;
+      const pinHash = this.userService.pinHash();
+      if (!pinHash) {
+        console.error('No PIN hash found');
+        return;
+      }
 
-      this.taskHttpService.editTask(
+      this.taskSupabaseService.editTask(
         task,
         this.userId(),
-        iv,
-        authTag,
-        encryptedPin
+        pinHash
       );
     }
   }
@@ -277,7 +306,7 @@ export class TabListPage extends TaskForm {
     this.tasks.update((tasks) => tasks.filter((task) => task.id !== taskId));
   }
 
-  protected deleteAllTasks(): void {
-    this.tasks.set([]);
+  protected isTabletOrDesktop(): boolean {
+    return window.matchMedia('(min-width: 768px)').matches;
   }
 }

@@ -1,140 +1,190 @@
-<ion-header>
-  <ion-toolbar class="lg:py-1">
+<ion-header class="ion-no-border">
+  <ion-toolbar class="toolbar-gradient lg:py-2">
     <ion-button slot="start" class="invisible ion-margin">
       <ion-icon name="trash-outline"></ion-icon>
     </ion-button>
     <ion-title
       routerLink="/"
-      class="lg:fixed lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 ion-text-center cursor-pointer hover:text-green-700 lg:text-4xl font-extrabold"
-      >Cloud</ion-title
+      class="lg:fixed lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 ion-text-center cursor-pointer hover:opacity-80 transition-opacity text-2xl lg:text-4xl font-extrabold tracking-tight"
     >
+      <span class="title-gradient">Settings</span>
+    </ion-title>
     <ion-button
       aria-label="information button"
       slot="end"
-      id="info-alert"
-      color="primary"
-      class="ion-margin w-20 lg:text-xl"
+      fill="clear"
+      class="ion-margin toolbar-button lg:text-xl"
+      matTooltip="Help & Information"
+      matTooltipPosition="below"
+      (click)="showInfoAlert()"
     >
       <ion-icon name="help-circle-outline"></ion-icon>
     </ion-button>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="content-background">
   <img
     src="assets/background-image.svg"
-    class="absolute bottom-10 right-2 opacity-15"
+    class="background-decoration"
     alt="soft background image of a girl and sunflowers"
   />
 
-  @if (!userId() && !isLoading()) {
-  <p class="m-4 float-right bg-white p-2 shadow rounded-lg lg:text-2xl">
-    <strong class="text-black">Offline mode</strong>
-  </p>
+  <div class="settings-container">
+    <!-- Status Badge -->
+    <div class="status-badge fade-in-subtle">
+      @if (!userId() && !isLoading()) {
+        <ion-chip color="warning" class="status-chip">
+          <ion-icon name="cloud-offline-outline"></ion-icon>
+          <ion-label>Offline Mode</ion-label>
+        </ion-chip>
+      }
+      @if (userId() && !isLoading()) {
+        <ion-chip color="success" class="status-chip">
+          <ion-icon name="cloud-done-outline"></ion-icon>
+          <ion-label>Connected</ion-label>
+        </ion-chip>
+      }
+    </div>
 
-  <p class="m-4 font-bold lg:text-2xl">Upload tasks</p>
+    <!-- Loading State -->
+    @if (isLoading()) {
+      <div class="loading-container">
+        <ion-spinner aria-label="loading spinner" name="crescent" color="primary"></ion-spinner>
+        <p class="loading-text">Loading...</p>
+      </div>
+    }
 
-  <ion-button
-    aria-label="upload button"
-    color="primary"
-    class="mx-4 mt-0 mb-4 lg:text-xl"
-    (click)="uploadTasks()"
-  >
-    <ion-icon name="cloud-upload-outline"></ion-icon>
-  </ion-button>
+    @if (!isLoading()) {
+      <!-- Cloud Sync Section -->
+      <div class="settings-section fade-in-subtle" style="animation-delay: 0.05s">
+        <div class="section-header">
+          <ion-icon name="cloud-outline" class="section-icon"></ion-icon>
+          <h2 class="section-title">Cloud Sync</h2>
+        </div>
 
-  } @if (isLoading()) {
-  <ion-spinner
-    aria-label="loading spinner"
-    class="p-6 m-6"
-    name="crescent"
-  ></ion-spinner>
+        <ion-card class="settings-card">
+          @if (!userId()) {
+            <!-- Upload Tasks -->
+            <div class="card-item">
+              <div class="card-content">
+                <h3 class="card-title">Upload Tasks</h3>
+                <p class="card-description">Sync your local tasks to the cloud</p>
+              </div>
+              <ion-button
+                aria-label="upload button"
+                color="primary"
+                (click)="uploadTasks()"
+                class="action-button"
+              >
+                <ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
+              </ion-button>
+            </div>
+          }
 
-  } @if (userId() && !isLoading()) {
+          @if (userId()) {
+            <!-- User Info Card -->
+            <div class="card-item user-info">
+              <div class="card-content">
+                <h3 class="card-title">User ID</h3>
+                <p class="card-id">{{userId()}}</p>
+              </div>
+              <ion-button
+                aria-label="offline button"
+                fill="clear"
+                class="action-button"
+                matTooltip="Go offline"
+                (click)="showGoOfflineAlert()"
+              >
+                <ion-icon name="cloud-offline-outline"></ion-icon>
+              </ion-button>
+            </div>
+          }
 
-  <ion-card
-    class="m-4 p-2 shadow rounded-lg float-right flex flex-col items-center animate-fade animate-duration-300"
-    color="primary"
-  >
-    <p class="lg:text-2xl lg:mx-2">
-      <strong>User ID : {{userId()}}</strong>
-    </p>
+          <!-- Login/Switch Account -->
+          <div class="card-item">
+            <div class="card-content">
+              <h3 class="card-title">{{!userId() ? 'Login with PIN' : 'Switch Account'}}</h3>
+              <p class="card-description">{{!userId() ? 'Sign in to sync your tasks' : 'Login with a different PIN'}}</p>
+            </div>
+            <ion-button
+              aria-label="login button"
+              color="primary"
+              class="action-button"
+              (click)="showLoginAlert()"
+            >
+              <ion-icon slot="icon-only" name="{{!userId() ? 'log-in-outline' : 'swap-horizontal-outline'}}"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-card>
+      </div>
 
-    <ion-alert
-      trigger="offline-alert"
-      [header]="'Confirmation'"
-      [message]="alertMessages.GoOfflineAlert"
-      [buttons]="alertButtonsDelete"
-    ></ion-alert>
+      <!-- Danger Zone Section -->
+      <div class="settings-section fade-in-subtle" style="animation-delay: 0.1s">
+        <div class="section-header">
+          <ion-icon name="warning-outline" class="section-icon"></ion-icon>
+          <h2 class="section-title">Danger Zone</h2>
+        </div>
 
-    <ion-button
-      aria-label="offline button"
-      class="m-4 lg:text-xl text-white"
-      id="offline-alert"
-      matTooltip="Go offline"
-      fill="clear"
-    >
-      <ion-icon name="cloud-offline-outline"></ion-icon>
-    </ion-button>
-  </ion-card>
+        <ion-card class="settings-card danger-card">
+          <!-- Delete All Tasks -->
+          <div class="card-item">
+            <div class="card-content">
+              <h3 class="card-title text-danger">Delete All Tasks</h3>
+              <p class="card-description">Permanently remove all tasks from your list</p>
+            </div>
+            <ion-button
+              aria-label="delete all tasks button"
+              color="danger"
+              class="action-button"
+              [disabled]="!tasks().length"
+              (click)="showDeleteAllTasksAlert()"
+            >
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
+          </div>
 
-  }
+          @if (userId()) {
+            <!-- Delete Account -->
+            <div class="card-item">
+              <div class="card-content">
+                <h3 class="card-title text-danger">Delete Account</h3>
+                <p class="card-description">Permanently remove your user ID and cloud data</p>
+              </div>
+              <ion-button
+                aria-label="delete account button"
+                color="danger"
+                class="action-button"
+                (click)="showDeleteUserAlert()"
+              >
+                <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+              </ion-button>
+            </div>
+          }
+        </ion-card>
+      </div>
 
-  <p class="m-4 font-bold lg:text-2xl">
-    {{!userId() ? 'Download tasks' : 'Change User ID'}}
-  </p>
+      <!-- Appearance Section -->
+      <div class="settings-section fade-in-subtle" style="animation-delay: 0.15s">
+        <div class="section-header">
+          <ion-icon name="color-palette-outline" class="section-icon"></ion-icon>
+          <h2 class="section-title">Appearance</h2>
+        </div>
 
-  <ion-button
-    aria-label="download button"
-    color="primary"
-    class="mx-4 mt-0 mb-4 lg:text-xl"
-    id="download-alert"
-  >
-    <ion-icon name="cloud-download-outline"></ion-icon>
-  </ion-button>
-
-  <ion-alert
-    trigger="download-alert"
-    header="Import tasks"
-    [message]="!userId() ? alertMessages.DownloadAlert: '' "
-    [buttons]="alertButtonsDownload"
-    [inputs]="alertInputs"
-  ></ion-alert>
-
-  <ion-alert
-    trigger="info-alert"
-    header="Information"
-    [message]="alertMessages.InfoAlert"
-    [buttons]="alertButtonsInfo"
-  ></ion-alert>
-
-  @if (userId()) {
-
-  <p class="m-4 font-bold lg:text-2xl">Delete User ID</p>
-
-  <ion-button
-    aria-label="delete button"
-    color="danger"
-    class="mx-4 mt-0 lg:text-xl"
-    id="delete-user-alert"
-  >
-    <ion-icon name="trash-outline"></ion-icon>
-  </ion-button>
-
-  <ion-alert
-    trigger="delete-user-alert"
-    header="Delete User ID"
-    [message]="alertMessages.DeleteUserAlert"
-    [buttons]="alertButtonsDelete"
-  ></ion-alert>
-
-  }
-
-  <p class="m-4 font-bold lg:text-2xl">Toggle dark mode</p>
-
-  <ion-toggle
-    class="mx-2 mt-0"
-    [checked]="isDark()"
-    (ionChange)="themeService.switchTheme()"
-  ></ion-toggle>
+        <ion-card class="settings-card">
+          <div class="card-item">
+            <div class="card-content">
+              <h3 class="card-title">Dark Mode</h3>
+              <p class="card-description">Toggle between light and dark theme</p>
+            </div>
+            <ion-toggle
+              [checked]="isDark()"
+              (ionChange)="themeService.switchTheme()"
+              class="modern-toggle"
+            ></ion-toggle>
+          </div>
+        </ion-card>
+      </div>
+    }
+  </div>
 </ion-content>
