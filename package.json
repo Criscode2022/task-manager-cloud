@@ -6,10 +6,8 @@
   "scripts": {
     "ng": "ng",
     "config": "node scripts/set-env.js",
-    "prestart": "npm run config",
-    "start": "ng serve",
-    "prebuild": "npm run config",
-    "build": "ng build",
+    "start": "node scripts/set-env.js && ng serve",
+    "build": "node scripts/set-env.js && ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint"
@@ -59,6 +57,7 @@
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "autoprefixer": "^10.4.19",
+    "dotenv": "^17.2.3",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsdoc": "^48.2.1",
