@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -7,11 +8,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import {
-  AlertController,
-  IonicModule,
-  ItemReorderEventDetail,
-} from '@ionic/angular';
+import { AlertController, IonicModule } from '@ionic/angular';
+import { skip, take } from 'rxjs';
 import { UserService } from 'src/app/core/services/user-service/user.service';
 import { TaskSupabaseService } from '../../core/services/task-supabase.service';
 import { TaskService } from '../../core/services/task.service';
@@ -46,7 +44,6 @@ export class TabListPage extends TaskForm {
 
   protected canClick = signal(true);
   protected hasNewTask = signal(false);
-  protected isDisabled = signal(false);
   protected mustRotate = signal(false);
   protected isFormVisible = signal(false);
 
@@ -143,16 +140,26 @@ export class TabListPage extends TaskForm {
 
   constructor() {
     super();
+    this.taskService.storageInitialized
+      .pipe(
+        skip(1),
+        take(1),
+        takeUntilDestroyed()
+      )
+      .subscribe(async () => {
+        try {
+          const tasks = await this.taskService.getTasks();
+          this.isFormVisible.set(tasks.length === 0);
+        } catch (error) {
+          console.error(
+            'Error determining initial form visibility: failed to load existing tasks',
+            error
+          );
+        }
+      });
+
     effect(async () => {
       await this.taskService.saveTasks(this.tasks());
-      this.canClick.set(false);
-      this.isDisabled.set(true);
-
-      setTimeout(() => {
-        this.reorderTasksByState(this.tasks());
-        this.canClick.set(true);
-        this.isDisabled.set(false);
-      }, 500);
     });
 
     effect(() => {
@@ -258,20 +265,6 @@ export class TabListPage extends TaskForm {
         task.id === taskId ? { ...task, done: !task.done } : task
       )
     );
-  }
-
-  protected handleManualReorder(
-    event: CustomEvent<ItemReorderEventDetail>
-  ): void {
-    const items = [...this.tasks()];
-    const movedItem = items.splice(event.detail.from, 1)[0];
-    items.splice(event.detail.to, 0, movedItem);
-    this.tasks.set(items);
-    event.detail.complete();
-  }
-
-  private reorderTasksByState(tasks: Task[]): Task[] {
-    return tasks.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
   }
 
   protected editTask(id: number, title: string, description: string): void {

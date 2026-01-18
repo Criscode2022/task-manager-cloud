@@ -5,9 +5,9 @@
       Filter
     </ion-button>
     <ion-title
-      class="ion-text-center text-2xl lg:text-4xl font-extrabold tracking-tight"
+      class="ion-text-center text-lg md:text-xl lg:text-4xl font-extrabold tracking-tight"
     >
-      <span class="title-gradient">Task Manager</span>
+      <span>Task Manager</span>
     </ion-title>
     <ion-button
       slot="end"
@@ -117,10 +117,7 @@
 
   <div class="tasks-container">
     <ion-list class="task-list">
-      <ion-reorder-group
-        [disabled]="isDisabled() || this.taskService.userId()"
-        (ionItemReorder)="handleManualReorder($any($event))"
-      >
+      <div class="task-grid">
         @for (task of filteredTasks(); track task.id; let index = $index) {
 
         <ion-item-sliding
@@ -161,7 +158,6 @@
               >
                 <ion-icon slot="icon-only" name="create-outline"></ion-icon>
               </ion-button>
-              <ion-reorder slot="end" class="reorder-icon"></ion-reorder>
               <ion-icon
                 slot="end"
                 color="danger"
@@ -221,7 +217,7 @@
         </div>
 
         }
-      </ion-reorder-group>
+      </div>
     </ion-list>
   </div>
 

@@ -146,6 +146,30 @@ ion-button {
   }
 }
 
+// Dialog sizing
+@media (min-width: 1024px) {
+  ion-alert {
+    --max-width: 640px;
+    --width: 90%;
+  }
+
+  ion-alert::part(content) {
+    padding: 1.75rem 2rem;
+  }
+
+  ion-alert::part(header) {
+    font-size: 1.5rem;
+  }
+
+  ion-alert::part(message) {
+    font-size: 1.05rem;
+  }
+
+  ion-alert::part(button) {
+    font-size: 1rem;
+  }
+}
+
 // Card Enhancements
 ion-card {
   --background: var(--ion-card-background);
