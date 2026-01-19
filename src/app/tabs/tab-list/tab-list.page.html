@@ -38,17 +38,12 @@
           <ion-icon name="add-circle-outline" class="header-icon"></ion-icon>
           <h2 class="form-title">Create New Task</h2>
         </div>
-        <ion-button
-          fill="clear"
-          size="small"
-          class="toggle-button"
+
+        <ion-icon
           [matTooltip]="isFormVisible() ? 'Collapse form' : 'Expand form'"
-        >
-          <ion-icon
-            slot="icon-only"
-            [name]="isFormVisible() ? 'chevron-up-outline' : 'chevron-down-outline'"
-          ></ion-icon>
-        </ion-button>
+          slot="icon-only"
+          [name]="isFormVisible() ? 'chevron-up-outline' : 'chevron-down-outline'"
+        ></ion-icon>
       </div>
 
       @if (isFormVisible()) {
