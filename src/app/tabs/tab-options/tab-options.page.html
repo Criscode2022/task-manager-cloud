@@ -1,17 +1,13 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar class="toolbar-gradient">
-    <button slot="start" class="!hidden md:!block !invisible px-4">
-      <mat-icon class="mr-1">filter_list</mat-icon>
-      Filter
-    </button>
+  <ion-toolbar class="toolbar-gradient py-2 md:py-4">
     <h1
-      class="ion-text-center text-lg md:text-xl lg:text-4xl ml-5 md:ml-7 xl:ml-11 font-extrabold tracking-tight"
+      class="ion-text-center text-xl lg:text-4xl ml-5 md:ml-7 xl:ml-11 font-extrabold tracking-tight"
     >
       <span>Settings</span>
     </h1>
     <button
       mat-icon-button
-      class="ion-margin my-4"
+      class="ion-margin my-4 absolute right-0 md:right-8 lg:text-xl text-white"
       slot="end"
       (click)="showInfoAlert()"
       matTooltip="Help"
