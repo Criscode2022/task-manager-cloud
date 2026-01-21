@@ -297,6 +297,20 @@ export class TabListPage extends TaskForm {
 
   protected deleteTask(taskId: number): void {
     this.tasks.update((tasks) => tasks.filter((task) => task.id !== taskId));
+
+    if (this.userId()) {
+      const pinHash = this.userService.pinHash();
+      if (!pinHash) {
+        console.error('No PIN hash found');
+        return;
+      }
+
+      this.taskSupabaseService.deleteTask(
+        taskId,
+        this.userId(),
+        pinHash
+      );
+    }
   }
 
   protected isTabletOrDesktop(): boolean {
