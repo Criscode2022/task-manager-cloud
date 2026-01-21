@@ -46,6 +46,7 @@ export class TabListPage extends TaskForm {
   protected hasNewTask = signal(false);
   protected mustRotate = signal(false);
   protected isFormVisible = signal(false);
+  protected animatingTaskIds = signal<Set<number>>(new Set());
 
   protected filter = this.taskService.filter;
   protected shouldShowInstall = this.taskService.shouldShowInstall;
@@ -53,13 +54,16 @@ export class TabListPage extends TaskForm {
   protected userId = this.taskService.userId;
 
   public filteredTasks = computed(() => {
+    const animating = this.animatingTaskIds();
+    const allTasks = this.tasks();
+
     switch (this.filter()) {
       case StatusEnum.All:
-        return this.tasks();
+        return allTasks;
       case StatusEnum.Done:
-        return this.tasks().filter((task) => task.done);
+        return allTasks.filter((task) => task.done || animating.has(task.id));
       case StatusEnum.Undone:
-        return this.tasks().filter((task) => !task.done);
+        return allTasks.filter((task) => !task.done || animating.has(task.id));
     }
   });
 
@@ -254,17 +258,64 @@ export class TabListPage extends TaskForm {
   }
 
   protected toggleTaskState(taskId: number): void {
-    if (!this.canClick) {
+    if (!this.canClick()) {
       return;
     }
 
-    console.log('Toggling task state for taskId:', taskId); //this logs undefined
+    console.log('Toggling task state for taskId:', taskId);
 
+    // Disable clicks during animation
+    this.canClick.set(false);
+
+    // Add task to animating set to keep it visible during animation
+    this.animatingTaskIds.update((ids) => {
+      const newSet = new Set(ids);
+      newSet.add(taskId);
+      return newSet;
+    });
+
+    // First, apply visual feedback immediately (for animation)
     this.tasks.update((tasks) =>
       tasks.map((task) =>
         task.id === taskId ? { ...task, done: !task.done } : task
       )
     );
+
+    // After half a second, persist changes and remove from animating
+    setTimeout(() => {
+      this.canClick.set(true);
+
+      // Remove from animating set
+      this.animatingTaskIds.update((ids) => {
+        const newSet = new Set(ids);
+        newSet.delete(taskId);
+        return newSet;
+      });
+
+      const userId = this.taskService.userId();
+      if (userId) {
+        const task = this.tasks().find((t) => t.id === taskId);
+        if (!task) return;
+
+        const pinHash = this.userService.pinHash();
+        if (!pinHash) {
+          console.error('No PIN hash found');
+          return;
+        }
+
+        // Update task in Supabase
+        this.taskSupabaseService.editTask(
+          {
+            id: taskId,
+            title: task.title,
+            description: task.description,
+            done: task.done,
+          },
+          userId,
+          pinHash
+        );
+      }
+    }, 500);
   }
 
   protected editTask(id: number, title: string, description: string): void {
@@ -297,6 +348,20 @@ export class TabListPage extends TaskForm {
 
   protected deleteTask(taskId: number): void {
     this.tasks.update((tasks) => tasks.filter((task) => task.id !== taskId));
+
+    if (this.userId()) {
+      const pinHash = this.userService.pinHash();
+      if (!pinHash) {
+        console.error('No PIN hash found');
+        return;
+      }
+
+      this.taskSupabaseService.deleteTask(
+        taskId,
+        this.userId(),
+        pinHash
+      );
+    }
   }
 
   protected isTabletOrDesktop(): boolean {

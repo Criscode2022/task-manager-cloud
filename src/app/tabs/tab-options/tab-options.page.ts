@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
@@ -18,7 +20,14 @@ import { User } from './types/user';
   selector: 'app-tab-options',
   templateUrl: 'tab-options.page.html',
   styleUrls: ['tab-options.page.scss'],
-  imports: [IonicModule, CommonModule, RouterModule, MatTooltipModule],
+  imports: [
+    IonicModule,
+    CommonModule,
+    RouterModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatButtonModule,
+  ],
 })
 export class TabOptionsPage {
   private readonly tasksSupabaseService = inject(TaskSupabaseService);

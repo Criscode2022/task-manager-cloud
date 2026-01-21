@@ -112,6 +112,48 @@ export class TaskSupabaseService {
   }
 
   /**
+   * Delete a task from Supabase
+   */
+  public async deleteTask(
+    taskId: number,
+    userId: number,
+    pinHash: string
+  ): Promise<void> {
+    if (!userId || !taskId) return;
+
+    try {
+      console.log('Deleting task from Supabase...', taskId, userId);
+
+      // Verify user PIN first
+      const isValidUser = await this.supabase.verifyUserPin(userId, pinHash);
+
+      if (!isValidUser) {
+        this.snackbar.open('Invalid user credentials', 'Close', {
+          duration: 5000,
+        });
+        return;
+      }
+
+      // Delete the task
+      await this.supabase.deleteTask(taskId);
+
+      console.log('Task deleted successfully:', taskId);
+    } catch (error) {
+      console.error('Delete error:', error);
+      this.snackbar
+        .open('Error deleting task, please try again later', 'Retry', {
+          duration: 5000,
+        })
+        .onAction()
+        .subscribe(() => {
+          this.deleteTask(taskId, userId, pinHash);
+        });
+
+      throw error;
+    }
+  }
+
+  /**
    * Create a new user with hashed PIN
    */
   public async createUser(pinHash: string): Promise<number | null> {

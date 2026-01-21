@@ -1,17 +1,13 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar class="toolbar-gradient">
-    <button slot="start" class="!hidden md:!block !invisible px-4">
-      <mat-icon class="mr-1">filter_list</mat-icon>
-      Filter
-    </button>
+  <ion-toolbar class="toolbar-gradient md:py-4">
     <h1
-      class="ion-text-center text-lg md:text-xl lg:text-4xl md:ml-16 xl:ml-24 font-extrabold tracking-tight"
+      class="ion-text-center text-xl lg:text-4xl font-extrabold tracking-tight"
     >
       <span>Task Manager</span>
     </h1>
     <button
       slot="end"
-      class="filter-button lg:text-xl ion-margin px-4 py-2 bg-white text-black rounded-full shadow-md flex justify-center items-center hover:bg-gray-200 focus:bg-gray-300"
+      class="filter-button md:absolute md:right-8 lg:text-xl ion-margin px-4 py-2 bg-white text-black rounded-full shadow-md flex justify-center items-center hover:bg-gray-200 focus:bg-gray-300"
       (click)="taskService.changeFilter()"
       matTooltip="Filter tasks"
       matTooltipPosition="below"
@@ -38,17 +34,12 @@
           <ion-icon name="add-circle-outline" class="header-icon"></ion-icon>
           <h2 class="form-title">Create New Task</h2>
         </div>
-        <ion-button
-          fill="clear"
-          size="small"
-          class="toggle-button"
+
+        <ion-icon
           [matTooltip]="isFormVisible() ? 'Collapse form' : 'Expand form'"
-        >
-          <ion-icon
-            slot="icon-only"
-            [name]="isFormVisible() ? 'chevron-up-outline' : 'chevron-down-outline'"
-          ></ion-icon>
-        </ion-button>
+          slot="icon-only"
+          [name]="isFormVisible() ? 'chevron-up-outline' : 'chevron-down-outline'"
+        ></ion-icon>
       </div>
 
       @if (isFormVisible()) {

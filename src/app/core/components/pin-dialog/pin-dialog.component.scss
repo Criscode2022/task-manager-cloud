@@ -6,6 +6,10 @@
   width: 90vw;
   box-shadow: var(--shadow-xl);
   animation: slideInUp 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
 }
 
 // Dialog Header
@@ -15,6 +19,7 @@
   align-items: center;
   margin-bottom: 1.5rem;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .header-icon {
@@ -43,6 +48,30 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.5rem;
+  min-height: 0;
+
+  // Custom scrollbar
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--ion-border-color-light);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--ion-color-primary);
+    border-radius: 3px;
+
+    &:hover {
+      background: var(--ion-color-primary-shade);
+    }
+  }
 }
 
 // Warning Banner
@@ -193,6 +222,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .close-button {
