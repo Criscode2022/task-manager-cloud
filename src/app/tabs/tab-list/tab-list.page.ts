@@ -254,17 +254,50 @@ export class TabListPage extends TaskForm {
   }
 
   protected toggleTaskState(taskId: number): void {
-    if (!this.canClick) {
+    if (!this.canClick()) {
       return;
     }
 
-    console.log('Toggling task state for taskId:', taskId); //this logs undefined
+    console.log('Toggling task state for taskId:', taskId);
 
+    // Disable clicks during animation
+    this.canClick.set(false);
+
+    // First, apply visual feedback immediately (for animation)
     this.tasks.update((tasks) =>
       tasks.map((task) =>
         task.id === taskId ? { ...task, done: !task.done } : task
       )
     );
+
+    // After half a second, actually persist the change
+    setTimeout(() => {
+      this.canClick.set(true);
+
+      const userId = this.taskService.userId();
+      if (userId) {
+        const task = this.tasks().find((t) => t.id === taskId);
+        if (!task) return;
+
+        const pinHash = this.userService.pinHash();
+        if (!pinHash) {
+          console.error('No PIN hash found');
+          return;
+        }
+
+        // Update task in Supabase
+        this.taskSupabaseService.editTask(
+          {
+            id: taskId,
+            title: task.title,
+            description: task.description,
+            done: task.done,
+          },
+          userId,
+          pinHash
+        );
+      }
+    }, 500);
   }
 
   protected editTask(id: number, title: string, description: string): void {
