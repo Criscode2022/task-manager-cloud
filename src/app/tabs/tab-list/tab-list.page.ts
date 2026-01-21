@@ -46,6 +46,7 @@ export class TabListPage extends TaskForm {
   protected hasNewTask = signal(false);
   protected mustRotate = signal(false);
   protected isFormVisible = signal(false);
+  protected animatingTaskIds = signal<Set<number>>(new Set());
 
   protected filter = this.taskService.filter;
   protected shouldShowInstall = this.taskService.shouldShowInstall;
@@ -53,13 +54,16 @@ export class TabListPage extends TaskForm {
   protected userId = this.taskService.userId;
 
   public filteredTasks = computed(() => {
+    const animating = this.animatingTaskIds();
+    const allTasks = this.tasks();
+
     switch (this.filter()) {
       case StatusEnum.All:
-        return this.tasks();
+        return allTasks;
       case StatusEnum.Done:
-        return this.tasks().filter((task) => task.done);
+        return allTasks.filter((task) => task.done || animating.has(task.id));
       case StatusEnum.Undone:
-        return this.tasks().filter((task) => !task.done);
+        return allTasks.filter((task) => !task.done || animating.has(task.id));
     }
   });
 
@@ -263,6 +267,13 @@ export class TabListPage extends TaskForm {
     // Disable clicks during animation
     this.canClick.set(false);
 
+    // Add task to animating set to keep it visible during animation
+    this.animatingTaskIds.update((ids) => {
+      const newSet = new Set(ids);
+      newSet.add(taskId);
+      return newSet;
+    });
+
     // First, apply visual feedback immediately (for animation)
     this.tasks.update((tasks) =>
       tasks.map((task) =>
@@ -270,9 +281,16 @@ export class TabListPage extends TaskForm {
       )
     );
 
-    // After half a second, actually persist the change
+    // After half a second, persist changes and remove from animating
     setTimeout(() => {
       this.canClick.set(true);
+
+      // Remove from animating set
+      this.animatingTaskIds.update((ids) => {
+        const newSet = new Set(ids);
+        newSet.delete(taskId);
+        return newSet;
+      });
 
       const userId = this.taskService.userId();
       if (userId) {
