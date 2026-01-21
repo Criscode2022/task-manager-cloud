@@ -111,7 +111,7 @@
         @for (task of filteredTasks(); track task.id; let index = $index) {
 
         <ion-item-sliding
-          class="task-item-sliding animate-scale-in"
+          class="task-item-sliding animate-scale-in md:pt-0.5"
           [style.animation-delay.ms]="index * 50"
           [disabled]="isTabletOrDesktop()"
         >
