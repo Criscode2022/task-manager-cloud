@@ -1,15 +1,40 @@
 /**
- * Script to generate environment.local.ts files from .env
- * This ensures sensitive credentials are not committed to git
+ * Script to generate environment.local.ts files from .env or process.env
+ * 
+ * Priority order:
+ * 1. Process environment variables (e.g. Netlify dashboard env vars)
+ * 2. .env file in the project root
+ * 3. .env.example as a fallback template (will abort for local dev)
+ * 
+ * This ensures:
+ * - CI/CD (Netlify) works with dashboard env vars even without a .env file
+ * - Local dev works by reading the .env file
  */
 
 const fs = require('fs');
 const path = require('path');
 
-// Read .env file
 const envPath = path.join(__dirname, '..', '.env');
 const envExamplePath = path.join(__dirname, '..', '.env.example');
 
+// --- Step 1: Check process.env first (Netlify / CI) ---
+const processSupabaseUrl = process.env.SUPABASE_URL;
+const processSupabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+if (processSupabaseUrl && processSupabaseAnonKey) {
+  console.log('🌐 Found environment variables from process (CI/CD)');
+  console.log('   SUPABASE_URL:', processSupabaseUrl);
+  console.log('   SUPABASE_ANON_KEY (first 30 chars):',
+    processSupabaseAnonKey.substring(0, 30) + '...');
+  console.log('   SUPABASE_ANON_KEY length:', processSupabaseAnonKey.length);
+
+  generateEnvFiles(processSupabaseUrl, processSupabaseAnonKey);
+  process.exit(0);
+}
+
+console.log('ℹ️  No process env vars found, falling back to .env file...');
+
+// --- Step 2: Fall back to .env file (local development) ---
 if (!fs.existsSync(envPath)) {
   console.error('❌ .env file not found!');
   console.log('📝 Creating .env from .env.example...');
@@ -66,8 +91,11 @@ if (envVars.SUPABASE_ANON_KEY.includes('your-') ||
   console.warn('   Get it from: https://supabase.com/dashboard > Settings > API\n');
 }
 
-// Generate environment.local.ts
-const devEnvContent = `// This file is auto-generated from .env
+generateEnvFiles(envVars.SUPABASE_URL, envVars.SUPABASE_ANON_KEY);
+
+// --- Helper: generate the environment TS files ---
+function generateEnvFiles(supabaseUrl, supabaseAnonKey) {
+  const devEnvContent = `// This file is auto-generated from .env or process.env
 // DO NOT COMMIT THIS FILE
 
 export const environment = {
@@ -75,16 +103,15 @@ export const environment = {
   // Legacy API (deprecated)
   baseUrl: 'https://api-workspace-wczh.onrender.com/tasks-manager',
 
-  // Supabase Configuration (from .env)
+  // Supabase Configuration
   supabase: {
-    url: '${envVars.SUPABASE_URL}',
-    anonKey: '${envVars.SUPABASE_ANON_KEY}'
+    url: '${supabaseUrl}',
+    anonKey: '${supabaseAnonKey}'
   }
 };
 `;
 
-// Generate environment.prod.local.ts
-const prodEnvContent = `// This file is auto-generated from .env
+  const prodEnvContent = `// This file is auto-generated from .env or process.env
 // DO NOT COMMIT THIS FILE
 
 export const environment = {
@@ -92,28 +119,28 @@ export const environment = {
   // Legacy API (deprecated)
   baseUrl: 'https://api-workspace-wczh.onrender.com/tasks-manager',
 
-  // Supabase Configuration (from .env)
+  // Supabase Configuration
   supabase: {
-    url: '${envVars.SUPABASE_URL}',
-    anonKey: '${envVars.SUPABASE_ANON_KEY}'
+    url: '${supabaseUrl}',
+    anonKey: '${supabaseAnonKey}'
   }
 };
 `;
 
-// Write files
-const envDir = path.join(__dirname, '..', 'src', 'environments');
+  const envDir = path.join(__dirname, '..', 'src', 'environments');
 
-fs.writeFileSync(
-  path.join(envDir, 'environment.local.ts'),
-  devEnvContent
-);
+  fs.writeFileSync(
+    path.join(envDir, 'environment.local.ts'),
+    devEnvContent
+  );
 
-fs.writeFileSync(
-  path.join(envDir, 'environment.prod.local.ts'),
-  prodEnvContent
-);
+  fs.writeFileSync(
+    path.join(envDir, 'environment.prod.local.ts'),
+    prodEnvContent
+  );
 
-console.log('✅ Environment files generated successfully!');
-console.log('   - src/environments/environment.local.ts');
-console.log('   - src/environments/environment.prod.local.ts');
-console.log('\n🔒 These files are gitignored and contain your secrets');
+  console.log('✅ Environment files generated successfully!');
+  console.log('   - src/environments/environment.local.ts');
+  console.log('   - src/environments/environment.prod.local.ts');
+  console.log('\n🔒 These files are gitignored and contain your secrets');
+}
