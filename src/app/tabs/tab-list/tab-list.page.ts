@@ -119,7 +119,7 @@ export class TabListPage extends TaskForm {
       text: 'Confirm',
       role: 'confirm',
       handler: (data: Task) => {
-        const id = data.id;
+        const id = Number(data.id);
         const updatedTitle = data.title;
         const updatedDescription = data.description;
         this.editTask(id, updatedTitle, updatedDescription);

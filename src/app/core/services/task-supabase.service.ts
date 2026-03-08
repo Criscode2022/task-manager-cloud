@@ -2,8 +2,8 @@ import { inject, Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Task, TaskDTO } from 'src/app/tabs/tab-list/types/task';
-import { TaskService } from './task.service';
 import { SupabaseService } from './supabase.service';
+import { TaskService } from './task.service';
 
 @Injectable({
   providedIn: 'root',
@@ -25,6 +25,8 @@ export class TaskSupabaseService {
     pinHash: string
   ): Promise<void> {
     if (!userId) return;
+
+    const localId = task.id;
 
     try {
       console.log('Uploading task to Supabase...', task, userId);
@@ -49,6 +51,17 @@ export class TaskSupabaseService {
       });
 
       console.log('Task uploaded successfully:', newTask);
+
+      // Replace the local temporary ID with the real Supabase ID
+      // so that future updates/deletes target the correct row
+      if (localId && newTask.id !== localId) {
+        this.tasks.update((tasks) =>
+          tasks.map((t) =>
+            t.id === localId ? { ...t, id: newTask.id } : t
+          )
+        );
+        console.log(`Local task ID updated: ${localId} → ${newTask.id}`);
+      }
     } catch (error) {
       console.error('Upload error:', error);
       this.snackbar
@@ -254,7 +267,24 @@ export class TaskSupabaseService {
         updated_at: new Date(),
       }));
 
-      await this.supabase.bulkUploadTasks(tasksToUpload);
+      const uploadedTasks = await this.supabase.bulkUploadTasks(tasksToUpload);
+
+      // Replace local task IDs with the real Supabase IDs
+      if (uploadedTasks.length === tasks.length) {
+        this.tasks.update((currentTasks) => {
+          const updated = [...currentTasks];
+          for (let i = 0; i < tasks.length; i++) {
+            const localId = tasks[i].id;
+            const supabaseId = uploadedTasks[i].id;
+            const idx = updated.findIndex((t) => t.id === localId);
+            if (idx !== -1) {
+              updated[idx] = { ...updated[idx], id: supabaseId };
+            }
+          }
+          return updated;
+        });
+        console.log('Local task IDs updated after bulk upload');
+      }
 
       console.log('Bulk upload successful');
       this.snackbar.open('Tasks synced successfully', '', {
