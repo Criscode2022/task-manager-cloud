@@ -443,6 +443,13 @@
   opacity: 0.5;
 }
 
+// Mobile Visibility
+.hide-on-mobile {
+  @media (max-width: 767px) {
+    display: none !important;
+  }
+}
+
 // Animations
 @keyframes fadeInSubtle {
   from {

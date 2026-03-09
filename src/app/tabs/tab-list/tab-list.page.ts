@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -9,7 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AlertController, IonicModule } from '@ionic/angular';
-import { skip, take } from 'rxjs';
+
 import { UserService } from 'src/app/core/services/user-service/user.service';
 import { TaskSupabaseService } from '../../core/services/task-supabase.service';
 import { TaskService } from '../../core/services/task.service';
@@ -144,23 +144,6 @@ export class TabListPage extends TaskForm {
 
   constructor() {
     super();
-    this.taskService.storageInitialized
-      .pipe(
-        skip(1),
-        take(1),
-        takeUntilDestroyed()
-      )
-      .subscribe(async () => {
-        try {
-          const tasks = await this.taskService.getTasks();
-          this.isFormVisible.set(tasks.length === 0);
-        } catch (error) {
-          console.error(
-            'Error determining initial form visibility: failed to load existing tasks',
-            error
-          );
-        }
-      });
 
     effect(async () => {
       await this.taskService.saveTasks(this.tasks());

@@ -176,7 +176,7 @@
 
         } @empty {
 
-        <div class="empty-state">
+        <div class="empty-state" [class.hide-on-mobile]="isFormVisible()">
           @if (alternativeFilterInfo()) {
           <!-- Smart filter suggestion -->
           <ion-icon
