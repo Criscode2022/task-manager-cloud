@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, afterNextRender } from '@angular/core';
 
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -47,6 +47,8 @@ export class TabListPage extends TaskForm {
   protected mustRotate = signal(false);
   protected isFormVisible = signal(false);
   protected animatingTaskIds = signal<Set<number>>(new Set());
+  protected initialLoadDone = signal(false);
+  protected newlyAddedTaskIds = signal<Set<number>>(new Set());
 
   protected filter = this.taskService.filter;
   protected shouldShowInstall = this.taskService.shouldShowInstall;
@@ -145,6 +147,12 @@ export class TabListPage extends TaskForm {
   constructor() {
     super();
 
+    afterNextRender(() => {
+      // Mark initial load as done after the first render cycle completes
+      // This prevents the staggered scale-in animation from replaying on every list change
+      setTimeout(() => this.initialLoadDone.set(true), 600);
+    });
+
     effect(async () => {
       await this.taskService.saveTasks(this.tasks());
     });
@@ -208,9 +216,25 @@ export class TabListPage extends TaskForm {
       done: false,
     };
 
+    // Track the new task ID for a gentler entrance animation
+    this.newlyAddedTaskIds.update((ids) => {
+      const newSet = new Set(ids);
+      newSet.add(id);
+      return newSet;
+    });
+
     this.tasks.update((tasks) => [...tasks, task as Task]);
 
     this.form.reset();
+
+    // Remove from newly added set after animation completes
+    setTimeout(() => {
+      this.newlyAddedTaskIds.update((ids) => {
+        const newSet = new Set(ids);
+        newSet.delete(id);
+        return newSet;
+      });
+    }, 500);
 
     const userId = this.taskService.userId();
 

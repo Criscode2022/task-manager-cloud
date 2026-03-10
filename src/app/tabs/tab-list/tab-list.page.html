@@ -111,8 +111,10 @@
         @for (task of filteredTasks(); track task.id; let index = $index) {
 
         <ion-item-sliding
-          class="task-item-sliding animate-scale-in md:pt-0.5"
-          [style.animation-delay.ms]="index * 50"
+          class="task-item-sliding md:pt-0.5"
+          [class.animate-scale-in]="!initialLoadDone()"
+          [class.animate-new-task]="newlyAddedTaskIds().has(task.id)"
+          [style.animation-delay.ms]="!initialLoadDone() ? index * 50 : 0"
           [disabled]="isTabletOrDesktop()"
         >
           <ion-item class="task-item" [class.task-completed]="task.done">
