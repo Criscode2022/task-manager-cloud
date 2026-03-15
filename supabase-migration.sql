@@ -1,4 +1,4 @@
--- Task Manager Cloud - Supabase Database Schema
+-- Task Cloud Cloud - Supabase Database Schema
 -- Run this SQL in your Supabase SQL Editor to set up the database
 
 -- Create users table

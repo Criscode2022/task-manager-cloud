@@ -1,6 +1,6 @@
 # Supabase Integration Setup Guide
 
-This guide will help you set up Supabase as the database backend for the Task Manager Cloud application.
+This guide will help you set up Supabase as the database backend for the Task Cloud application.
 
 ## Prerequisites
 

@@ -1,4 +1,4 @@
--- Task Manager Cloud - Complete Database Migration
+-- Task Cloud Cloud - Complete Database Migration
 -- This script drops old tables and creates the new schema with pin_hash
 -- ⚠️  WARNING: This will delete all existing data! ⚠️
 
