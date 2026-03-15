@@ -223,8 +223,9 @@
   <ion-button
     shape="round"
     class="fab-button fab-refresh"
-    [class.animate-spin]="mustRotate()"
-    [class.animate-duration-500]="mustRotate()"
+    [class.animate-spin]="loadingService.isLoading()"
+    [class.animate-duration-2000]="loadingService.isLoading()"
+    [disabled]="loadingService.isLoading()"
     (click)="refresh()"
     matTooltip="Sync tasks with cloud"
     matTooltipPosition="above"

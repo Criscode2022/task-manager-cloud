@@ -1,7 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
 import { Task } from '../../tabs/tab-list/types/task';
+import { LoadingController } from '@ionic/angular';
+import { LoadingService } from './loading.service';
 
 @Injectable({
   providedIn: 'root',
@@ -10,6 +12,17 @@ export class SupabaseService {
   private supabase: SupabaseClient;
 
   constructor() {
+    const loadingService = inject(LoadingService);
+    const customFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      loadingService.showLoading();
+
+      try {
+        return await fetch(input, init);
+      } finally {
+        loadingService.hideLoading();
+      }
+    };
+
     // Log environment configuration for debugging
     console.log('🔧 Supabase Configuration:');
     console.log('  URL:', environment.supabase.url);
@@ -19,7 +32,12 @@ export class SupabaseService {
 
     this.supabase = createClient(
       environment.supabase.url,
-      environment.supabase.anonKey
+      environment.supabase.anonKey,
+      {
+        global: {
+          fetch: customFetch
+        }
+      }
     );
 
     console.log('✅ Supabase client initialized');

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, signal, afterNextRender } from '@angular/core';
+import { afterNextRender, Component, computed, effect, inject, signal } from '@angular/core';
 
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,6 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { AlertController, IonicModule } from '@ionic/angular';
 
 import { UserService } from 'src/app/core/services/user-service/user.service';
+import { LoadingService } from 'src/app/core/services/loading.service';
 import { TaskSupabaseService } from '../../core/services/task-supabase.service';
 import { TaskService } from '../../core/services/task.service';
 import { AlertMessages } from '../../core/types/alert-messages';
@@ -44,7 +45,7 @@ export class TabListPage extends TaskForm {
 
   protected canClick = signal(true);
   protected hasNewTask = signal(false);
-  protected mustRotate = signal(false);
+  protected readonly loadingService = inject(LoadingService);
   protected isFormVisible = signal(false);
   protected animatingTaskIds = signal<Set<number>>(new Set());
   protected initialLoadDone = signal(false);
@@ -160,6 +161,12 @@ export class TabListPage extends TaskForm {
     effect(() => {
       this.taskService.saveFilter(this.filter());
     });
+
+    effect(() => {
+      if (this.tasks().length === 0 && this.isTabletOrDesktop()) {
+        this.isFormVisible.set(true);
+      }
+    });
   }
 
   protected async presentEditAlert(task: Task): Promise<void> {
@@ -194,11 +201,6 @@ export class TabListPage extends TaskForm {
 
   protected refresh(): void {
     this.userService.getUser();
-
-    this.mustRotate.set(true);
-    setTimeout(() => {
-      this.mustRotate.set(false);
-    }, 500);
   }
 
   protected async addTask(): Promise<void> {

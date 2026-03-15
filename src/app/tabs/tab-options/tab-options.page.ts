@@ -113,10 +113,12 @@ export class TabOptionsPage {
   public alertInputs = [
     {
       placeholder: 'Enter your 4-digit PIN',
-      type: 'number',
+      type: 'text',
       name: 'pin',
-      min: 1000,
-      max: 9999,
+      attributes: {
+        maxlength: 4,
+        inputmode: 'numeric',
+      },
       label: 'PIN',
       required: true,
     },
@@ -134,6 +136,13 @@ export class TabOptionsPage {
       // Validate PIN format
       if (!pinString || pinString.length !== 4) {
         this.snackbar.open('PIN must be exactly 4 digits', 'Close', {
+          duration: 5000,
+        });
+        return;
+      }
+
+      if (/[a-zA-Z]/.test(pinString)) {
+        this.snackbar.open('PIN cannot contain letters', 'Close', {
           duration: 5000,
         });
         return;
@@ -180,11 +189,10 @@ export class TabOptionsPage {
       inputs: [
         {
           name: 'pin',
-          type: 'number',
+          type: 'text',
           placeholder: 'PIN',
-          min: 0,
-          max: 9999,
           attributes: {
+            maxlength: 4,
             inputmode: 'numeric',
           },
         },
