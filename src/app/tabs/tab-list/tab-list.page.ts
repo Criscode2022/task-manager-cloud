@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { afterNextRender, Component, computed, effect, inject, signal } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,12 +16,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AlertController, IonicModule } from '@ionic/angular';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
-import { UserService } from 'src/app/core/services/user-service/user.service';
 import { LoadingService } from 'src/app/core/services/loading.service';
+import { UserService } from 'src/app/core/services/user-service/user.service';
 import { TaskSupabaseService } from '../../core/services/task-supabase.service';
 import { TaskService } from '../../core/services/task.service';
-import { AlertMessages } from '../../core/types/alert-messages';
 import { TaskForm } from './task.form';
 import { StatusEnum } from './types/statusEnum';
 import { Task, TaskDTO } from './types/task';
@@ -33,15 +40,15 @@ import { Task, TaskDTO } from './types/task';
     MatIconModule,
     MatInputModule,
     MatTooltipModule,
+    TranslateModule,
   ],
 })
 export class TabListPage extends TaskForm {
   private readonly taskSupabaseService = inject(TaskSupabaseService);
   private readonly alertController = inject(AlertController);
+  private readonly translate = inject(TranslateService);
   protected readonly taskService = inject(TaskService);
   private readonly userService = inject(UserService);
-
-  protected alertMessages = AlertMessages;
 
   protected canClick = signal(true);
   protected hasNewTask = signal(false);
@@ -55,6 +62,17 @@ export class TabListPage extends TaskForm {
   protected shouldShowInstall = this.taskService.shouldShowInstall;
   protected tasks = this.taskService.tasks;
   protected userId = this.taskService.userId;
+
+  protected filterLabelKey = computed(() => {
+    switch (this.filter()) {
+      case StatusEnum.All:
+        return 'TASKS.FILTER.ALL';
+      case StatusEnum.Done:
+        return 'TASKS.FILTER.DONE';
+      case StatusEnum.Undone:
+        return 'TASKS.FILTER.PENDING';
+    }
+  });
 
   public filteredTasks = computed(() => {
     const animating = this.animatingTaskIds();
@@ -90,13 +108,19 @@ export class TabListPage extends TaskForm {
       return {
         count: undoneTasks,
         filter: StatusEnum.Undone,
-        label: undoneTasks === 1 ? 'pending task' : 'pending tasks',
+        labelKey:
+          undoneTasks === 1
+            ? 'TASKS.PENDING_TASK_SINGULAR'
+            : 'TASKS.PENDING_TASK_PLURAL',
       };
     } else if (currentFilter === StatusEnum.Undone && doneTasks > 0) {
       return {
         count: doneTasks,
         filter: StatusEnum.Done,
-        label: doneTasks === 1 ? 'completed task' : 'completed tasks',
+        labelKey:
+          doneTasks === 1
+            ? 'TASKS.COMPLETED_TASK_SINGULAR'
+            : 'TASKS.COMPLETED_TASK_PLURAL',
       };
     } else if (currentFilter === StatusEnum.All) {
       // This shouldn't happen since All shows all tasks
@@ -113,37 +137,22 @@ export class TabListPage extends TaskForm {
     }
   }
 
-  protected alertEditButtons = [
-    {
-      text: 'Cancel',
-      role: 'cancel',
-    },
-    {
-      text: 'Confirm',
-      role: 'confirm',
-      handler: (data: Task) => {
-        const id = Number(data.id);
-        const updatedTitle = data.title;
-        const updatedDescription = data.description;
-        this.editTask(id, updatedTitle, updatedDescription);
+  protected get installButtons() {
+    return [
+      {
+        text: this.translate.instant('COMMON.OK'),
+        role: 'cancel',
       },
-    },
-  ];
-
-  protected installButtons = [
-    {
-      text: 'OK',
-      role: 'cancel',
-    },
-    {
-      text: "Don't show again",
-      role: 'confirm',
-      handler: () => {
-        this.shouldShowInstall.set(false);
-        localStorage.setItem('install', 'false');
+      {
+        text: this.translate.instant('TASKS.DONT_SHOW_AGAIN'),
+        role: 'confirm',
+        handler: () => {
+          this.shouldShowInstall.set(false);
+          localStorage.setItem('install', 'false');
+        },
       },
-    },
-  ];
+    ];
+  }
 
   constructor() {
     super();
@@ -171,18 +180,20 @@ export class TabListPage extends TaskForm {
 
   protected async presentEditAlert(task: Task): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Edit Task',
+      header: this.translate.instant('TASKS.EDIT_TASK'),
       inputs: [
         {
           name: 'title',
           type: 'text',
-          placeholder: 'Title',
+          placeholder: this.translate.instant('TASKS.TITLE_PLACEHOLDER'),
           value: task.title,
         },
         {
           name: 'description',
           type: 'text',
-          placeholder: 'Description',
+          placeholder: this.translate.instant(
+            'TASKS.DESCRIPTION_PLACEHOLDER_EDIT',
+          ),
           value: task.description,
         },
         {
@@ -193,7 +204,22 @@ export class TabListPage extends TaskForm {
           },
         },
       ],
-      buttons: this.alertEditButtons,
+      buttons: [
+        {
+          text: this.translate.instant('COMMON.CANCEL'),
+          role: 'cancel',
+        },
+        {
+          text: this.translate.instant('COMMON.CONFIRM'),
+          role: 'confirm',
+          handler: (data: Task) => {
+            const id = Number(data.id);
+            const updatedTitle = data.title;
+            const updatedDescription = data.description;
+            this.editTask(id, updatedTitle, updatedDescription);
+          },
+        },
+      ],
     });
 
     await alert.present();
@@ -286,8 +312,8 @@ export class TabListPage extends TaskForm {
     // First, apply visual feedback immediately (for animation)
     this.tasks.update((tasks) =>
       tasks.map((task) =>
-        task.id === taskId ? { ...task, done: !task.done } : task
-      )
+        task.id === taskId ? { ...task, done: !task.done } : task,
+      ),
     );
 
     // After half a second, persist changes and remove from animating
@@ -321,7 +347,7 @@ export class TabListPage extends TaskForm {
             done: task.done,
           },
           userId,
-          pinHash
+          pinHash,
         );
       }
     }, 500);
@@ -330,8 +356,8 @@ export class TabListPage extends TaskForm {
   protected editTask(id: number, title: string, description: string): void {
     this.tasks.update((tasks) =>
       tasks.map((task) =>
-        task.id === id ? { ...task, title, description } : task
-      )
+        task.id === id ? { ...task, title, description } : task,
+      ),
     );
 
     if (this.userId()) {
@@ -347,11 +373,7 @@ export class TabListPage extends TaskForm {
         return;
       }
 
-      this.taskSupabaseService.editTask(
-        task,
-        this.userId(),
-        pinHash
-      );
+      this.taskSupabaseService.editTask(task, this.userId(), pinHash);
     }
   }
 
@@ -365,11 +387,7 @@ export class TabListPage extends TaskForm {
         return;
       }
 
-      this.taskSupabaseService.deleteTask(
-        taskId,
-        this.userId(),
-        pinHash
-      );
+      this.taskSupabaseService.deleteTask(taskId, this.userId(), pinHash);
     }
   }
 

@@ -6,6 +6,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { AlertController, IonicModule } from '@ionic/angular';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { ThemeService } from 'src/app/core/services/theme.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
@@ -13,7 +15,6 @@ import { PinHashService } from '../../core/services/pin-hash.service';
 import { SupabaseService } from '../../core/services/supabase.service';
 import { TaskSupabaseService } from '../../core/services/task-supabase.service';
 import { TaskService } from '../../core/services/task.service';
-import { AlertMessages } from '../../core/types/alert-messages';
 import { User } from './types/user';
 
 @Component({
@@ -27,6 +28,7 @@ import { User } from './types/user';
     MatIconModule,
     MatTooltipModule,
     MatButtonModule,
+    TranslateModule,
   ],
 })
 export class TabOptionsPage {
@@ -37,11 +39,14 @@ export class TabOptionsPage {
   private readonly pinHashService = inject(PinHashService);
   private readonly alertController = inject(AlertController);
   private readonly supabase = inject(SupabaseService);
+  private readonly translate = inject(TranslateService);
+  protected readonly languageService = inject(LanguageService);
   protected readonly themeService = inject(ThemeService);
   protected readonly userService = inject(UserService);
 
-  protected alertMessages = AlertMessages;
   protected isDark = this.themeService.isDark;
+  protected selectedLanguage = this.languageService.currentLanguage;
+  protected supportedLanguages = this.languageService.getSupportedLanguages();
 
   protected userId = this.taskService.userId;
   protected tasks = this.taskService.tasks;
@@ -128,6 +133,19 @@ export class TabOptionsPage {
     await this.userService.createUser();
   }
 
+  protected changeLanguage(language: string): void {
+    this.languageService.setLanguage(language);
+  }
+
+  protected getLanguageLabel(language: string): string {
+    const labels: Record<string, string> = {
+      en: '🇬🇧 English',
+      es: '🇪🇸 Espanol',
+    };
+
+    return labels[language] ?? language;
+  }
+
   protected async download(pin: User['pin']): Promise<void> {
     try {
       // Convert PIN to string (alert input returns number)
@@ -135,16 +153,24 @@ export class TabOptionsPage {
 
       // Validate PIN format
       if (!pinString || pinString.length !== 4) {
-        this.snackbar.open('PIN must be exactly 4 digits', 'Close', {
-          duration: 5000,
-        });
+        this.snackbar.open(
+          this.translate.instant('OPTIONS.PIN_MUST_HAVE_4_DIGITS'),
+          this.translate.instant('COMMON.CLOSE'),
+          {
+            duration: 5000,
+          },
+        );
         return;
       }
 
       if (/[a-zA-Z]/.test(pinString)) {
-        this.snackbar.open('PIN cannot contain letters', 'Close', {
-          duration: 5000,
-        });
+        this.snackbar.open(
+          this.translate.instant('OPTIONS.PIN_CANNOT_CONTAIN_LETTERS'),
+          this.translate.instant('COMMON.CLOSE'),
+          {
+            duration: 5000,
+          },
+        );
         return;
       }
 
@@ -167,9 +193,13 @@ export class TabOptionsPage {
       console.log('✅ Login successful!');
     } catch (error) {
       console.error('❌ Login error:', error);
-      this.snackbar.open('Invalid PIN. Please try again.', 'Close', {
-        duration: 5000,
-      });
+      this.snackbar.open(
+        this.translate.instant('OPTIONS.INVALID_PIN_TRY_AGAIN'),
+        this.translate.instant('COMMON.CLOSE'),
+        {
+          duration: 5000,
+        },
+      );
     }
   }
 
@@ -184,13 +214,13 @@ export class TabOptionsPage {
    */
   protected async showLoginAlert(): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Login with PIN',
-      message: 'Enter your 4-digit PIN to sync your tasks',
+      header: this.translate.instant('OPTIONS.LOGIN_WITH_PIN'),
+      message: this.translate.instant('OPTIONS.LOGIN_ALERT_MESSAGE'),
       inputs: [
         {
           name: 'pin',
           type: 'text',
-          placeholder: 'PIN',
+          placeholder: this.translate.instant('COMMON.PIN'),
           attributes: {
             maxlength: 4,
             inputmode: 'numeric',
@@ -199,11 +229,11 @@ export class TabOptionsPage {
       ],
       buttons: [
         {
-          text: 'Cancel',
+          text: this.translate.instant('COMMON.CANCEL'),
           role: 'cancel',
         },
         {
-          text: 'Login',
+          text: this.translate.instant('COMMON.LOGIN'),
           role: 'confirm',
           handler: (data) => {
             this.download(data.pin);
@@ -220,15 +250,15 @@ export class TabOptionsPage {
    */
   protected async showGoOfflineAlert(): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Confirmation',
-      message: this.alertMessages.GoOfflineAlert,
+      header: this.translate.instant('COMMON.CONFIRMATION'),
+      message: this.translate.instant('OPTIONS.GO_OFFLINE_ALERT'),
       buttons: [
         {
-          text: 'Cancel',
+          text: this.translate.instant('COMMON.CANCEL'),
           role: 'cancel',
         },
         {
-          text: 'Confirm',
+          text: this.translate.instant('COMMON.CONFIRM'),
           role: 'confirm',
           handler: () => {
             this.activateOfflineMode();
@@ -245,15 +275,15 @@ export class TabOptionsPage {
    */
   protected async showDeleteUserAlert(): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Delete User ID',
-      message: this.alertMessages.DeleteUserAlert,
+      header: this.translate.instant('OPTIONS.DELETE_ACCOUNT'),
+      message: this.translate.instant('OPTIONS.DELETE_USER_ALERT'),
       buttons: [
         {
-          text: 'Cancel',
+          text: this.translate.instant('COMMON.CANCEL'),
           role: 'cancel',
         },
         {
-          text: 'Confirm',
+          text: this.translate.instant('COMMON.CONFIRM'),
           role: 'confirm',
           handler: () => {
             this.userService.delete(this.userId());
@@ -270,11 +300,11 @@ export class TabOptionsPage {
    */
   protected async showInfoAlert(): Promise<void> {
     const alert = await this.alertController.create({
-      header: 'Information',
-      message: this.alertMessages.InfoAlert,
+      header: this.translate.instant('COMMON.INFORMATION'),
+      message: this.translate.instant('OPTIONS.INFO_ALERT'),
       buttons: [
         {
-          text: 'Close',
+          text: this.translate.instant('COMMON.CLOSE'),
           role: 'cancel',
         },
       ],
@@ -291,11 +321,11 @@ export class TabOptionsPage {
     const buttons = !this.userId()
       ? [
           {
-            text: 'Cancel',
+            text: this.translate.instant('COMMON.CANCEL'),
             role: 'cancel',
           },
           {
-            text: 'Delete All',
+            text: this.translate.instant('OPTIONS.DELETE_ALL_TASKS'),
             role: 'destructive',
             handler: () => {
               this.deleteAllTasksLocal();
@@ -304,18 +334,20 @@ export class TabOptionsPage {
         ]
       : [
           {
-            text: 'Cancel',
+            text: this.translate.instant('COMMON.CANCEL'),
             role: 'cancel',
           },
           {
-            text: 'Delete from Cloud Only',
+            text: this.translate.instant('OPTIONS.DELETE_FROM_CLOUD_ONLY'),
             role: 'destructive',
             handler: () => {
               this.deleteAllTasksCloudOnly();
             },
           },
           {
-            text: 'Delete from Both Cloud and Device',
+            text: this.translate.instant(
+              'OPTIONS.DELETE_FROM_BOTH_CLOUD_AND_DEVICE',
+            ),
             role: 'destructive',
             handler: () => {
               this.deleteAllTasksBoth();
@@ -324,10 +356,10 @@ export class TabOptionsPage {
         ];
 
     const alert = await this.alertController.create({
-      header: 'Delete All Tasks',
+      header: this.translate.instant('OPTIONS.DELETE_ALL_TASKS'),
       message: !this.userId()
-        ? this.alertMessages.DeleteTasksAlert
-        : 'Choose where to delete your tasks from:',
+        ? this.translate.instant('OPTIONS.DELETE_TASKS_ALERT')
+        : this.translate.instant('OPTIONS.CHOOSE_WHERE_DELETE_TASKS'),
       buttons,
     });
 
@@ -355,7 +387,11 @@ export class TabOptionsPage {
       // Verify user PIN first
       const isValidUser = await this.supabase.verifyUserPin(userId, pinHash);
       if (!isValidUser) {
-        this.snackbar.open('Invalid credentials', 'Close', { duration: 5000 });
+        this.snackbar.open(
+          this.translate.instant('OPTIONS.INVALID_CREDENTIALS'),
+          this.translate.instant('COMMON.CLOSE'),
+          { duration: 5000 },
+        );
         return;
       }
 
@@ -366,17 +402,21 @@ export class TabOptionsPage {
       await this.activateOfflineMode();
 
       this.snackbar.open(
-        'Tasks deleted from cloud, now you are in offline mode',
-        'Close',
+        this.translate.instant('OPTIONS.TASKS_DELETED_CLOUD_OFFLINE_MODE'),
+        this.translate.instant('COMMON.CLOSE'),
         {
           duration: 3000,
         },
       );
     } catch (error) {
       console.error('Error deleting tasks from cloud:', error);
-      this.snackbar.open('Error deleting tasks from cloud', 'Close', {
-        duration: 5000,
-      });
+      this.snackbar.open(
+        this.translate.instant('OPTIONS.ERROR_DELETING_TASKS_FROM_CLOUD'),
+        this.translate.instant('COMMON.CLOSE'),
+        {
+          duration: 5000,
+        },
+      );
     }
   }
 
@@ -398,7 +438,11 @@ export class TabOptionsPage {
       // Verify user PIN first
       const isValidUser = await this.supabase.verifyUserPin(userId, pinHash);
       if (!isValidUser) {
-        this.snackbar.open('Invalid credentials', 'Close', { duration: 5000 });
+        this.snackbar.open(
+          this.translate.instant('OPTIONS.INVALID_CREDENTIALS'),
+          this.translate.instant('COMMON.CLOSE'),
+          { duration: 5000 },
+        );
         return;
       }
 
@@ -408,14 +452,22 @@ export class TabOptionsPage {
       // Delete all local tasks
       this.taskService.tasks.set([]);
 
-      this.snackbar.open('All tasks deleted from cloud and device.', 'Close', {
-        duration: 3000,
-      });
+      this.snackbar.open(
+        this.translate.instant('OPTIONS.ALL_TASKS_DELETED_CLOUD_DEVICE'),
+        this.translate.instant('COMMON.CLOSE'),
+        {
+          duration: 3000,
+        },
+      );
     } catch (error) {
       console.error('Error deleting tasks:', error);
-      this.snackbar.open('Error deleting tasks', 'Close', {
-        duration: 5000,
-      });
+      this.snackbar.open(
+        this.translate.instant('OPTIONS.ERROR_DELETING_TASKS'),
+        this.translate.instant('COMMON.CLOSE'),
+        {
+          duration: 5000,
+        },
+      );
     }
   }
 }

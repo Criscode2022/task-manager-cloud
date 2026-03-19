@@ -3,17 +3,17 @@
     <h1
       class="ion-text-center text-xl lg:text-4xl font-extrabold tracking-tight"
     >
-      <span>Task Cloud</span>
+      <span>{{ 'TASKS.PAGE_TITLE' | translate }}</span>
     </h1>
     <button
       slot="end"
       class="filter-button md:absolute md:right-8 lg:text-xl ion-margin px-4 py-2 bg-white text-black rounded-full shadow-md flex justify-center items-center hover:bg-gray-200 focus:bg-gray-300"
       (click)="taskService.changeFilter()"
-      matTooltip="Filter tasks"
+      [matTooltip]="'TASKS.FILTER_TASKS' | translate"
       matTooltipPosition="below"
     >
       <mat-icon class="mr-1">filter_list</mat-icon>
-      {{filter()}}
+      {{ filterLabelKey() | translate }}
     </button>
   </ion-toolbar>
 </ion-header>
@@ -32,11 +32,11 @@
       >
         <div class="flex items-center gap-3">
           <ion-icon name="add-circle-outline" class="header-icon"></ion-icon>
-          <h2 class="form-title">Create New Task</h2>
+          <h2 class="form-title">{{ 'TASKS.CREATE_NEW_TASK' | translate }}</h2>
         </div>
 
         <ion-icon
-          [matTooltip]="isFormVisible() ? 'Collapse form' : 'Expand form'"
+          [matTooltip]="isFormVisible() ? ('TASKS.COLLAPSE_FORM' | translate) : ('TASKS.EXPAND_FORM' | translate)"
           slot="icon-only"
           [name]="isFormVisible() ? 'chevron-up-outline' : 'chevron-down-outline'"
         ></ion-icon>
@@ -44,11 +44,11 @@
 
       @if (isFormVisible()) {
       <mat-form-field appearance="outline" class="form-field">
-        <mat-label>Task Title</mat-label>
+        <mat-label>{{ 'TASKS.TASK_TITLE' | translate }}</mat-label>
         <input
           matInput
           type="text"
-          placeholder="What do you need to do?"
+          [placeholder]="'TASKS.TITLE_PLACEHOLDER' | translate"
           formControlName="title"
           maxlength="40"
         />
@@ -60,18 +60,18 @@
           matSuffix
           class="clear-button"
           (click)="clear('title')"
-          matTooltip="Clear title"
+          [matTooltip]="'TASKS.CLEAR_TITLE' | translate"
         >
           <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="form-field mt-3">
-        <mat-label>Description (Optional)</mat-label>
+        <mat-label>{{ 'TASKS.DESCRIPTION_OPTIONAL' | translate }}</mat-label>
         <input
           matInput
           type="text"
-          placeholder="Add more details..."
+          [placeholder]="'TASKS.DESCRIPTION_PLACEHOLDER' | translate"
           formControlName="description"
           maxlength="30"
         />
@@ -85,7 +85,7 @@
           matSuffix
           class="clear-button"
           (click)="clear('description')"
-          matTooltip="Clear description"
+          [matTooltip]="'TASKS.CLEAR_DESCRIPTION' | translate"
         >
           <mat-icon>close</mat-icon>
         </button>
@@ -99,7 +99,7 @@
         [disabled]="!form.valid"
       >
         <ion-icon slot="start" name="add-outline"></ion-icon>
-        Add Task
+        {{ 'TASKS.ADD_TASK' | translate }}
       </ion-button>
       }
     </form>
@@ -123,7 +123,7 @@
                 [checked]="task.done"
                 (change)="canClick() ? toggleTaskState(task.id) : null"
                 [class.disabled]="!canClick()"
-                matTooltip="Mark as complete"
+                [matTooltip]="'TASKS.MARK_AS_COMPLETE' | translate"
                 color="primary"
               ></mat-checkbox>
             </div>
@@ -146,7 +146,7 @@
                 fill="clear"
                 class="edit-button hidden md:flex"
                 (click)="presentEditAlert(task)"
-                matTooltip="Edit task"
+                [matTooltip]="'TASKS.EDIT_TASK' | translate"
               >
                 <ion-icon slot="icon-only" name="create-outline"></ion-icon>
               </ion-button>
@@ -156,7 +156,7 @@
                 name="trash-outline"
                 (dblclick)="deleteTask(task.id)"
                 class="delete-icon hidden sm:block"
-                matTooltip="Double click to delete"
+                [matTooltip]="'TASKS.DOUBLE_CLICK_DELETE' | translate"
               ></ion-icon>
             </div>
           </ion-item>
@@ -164,14 +164,14 @@
           <ion-item-options side="start" class="item-options-start md:hidden">
             <ion-item-option color="tertiary" (click)="presentEditAlert(task)">
               <ion-icon slot="start" name="create-outline"></ion-icon>
-              Edit
+              {{ 'COMMON.EDIT' | translate }}
             </ion-item-option>
           </ion-item-options>
 
           <ion-item-options side="end" class="item-options-end">
             <ion-item-option (click)="deleteTask(task.id)" color="danger">
               <ion-icon slot="start" name="trash-outline"></ion-icon>
-              Delete
+              {{ 'COMMON.DELETE' | translate }}
             </ion-item-option>
           </ion-item-options>
         </ion-item-sliding>
@@ -185,17 +185,19 @@
             name="funnel-outline"
             class="empty-icon empty-icon-subtle"
           ></ion-icon>
-          <h3 class="empty-title">No tasks here</h3>
+          <h3 class="empty-title">{{ 'TASKS.NO_TASKS_HERE' | translate }}</h3>
           <p class="empty-text">
-            But you have {{ alternativeFilterInfo()!.count }} {{
-            alternativeFilterInfo()!.label }}
+            {{ 'TASKS.BUT_YOU_HAVE' | translate }} {{
+            alternativeFilterInfo()!.count }} {{
+            alternativeFilterInfo()!.labelKey | translate }}
           </p>
           <button
             class="filter-suggestion-button"
             (click)="switchToAlternativeFilter()"
           >
             <ion-icon name="arrow-forward-outline"></ion-icon>
-            View {{ alternativeFilterInfo()!.label }}
+            {{ 'TASKS.VIEW' | translate }} {{ alternativeFilterInfo()!.labelKey
+            | translate }}
           </button>
           } @else {
           <!-- Default empty state -->
@@ -203,8 +205,8 @@
             name="checkmark-done-circle-outline"
             class="empty-icon"
           ></ion-icon>
-          <h3 class="empty-title">No Tasks Yet</h3>
-          <p class="empty-text">Create your first task to get started!</p>
+          <h3 class="empty-title">{{ 'TASKS.NO_TASKS_YET' | translate }}</h3>
+          <p class="empty-text">{{ 'TASKS.CREATE_FIRST_TASK' | translate }}</p>
           }
         </div>
 
@@ -227,7 +229,7 @@
     [class.animate-duration-2000]="loadingService.isLoading()"
     [disabled]="loadingService.isLoading()"
     (click)="refresh()"
-    matTooltip="Sync tasks with cloud"
+    [matTooltip]="'TASKS.SYNC_WITH_CLOUD' | translate"
     matTooltipPosition="above"
     color="secondary"
   >
@@ -243,7 +245,7 @@
     class="fab-button fab-install"
     id="install-alert"
     color="primary"
-    matTooltip="Install app"
+    [matTooltip]="'TASKS.INSTALL_APP' | translate"
     matTooltipPosition="above"
   >
     <mat-icon slot="icon-only">install_mobile</mat-icon>
@@ -255,7 +257,7 @@
 
 <ion-alert
   trigger="install-alert"
-  [header]="'How to install'"
-  [message]="alertMessages.InstallAlert"
+  [header]="'TASKS.HOW_TO_INSTALL' | translate"
+  [message]="'TASKS.INSTALL_ALERT' | translate"
   [buttons]="installButtons"
 ></ion-alert>

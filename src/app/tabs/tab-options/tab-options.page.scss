@@ -169,9 +169,11 @@
   }
 
   &.user-info {
-    background: linear-gradient(135deg,
-        rgba(16, 185, 129, 0.1) 0%,
-        rgba(16, 185, 129, 0.05) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(16, 185, 129, 0.1) 0%,
+      rgba(16, 185, 129, 0.05) 100%
+    );
   }
 }
 
@@ -265,6 +267,46 @@
   }
 }
 
+// Language Select
+.language-select {
+  min-width: 140px;
+  max-width: 180px;
+  width: 100%;
+  flex: 0 0 auto;
+  text-align: center;
+  --padding-start: 12px;
+  --padding-end: 10px;
+  --background: var(--ion-item-background, var(--ion-color-light));
+  --border-radius: 12px;
+  border: 1px solid var(--ion-border-color);
+  border-radius: 12px;
+
+  &::part(text) {
+    width: 100%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 600;
+  }
+
+  &::part(placeholder) {
+    width: 100%;
+    text-align: center;
+  }
+
+  &::part(icon) {
+    opacity: 0.8;
+  }
+}
+
+@media (max-width: 480px) {
+  .language-select {
+    min-width: 120px;
+    max-width: 140px;
+  }
+}
+
 // Animations
 @keyframes fadeInSubtle {
   from {
@@ -301,9 +343,11 @@
     border-bottom-color: var(--ion-border-color);
 
     &.user-info {
-      background: linear-gradient(135deg,
-          rgba(52, 211, 153, 0.15) 0%,
-          rgba(52, 211, 153, 0.08) 100%);
+      background: linear-gradient(
+        135deg,
+        rgba(52, 211, 153, 0.15) 0%,
+        rgba(52, 211, 153, 0.08) 100%
+      );
     }
   }
 }

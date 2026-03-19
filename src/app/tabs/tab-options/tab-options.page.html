@@ -3,14 +3,14 @@
     <h1
       class="ion-text-center text-xl lg:text-4xl ml-5 md:ml-7 xl:ml-11 font-extrabold tracking-tight"
     >
-      <span>Settings</span>
+      <span>{{ 'OPTIONS.PAGE_TITLE' | translate }}</span>
     </h1>
     <button
       mat-icon-button
       class="ion-margin my-4 absolute right-0 md:right-8 lg:text-xl text-white"
       slot="end"
       (click)="showInfoAlert()"
-      matTooltip="Help"
+      [matTooltip]="'COMMON.HELP' | translate"
       matTooltipPosition="below"
     >
       <mat-icon class="mr-1">help-circle-outline</mat-icon>
@@ -31,12 +31,12 @@
       @if (!userId() && !isLoading()) {
       <ion-chip color="warning" class="status-chip">
         <ion-icon name="cloud-offline-outline"></ion-icon>
-        <ion-label>Offline Mode</ion-label>
+        <ion-label>{{ 'OPTIONS.OFFLINE_MODE' | translate }}</ion-label>
       </ion-chip>
       } @if (userId() && !isLoading()) {
       <ion-chip color="success" class="status-chip">
         <ion-icon name="cloud-done-outline"></ion-icon>
-        <ion-label>Connected</ion-label>
+        <ion-label>{{ 'OPTIONS.CONNECTED' | translate }}</ion-label>
       </ion-chip>
       }
     </div>
@@ -49,14 +49,14 @@
         name="crescent"
         color="primary"
       ></ion-spinner>
-      <p class="loading-text">Loading...</p>
+      <p class="loading-text">{{ 'COMMON.LOADING' | translate }}</p>
     </div>
     } @if (!isLoading()) {
     <!-- Cloud Sync Section -->
     <div class="settings-section fade-in-subtle" style="animation-delay: 0.05s">
       <div class="section-header">
         <ion-icon name="cloud-outline" class="section-icon"></ion-icon>
-        <h2 class="section-title">Cloud Sync</h2>
+        <h2 class="section-title">{{ 'OPTIONS.CLOUD_SYNC' | translate }}</h2>
       </div>
 
       <ion-card class="settings-card">
@@ -64,8 +64,10 @@
         <!-- Upload Tasks -->
         <div class="card-item">
           <div class="card-content">
-            <h3 class="card-title">Upload Tasks</h3>
-            <p class="card-description">Sync your local tasks to the cloud</p>
+            <h3 class="card-title">{{ 'OPTIONS.UPLOAD_TASKS' | translate }}</h3>
+            <p class="card-description">
+              {{ 'OPTIONS.SYNC_LOCAL_TASKS' | translate }}
+            </p>
           </div>
           <ion-button
             aria-label="upload button"
@@ -80,14 +82,14 @@
         <!-- User Info Card -->
         <div class="card-item user-info">
           <div class="card-content">
-            <h3 class="card-title">User ID</h3>
+            <h3 class="card-title">{{ 'OPTIONS.USER_ID' | translate }}</h3>
             <p class="card-id">{{userId()}}</p>
           </div>
           <ion-button
             aria-label="offline button"
             fill="clear"
             class="action-button"
-            matTooltip="Go offline"
+            [matTooltip]="'OPTIONS.GO_OFFLINE' | translate"
             (click)="showGoOfflineAlert()"
           >
             <ion-icon name="cloud-offline-outline"></ion-icon>
@@ -99,11 +101,12 @@
         <div class="card-item">
           <div class="card-content">
             <h3 class="card-title">
-              {{!userId() ? 'Login with PIN' : 'Switch Account'}}
+              {{!userId() ? ('OPTIONS.LOGIN_WITH_PIN' | translate) :
+              ('OPTIONS.SWITCH_ACCOUNT' | translate)}}
             </h3>
             <p class="card-description">
-              {{!userId() ? 'Sign in to sync your tasks' : 'Login with a
-              different PIN'}}
+              {{!userId() ? ('OPTIONS.SIGN_IN_TO_SYNC' | translate) :
+              ('OPTIONS.LOGIN_WITH_DIFFERENT_PIN' | translate)}}
             </p>
           </div>
           <ion-button
@@ -121,20 +124,77 @@
       </ion-card>
     </div>
 
+    <!-- Appearance Section -->
+    <div class="settings-section fade-in-subtle" style="animation-delay: 0.15s">
+      <div class="section-header">
+        <ion-icon name="color-palette-outline" class="section-icon"></ion-icon>
+        <h2 class="section-title">{{ 'OPTIONS.APPEARANCE' | translate }}</h2>
+      </div>
+
+      <ion-card class="settings-card">
+        <div class="card-item">
+          <div class="card-content">
+            <h3 class="card-title">{{ 'OPTIONS.DARK_MODE' | translate }}</h3>
+            <p class="card-description">
+              {{ 'OPTIONS.DARK_MODE_DESCRIPTION' | translate }}
+            </p>
+          </div>
+          <ion-toggle
+            [checked]="isDark()"
+            (ionChange)="themeService.switchTheme()"
+            class="modern-toggle"
+          ></ion-toggle>
+        </div>
+      </ion-card>
+    </div>
+
+    <!-- Language Section -->
+    <div class="settings-section fade-in-subtle" style="animation-delay: 0.2s">
+      <div class="section-header">
+        <ion-icon name="language-outline" class="section-icon"></ion-icon>
+        <h2 class="section-title">{{ 'OPTIONS.LANGUAGE' | translate }}</h2>
+      </div>
+
+      <ion-card class="settings-card">
+        <div class="card-item">
+          <div class="card-content">
+            <h3 class="card-title">{{ 'OPTIONS.LANGUAGE' | translate }}</h3>
+            <p class="card-description">
+              {{ 'OPTIONS.LANGUAGE_DESCRIPTION' | translate }}
+            </p>
+          </div>
+          <ion-select
+            interface="popover"
+            [value]="selectedLanguage()"
+            (ionChange)="changeLanguage($event.detail.value)"
+            class="language-select"
+          >
+            @for (language of supportedLanguages; track language) {
+            <ion-select-option [value]="language">
+              {{ getLanguageLabel(language) }}
+            </ion-select-option>
+            }
+          </ion-select>
+        </div>
+      </ion-card>
+    </div>
+
     <!-- Danger Zone Section -->
-    <div class="settings-section fade-in-subtle" style="animation-delay: 0.1s">
+    <div class="settings-section fade-in-subtle" style="animation-delay: 0.25s">
       <div class="section-header">
         <ion-icon name="warning-outline" class="section-icon"></ion-icon>
-        <h2 class="section-title">Danger Zone</h2>
+        <h2 class="section-title">{{ 'OPTIONS.DANGER_ZONE' | translate }}</h2>
       </div>
 
       <ion-card class="settings-card danger-card">
         <!-- Delete All Tasks -->
         <div class="card-item">
           <div class="card-content">
-            <h3 class="card-title text-danger">Delete All Tasks</h3>
+            <h3 class="card-title text-danger">
+              {{ 'OPTIONS.DELETE_ALL_TASKS' | translate }}
+            </h3>
             <p class="card-description">
-              Permanently remove all tasks from your list
+              {{ 'OPTIONS.DELETE_ALL_TASKS_DESCRIPTION' | translate }}
             </p>
           </div>
           <ion-button
@@ -152,9 +212,11 @@
         <!-- Delete Account -->
         <div class="card-item">
           <div class="card-content">
-            <h3 class="card-title text-danger">Delete Account</h3>
+            <h3 class="card-title text-danger">
+              {{ 'OPTIONS.DELETE_ACCOUNT' | translate }}
+            </h3>
             <p class="card-description">
-              Permanently remove your user ID and cloud data
+              {{ 'OPTIONS.DELETE_ACCOUNT_DESCRIPTION' | translate }}
             </p>
           </div>
           <ion-button
@@ -167,28 +229,6 @@
           </ion-button>
         </div>
         }
-      </ion-card>
-    </div>
-
-    <!-- Appearance Section -->
-    <div class="settings-section fade-in-subtle" style="animation-delay: 0.15s">
-      <div class="section-header">
-        <ion-icon name="color-palette-outline" class="section-icon"></ion-icon>
-        <h2 class="section-title">Appearance</h2>
-      </div>
-
-      <ion-card class="settings-card">
-        <div class="card-item">
-          <div class="card-content">
-            <h3 class="card-title">Dark Mode</h3>
-            <p class="card-description">Toggle between light and dark theme</p>
-          </div>
-          <ion-toggle
-            [checked]="isDark()"
-            (ionChange)="themeService.switchTheme()"
-            class="modern-toggle"
-          ></ion-toggle>
-        </div>
       </ion-card>
     </div>
     }
