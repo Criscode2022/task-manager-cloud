@@ -16,55 +16,80 @@ CREATE TABLE IF NOT EXISTS public.tasks (
     title TEXT NOT NULL,
     description TEXT,
     done BOOLEAN DEFAULT false NOT NULL,
+    priority TEXT DEFAULT 'medium' NOT NULL CHECK (priority IN ('low', 'medium', 'high')),
+    tags TEXT[] DEFAULT '{}'::TEXT[] NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
+-- Ensure existing tasks table also gets new columns when already created
+ALTER TABLE public.tasks
+ADD COLUMN IF NOT EXISTS priority TEXT DEFAULT 'medium' NOT NULL;
+
+ALTER TABLE public.tasks
+    ADD COLUMN IF NOT EXISTS tags TEXT[] DEFAULT '{}'::TEXT[] NOT NULL;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'tasks_priority_check'
+    ) THEN
+        ALTER TABLE public.tasks
+            ADD CONSTRAINT tasks_priority_check
+            CHECK (priority IN ('low', 'medium', 'high'));
+    END IF;
+END
+$$;
+
 -- Create indexes for better query performance
-CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON public.tasks(user_id);
-CREATE INDEX IF NOT EXISTS idx_tasks_done ON public.tasks(done);
-CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON public.tasks(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON public.tasks (user_id);
+
+CREATE INDEX IF NOT EXISTS idx_tasks_done ON public.tasks (done);
+
+CREATE INDEX IF NOT EXISTS idx_tasks_priority ON public.tasks (priority);
+
+CREATE INDEX IF NOT EXISTS idx_tasks_tags ON public.tasks USING GIN (tags);
+
+CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON public.tasks (created_at DESC);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for users table
 -- Allow anyone to create a user
-CREATE POLICY "Anyone can create users" ON public.users
-    FOR INSERT
-    WITH CHECK (true);
+CREATE POLICY "Anyone can create users" ON public.users FOR
+INSERT
+WITH
+    CHECK (true);
 
 -- Allow users to read their own data
-CREATE POLICY "Users can read their own data" ON public.users
-    FOR SELECT
-    USING (true);
+CREATE POLICY "Users can read their own data" ON public.users FOR
+SELECT USING (true);
 
 -- Allow users to delete their own account
-CREATE POLICY "Users can delete their own account" ON public.users
-    FOR DELETE
-    USING (true);
+CREATE POLICY "Users can delete their own account" ON public.users FOR DELETE USING (true);
 
 -- Create policies for tasks table
 -- Allow users to read all tasks (with user_id filter in app)
-CREATE POLICY "Users can read tasks" ON public.tasks
-    FOR SELECT
-    USING (true);
+CREATE POLICY "Users can read tasks" ON public.tasks FOR
+SELECT USING (true);
 
 -- Allow users to create tasks
-CREATE POLICY "Users can create tasks" ON public.tasks
-    FOR INSERT
-    WITH CHECK (true);
+CREATE POLICY "Users can create tasks" ON public.tasks FOR
+INSERT
+WITH
+    CHECK (true);
 
 -- Allow users to update tasks
-CREATE POLICY "Users can update tasks" ON public.tasks
-    FOR UPDATE
-    USING (true);
+CREATE POLICY "Users can update tasks" ON public.tasks FOR
+UPDATE USING (true);
 
 -- Allow users to delete tasks
-CREATE POLICY "Users can delete tasks" ON public.tasks
-    FOR DELETE
-    USING (true);
+CREATE POLICY "Users can delete tasks" ON public.tasks FOR DELETE USING (true);
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
@@ -83,6 +108,12 @@ CREATE TRIGGER set_updated_at
 
 -- Grant necessary permissions
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
+
 GRANT ALL ON public.users TO anon, authenticated;
+
 GRANT ALL ON public.tasks TO anon, authenticated;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+
+GRANT USAGE,
+SELECT
+    ON ALL SEQUENCES IN SCHEMA public TO anon,
+    authenticated;

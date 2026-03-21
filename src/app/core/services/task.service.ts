@@ -5,7 +5,11 @@ import {
   StatusEnum,
   StatusEnumArray,
 } from 'src/app/tabs/tab-list/types/statusEnum';
-import { Task } from '../../tabs/tab-list/types/task';
+import {
+  DEFAULT_TASK_PRIORITY,
+  Task,
+  TaskPriority,
+} from '../../tabs/tab-list/types/task';
 
 @Injectable({
   providedIn: 'root',
@@ -40,12 +44,37 @@ export class TaskService {
       return [];
     }
 
-    return (await this.storage.get('tasks')) || [];
+    const storedTasks = ((await this.storage.get('tasks')) || []) as Task[];
+    return storedTasks.map((task) => this.normalizeTask(task));
   }
 
   public async saveTasks(tasks: Task[]): Promise<void> {
     console.log('Saving tasks to storage:', tasks);
-    await this.storage?.set('tasks', tasks);
+    await this.storage?.set(
+      'tasks',
+      tasks.map((task) => this.normalizeTask(task)),
+    );
+  }
+
+  private normalizeTask(task: Task): Task {
+    const priority = this.normalizePriority(task.priority);
+    const tags = Array.isArray(task.tags)
+      ? task.tags.map((tag) => tag?.trim().toLowerCase()).filter(Boolean)
+      : [];
+
+    return {
+      ...task,
+      priority,
+      tags,
+    };
+  }
+
+  private normalizePriority(priority?: TaskPriority): TaskPriority {
+    if (priority === 'low' || priority === 'high' || priority === 'medium') {
+      return priority;
+    }
+
+    return DEFAULT_TASK_PRIORITY;
   }
 
   //=======================================================================================================

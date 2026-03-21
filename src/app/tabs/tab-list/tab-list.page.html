@@ -91,6 +91,55 @@
         </button>
       </mat-form-field>
 
+      <ion-item lines="none" class="priority-selector mt-2">
+        <ion-label>{{ 'TASKS.PRIORITY_LABEL' | translate }}</ion-label>
+        <ion-select formControlName="priority" interface="popover">
+          <ion-select-option value="high">
+            {{ 'TASKS.PRIORITY.HIGH' | translate }}
+          </ion-select-option>
+          <ion-select-option value="medium">
+            {{ 'TASKS.PRIORITY.MEDIUM' | translate }}
+          </ion-select-option>
+          <ion-select-option value="low">
+            {{ 'TASKS.PRIORITY.LOW' | translate }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <mat-form-field appearance="outline" class="form-field mt-3">
+        <mat-label>{{ 'TASKS.TAGS_OPTIONAL' | translate }}</mat-label>
+        <input
+          matInput
+          type="text"
+          [placeholder]="'TASKS.TAGS_PLACEHOLDER' | translate"
+          formControlName="tagsInput"
+          [matAutocomplete]="tagsAutocomplete"
+          (input)="onTagsInputChange($any($event.target).value)"
+          maxlength="80"
+        />
+        <mat-hint>{{ 'TASKS.TAGS_HELPER' | translate }}</mat-hint>
+        <button
+          *ngIf="this.tagsInput?.value?.length"
+          mat-icon-button
+          type="button"
+          matSuffix
+          class="clear-button"
+          (click)="clearTagsInput()"
+          [matTooltip]="'TASKS.CLEAR_TAGS' | translate"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <mat-autocomplete
+        #tagsAutocomplete="matAutocomplete"
+        (optionSelected)="applyTagSuggestion($event.option.value)"
+      >
+        @for (tag of tagSuggestions(); track tag) {
+        <mat-option [value]="tag"> #{{ tag }} </mat-option>
+        }
+      </mat-autocomplete>
+
       <ion-button
         type="submit"
         expand="block"
@@ -104,6 +153,55 @@
       }
     </form>
   </div>
+
+  @if (tasks().length) {
+  <div class="advanced-filters">
+    <ion-item lines="none" class="advanced-filter-item">
+      <ion-label>{{ 'TASKS.FILTER_BY_PRIORITY' | translate }}</ion-label>
+      <ion-select
+        [value]="selectedPriorityFilter()"
+        (ionChange)="onPriorityFilterChange($event.detail.value)"
+        interface="popover"
+      >
+        <ion-select-option value="all"
+          >{{ 'TASKS.ALL_PRIORITIES' | translate }}</ion-select-option
+        >
+        <ion-select-option value="high"
+          >{{ 'TASKS.PRIORITY.HIGH' | translate }}</ion-select-option
+        >
+        <ion-select-option value="medium"
+          >{{ 'TASKS.PRIORITY.MEDIUM' | translate }}</ion-select-option
+        >
+        <ion-select-option value="low"
+          >{{ 'TASKS.PRIORITY.LOW' | translate }}</ion-select-option
+        >
+      </ion-select>
+    </ion-item>
+
+    <ion-item lines="none" class="advanced-filter-item">
+      <ion-label>{{ 'TASKS.FILTER_BY_TAG' | translate }}</ion-label>
+      <ion-select
+        [value]="selectedTagFilter()"
+        (ionChange)="onTagFilterChange($event.detail.value)"
+        interface="popover"
+      >
+        <ion-select-option value="all"
+          >{{ 'TASKS.ALL_TAGS' | translate }}</ion-select-option
+        >
+        @for (tag of availableTags(); track tag) {
+        <ion-select-option [value]="tag">#{{ tag }}</ion-select-option>
+        }
+      </ion-select>
+    </ion-item>
+
+    @if (hasAdvancedFilters()) {
+    <button class="clear-advanced-filters" (click)="clearAdvancedFilters()">
+      <ion-icon name="close-circle-outline"></ion-icon>
+      {{ 'TASKS.CLEAR_EXTRA_FILTERS' | translate }}
+    </button>
+    }
+  </div>
+  }
 
   <div class="tasks-container">
     <ion-list class="task-list">
@@ -138,6 +236,17 @@
                 @if(task.description){
                 <div class="task-description">{{ task?.description }}</div>
                 }
+                <div class="task-meta">
+                  <span
+                    class="priority-badge"
+                    [ngClass]="getPriorityClass(task.priority)"
+                  >
+                    {{ getPriorityTranslationKey(task.priority) | translate }}
+                  </span>
+                  @for(tag of task.tags; track tag){
+                  <span class="tag-chip">#{{ tag }}</span>
+                  }
+                </div>
               </ion-label>
             </div>
 

@@ -4,20 +4,28 @@
 
 -- Drop existing tables if they exist (CASCADE removes dependencies)
 DROP TABLE IF EXISTS public.tasks CASCADE;
+
 DROP TABLE IF EXISTS public.users CASCADE;
 
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "Anyone can create users" ON public.users;
+
 DROP POLICY IF EXISTS "Users can read their own data" ON public.users;
+
 DROP POLICY IF EXISTS "Users can delete their own account" ON public.users;
+
 DROP POLICY IF EXISTS "Users can read tasks" ON public.tasks;
+
 DROP POLICY IF EXISTS "Users can create tasks" ON public.tasks;
+
 DROP POLICY IF EXISTS "Users can update tasks" ON public.tasks;
+
 DROP POLICY IF EXISTS "Users can delete tasks" ON public.tasks;
 
 -- Drop existing functions and triggers
 DROP TRIGGER IF EXISTS set_updated_at ON public.tasks;
-DROP FUNCTION IF EXISTS public.handle_updated_at();
+
+DROP FUNCTION IF EXISTS public.handle_updated_at ();
 
 -- =====================================================
 -- CREATE NEW SCHEMA WITH PIN_HASH
@@ -37,17 +45,26 @@ CREATE TABLE public.tasks (
     title TEXT NOT NULL,
     description TEXT,
     done BOOLEAN DEFAULT false NOT NULL,
+    priority TEXT DEFAULT 'medium' NOT NULL CHECK (priority IN ('low', 'medium', 'high')),
+    tags TEXT[] DEFAULT '{}'::TEXT[] NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW())
 );
 
 -- Create indexes for better query performance
-CREATE INDEX idx_tasks_user_id ON public.tasks(user_id);
-CREATE INDEX idx_tasks_done ON public.tasks(done);
-CREATE INDEX idx_tasks_created_at ON public.tasks(created_at DESC);
+CREATE INDEX idx_tasks_user_id ON public.tasks (user_id);
+
+CREATE INDEX idx_tasks_done ON public.tasks (done);
+
+CREATE INDEX idx_tasks_priority ON public.tasks (priority);
+
+CREATE INDEX idx_tasks_tags ON public.tasks USING GIN (tags);
+
+CREATE INDEX idx_tasks_created_at ON public.tasks (created_at DESC);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 
 -- =====================================================
@@ -55,34 +72,29 @@ ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 -- =====================================================
 
 -- Users table policies
-CREATE POLICY "Anyone can create users" ON public.users
-    FOR INSERT
-    WITH CHECK (true);
+CREATE POLICY "Anyone can create users" ON public.users FOR
+INSERT
+WITH
+    CHECK (true);
 
-CREATE POLICY "Users can read their own data" ON public.users
-    FOR SELECT
-    USING (true);
+CREATE POLICY "Users can read their own data" ON public.users FOR
+SELECT USING (true);
 
-CREATE POLICY "Users can delete their own account" ON public.users
-    FOR DELETE
-    USING (true);
+CREATE POLICY "Users can delete their own account" ON public.users FOR DELETE USING (true);
 
 -- Tasks table policies
-CREATE POLICY "Users can read tasks" ON public.tasks
-    FOR SELECT
-    USING (true);
+CREATE POLICY "Users can read tasks" ON public.tasks FOR
+SELECT USING (true);
 
-CREATE POLICY "Users can create tasks" ON public.tasks
-    FOR INSERT
-    WITH CHECK (true);
+CREATE POLICY "Users can create tasks" ON public.tasks FOR
+INSERT
+WITH
+    CHECK (true);
 
-CREATE POLICY "Users can update tasks" ON public.tasks
-    FOR UPDATE
-    USING (true);
+CREATE POLICY "Users can update tasks" ON public.tasks FOR
+UPDATE USING (true);
 
-CREATE POLICY "Users can delete tasks" ON public.tasks
-    FOR DELETE
-    USING (true);
+CREATE POLICY "Users can delete tasks" ON public.tasks FOR DELETE USING (true);
 
 -- =====================================================
 -- CREATE FUNCTIONS & TRIGGERS
@@ -108,9 +120,15 @@ CREATE TRIGGER set_updated_at
 -- =====================================================
 
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
+
 GRANT ALL ON public.users TO anon, authenticated;
+
 GRANT ALL ON public.tasks TO anon, authenticated;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+
+GRANT USAGE,
+SELECT
+    ON ALL SEQUENCES IN SCHEMA public TO anon,
+    authenticated;
 
 -- =====================================================
 -- VERIFICATION
@@ -122,8 +140,9 @@ SELECT
     column_name,
     data_type
 FROM information_schema.columns
-WHERE table_schema = 'public'
-AND table_name = 'users'
+WHERE
+    table_schema = 'public'
+    AND table_name = 'users'
 ORDER BY ordinal_position;
 
 SELECT
@@ -131,8 +150,9 @@ SELECT
     column_name,
     data_type
 FROM information_schema.columns
-WHERE table_schema = 'public'
-AND table_name = 'tasks'
+WHERE
+    table_schema = 'public'
+    AND table_name = 'tasks'
 ORDER BY ordinal_position;
 
 -- Show success message

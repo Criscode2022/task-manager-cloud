@@ -25,6 +25,11 @@
   "TASKS": {
     "PAGE_TITLE": "Task Cloud",
     "FILTER_TASKS": "Filter tasks",
+    "FILTER_BY_PRIORITY": "Filter by priority",
+    "FILTER_BY_TAG": "Filter by tag",
+    "ALL_PRIORITIES": "All priorities",
+    "ALL_TAGS": "All tags",
+    "CLEAR_EXTRA_FILTERS": "Clear filters",
     "FILTER": {
       "ALL": "All",
       "DONE": "Done",
@@ -40,6 +45,18 @@
     "DESCRIPTION_PLACEHOLDER": "Add more details...",
     "DESCRIPTION_PLACEHOLDER_EDIT": "Description",
     "CLEAR_DESCRIPTION": "Clear description",
+    "PRIORITY_LABEL": "Priority",
+    "PRIORITY_PLACEHOLDER_EDIT": "Priority: high, medium, or low",
+    "PRIORITY": {
+      "HIGH": "High",
+      "MEDIUM": "Medium",
+      "LOW": "Low"
+    },
+    "TAGS_OPTIONAL": "Tags (Optional)",
+    "TAGS_PLACEHOLDER": "work, urgent, personal",
+    "TAGS_PLACEHOLDER_EDIT": "Tags separated by commas",
+    "TAGS_HELPER": "Use commas to add multiple tags",
+    "CLEAR_TAGS": "Clear tags",
     "ADD_TASK": "Add Task",
     "MARK_AS_COMPLETE": "Mark as complete",
     "EDIT_TASK": "Edit Task",

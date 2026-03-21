@@ -1,7 +1,11 @@
 import { inject, Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { Task, TaskDTO } from 'src/app/tabs/tab-list/types/task';
+import {
+  DEFAULT_TASK_PRIORITY,
+  Task,
+  TaskDTO,
+} from 'src/app/tabs/tab-list/types/task';
 import { SupabaseService } from './supabase.service';
 import { TaskService } from './task.service';
 
@@ -22,7 +26,7 @@ export class TaskSupabaseService {
   public async upload(
     task: TaskDTO,
     userId: number,
-    pinHash: string
+    pinHash: string,
   ): Promise<void> {
     if (!userId) return;
 
@@ -46,6 +50,8 @@ export class TaskSupabaseService {
         title: task.title!,
         description: task.description || '',
         done: task.done || false,
+        priority: task.priority || DEFAULT_TASK_PRIORITY,
+        tags: task.tags || [],
         user_id: userId,
         updated_at: new Date(),
       });
@@ -56,9 +62,7 @@ export class TaskSupabaseService {
       // so that future updates/deletes target the correct row
       if (localId && newTask.id !== localId) {
         this.tasks.update((tasks) =>
-          tasks.map((t) =>
-            t.id === localId ? { ...t, id: newTask.id } : t
-          )
+          tasks.map((t) => (t.id === localId ? { ...t, id: newTask.id } : t)),
         );
         console.log(`Local task ID updated: ${localId} → ${newTask.id}`);
       }
@@ -83,7 +87,7 @@ export class TaskSupabaseService {
   public async editTask(
     task: TaskDTO,
     userId: number,
-    pinHash: string
+    pinHash: string,
   ): Promise<void> {
     if (!userId || !task.id) return;
 
@@ -105,6 +109,8 @@ export class TaskSupabaseService {
         title: task.title,
         description: task.description,
         done: task.done,
+        priority: task.priority,
+        tags: task.tags,
         updated_at: new Date(),
       });
 
@@ -130,7 +136,7 @@ export class TaskSupabaseService {
   public async deleteTask(
     taskId: number,
     userId: number,
-    pinHash: string
+    pinHash: string,
   ): Promise<void> {
     if (!userId || !taskId) return;
 
@@ -254,15 +260,14 @@ export class TaskSupabaseService {
   /**
    * Bulk upload local tasks to Supabase (for initial sync)
    */
-  public async bulkUpload(
-    tasks: Task[],
-    userId: number
-  ): Promise<void> {
+  public async bulkUpload(tasks: Task[], userId: number): Promise<void> {
     try {
       const tasksToUpload = tasks.map((task) => ({
         title: task.title,
         description: task.description,
         done: task.done,
+        priority: task.priority || DEFAULT_TASK_PRIORITY,
+        tags: task.tags || [],
         user_id: userId,
         updated_at: new Date(),
       }));
@@ -318,15 +323,15 @@ export class TaskSupabaseService {
           // Update existing task in local state
           this.tasks.update((tasks) =>
             tasks.map((task) =>
-              task.id === newRecord.id ? (newRecord as Task) : task
-            )
+              task.id === newRecord.id ? (newRecord as Task) : task,
+            ),
           );
           break;
 
         case 'DELETE':
           // Remove task from local state
           this.tasks.update((tasks) =>
-            tasks.filter((task) => task.id !== oldRecord.id)
+            tasks.filter((task) => task.id !== oldRecord.id),
           );
           break;
       }

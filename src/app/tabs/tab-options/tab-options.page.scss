@@ -164,8 +164,14 @@
   }
 
   &:hover {
-    background-color: var(--ion-color-primary-tint);
-    background-opacity: 0.05;
+    background-color: var(--ion-color-primary);
+
+    .card-title,
+    .card-description,
+    .card-id,
+    .card-title.text-danger {
+      color: var(--ion-color-primary-contrast);
+    }
   }
 
   &.user-info {
@@ -174,6 +180,26 @@
       rgba(16, 185, 129, 0.1) 0%,
       rgba(16, 185, 129, 0.05) 100%
     );
+
+    &:hover {
+      background: linear-gradient(
+        135deg,
+        rgba(16, 185, 129, 0.1) 0%,
+        rgba(16, 185, 129, 0.05) 100%
+      );
+
+      .card-title {
+        color: var(--ion-text-color);
+      }
+
+      .card-description {
+        color: var(--ion-text-color-secondary);
+      }
+
+      .card-id {
+        color: var(--ion-color-primary);
+      }
+    }
   }
 }
 
@@ -342,12 +368,43 @@
   .card-item {
     border-bottom-color: var(--ion-border-color);
 
+    &:hover {
+      background-color: var(--ion-color-primary-shade);
+
+      .card-title,
+      .card-description,
+      .card-id,
+      .card-title.text-danger {
+        color: var(--ion-color-primary-contrast);
+      }
+    }
+
     &.user-info {
       background: linear-gradient(
         135deg,
         rgba(52, 211, 153, 0.15) 0%,
         rgba(52, 211, 153, 0.08) 100%
       );
+
+      &:hover {
+        background: linear-gradient(
+          135deg,
+          rgba(52, 211, 153, 0.15) 0%,
+          rgba(52, 211, 153, 0.08) 100%
+        );
+
+        .card-title {
+          color: var(--ion-text-color);
+        }
+
+        .card-description {
+          color: var(--ion-text-color-secondary);
+        }
+
+        .card-id {
+          color: var(--ion-color-primary);
+        }
+      }
     }
   }
 }
