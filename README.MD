@@ -1,51 +1,85 @@
 # Task Cloud
 
-Task Cloud is an Angular Ionic application (PWA) designed to help you manage your tasks efficiently. With this app, you can create, update, and delete tasks, filter them by completion status, and even work offline using Ionic Storage. Additionally, you can sync your tasks across all devices by saving them in the cloud. The user-friendly interface, enhanced with Tailwind CSS, makes it easy to stay organized and on top of your tasks.
+Task Cloud is an Ionic + Angular Progressive Web App for personal task management with offline support and cloud sync.
 
 ## Features
 
-- Create, update, and delete tasks
-- Filter tasks by completion status
-- Offline functionality using Ionic Storage
-- Sync your tasks across all devices by saving them in the cloud
-- User-friendly interface
+- Create, edit, complete, and delete tasks
+- Filter tasks by status
+- Offline support with Ionic Storage
+- Cloud synchronization across devices
+- Responsive UI built with Ionic and Tailwind CSS
 
-## Production Deploy
+## Live App
 
-You can access the live application at [Task Cloud Web](https://task-cloud.netlify.app).
+- Production URL: [https://task-cloud.netlify.app](https://task-cloud.netlify.app)
 
-## Installation
+## Tech Stack
 
-To install and run the application, follow these steps:
+- Angular 19
+- Ionic 8
+- Tailwind CSS
+- Supabase
+- Jasmine + Karma
+- ESLint
 
-1. Clone the repository:
+## Getting Started
+
+1. Clone the repository.
 
 ```bash
 git clone https://github.com/Criscode2022/task-manager-ionic.git
+cd task-manager-ionic
 ```
 
-2. Navigate to the project directory:
-
-```bash
-cd task-manager
-```
-
-3. Install the dependencies:
+2. Install dependencies.
 
 ```bash
 npm install
 ```
 
-4. Run the application:
+3. Start the development server.
 
 ```bash
-ionic serve
+npm start
 ```
+
+## Useful Scripts
+
+- `npm start`: Start local development server
+- `npm run build`: Build production app
+- `npm run lint`: Run ESLint checks
+- `npm run test`: Run tests in watch mode
+- `npm run test:ci`: Run tests once in headless Chrome (for CI)
+- `npm run lint:ci`: Run lint checks for CI
+
+## Testing and Linting
+
+Run quality checks locally before pushing:
+
+```bash
+npm run lint
+npm run test:ci
+```
+
+## GitHub CI
+
+This repository includes a GitHub Actions workflow that runs on every push and pull request to `main`:
+
+- Install dependencies with `npm ci`
+- Run `npm run lint:ci`
+- Run `npm run test:ci`
+
+Workflow file: `.github/workflows/ci.yml`
+
+## Supabase Setup
+
+See `SUPABASE_SETUP.md` and the migration files in the project root for backend setup details.
 
 ## Contributing
 
-Contributions are welcome! Please fork the repository and submit a pull request.
+Contributions are welcome. Please open an issue or submit a pull request with clear context and testing notes.
 
 ## Contact
 
-For any questions or suggestions, please contact [cristiancode2023@gmail.com](mailto:cristiancode2023@gmail.com).
+For questions or suggestions: [cristiancode2023@gmail.com](mailto:cristiancode2023@gmail.com)

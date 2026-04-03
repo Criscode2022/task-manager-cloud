@@ -10,7 +10,9 @@
     "build": "node scripts/set-env.js && ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
+    "lint": "ng lint",
+    "lint:ci": "ng lint"
   },
   "private": true,
   "dependencies": {
