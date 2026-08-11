@@ -1,6 +1,8 @@
-# Supabase Integration Setup Guide
+# Supabase Integration Setup Guide (Deprecated)
 
-This guide will help you set up Supabase as the database backend for the Task Cloud application.
+> **Deprecated:** Task Cloud now uses Neon Postgres. See [`NEON_SETUP.md`](./NEON_SETUP.md) and `neon-migration.sql`.
+
+This guide remains for historical reference only.
 
 ## Prerequisites
 

@@ -22,7 +22,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
-import { TaskSupabaseService } from '../../core/services/task-supabase.service';
+import { TaskNeonService } from '../../core/services/task-neon.service';
 import { TaskService } from '../../core/services/task.service';
 import { TaskForm } from './task.form';
 import { StatusEnum } from './types/statusEnum';
@@ -53,7 +53,7 @@ import {
   ],
 })
 export class TabListPage extends TaskForm {
-  private readonly taskSupabaseService = inject(TaskSupabaseService);
+  private readonly taskNeonService = inject(TaskNeonService);
   private readonly alertController = inject(AlertController);
   private readonly translate = inject(TranslateService);
   protected readonly taskService = inject(TaskService);
@@ -394,7 +394,7 @@ export class TabListPage extends TaskForm {
 
     console.log('task,', task);
 
-    this.taskSupabaseService.upload(task, userId, pinHash);
+    this.taskNeonService.upload(task, userId, pinHash);
 
     this.hasNewTask.set(true);
     setTimeout(() => {
@@ -448,8 +448,8 @@ export class TabListPage extends TaskForm {
           return;
         }
 
-        // Update task in Supabase
-        this.taskSupabaseService.editTask(
+        // Update task in Neon
+        this.taskNeonService.editTask(
           {
             id: taskId,
             title: task.title,
@@ -493,7 +493,7 @@ export class TabListPage extends TaskForm {
         return;
       }
 
-      this.taskSupabaseService.editTask(task, this.userId(), pinHash);
+      this.taskNeonService.editTask(task, this.userId(), pinHash);
     }
   }
 
@@ -507,7 +507,7 @@ export class TabListPage extends TaskForm {
         return;
       }
 
-      this.taskSupabaseService.deleteTask(taskId, this.userId(), pinHash);
+      this.taskNeonService.deleteTask(taskId, this.userId(), pinHash);
     }
   }
 

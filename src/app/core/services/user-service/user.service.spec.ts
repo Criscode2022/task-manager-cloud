@@ -4,7 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { of } from 'rxjs';
 import { PinHashService } from '../pin-hash.service';
-import { TaskSupabaseService } from '../task-supabase.service';
+import { TaskNeonService } from '../task-neon.service';
 import { TaskService } from '../task.service';
 
 import { UserService } from './user.service';
@@ -20,7 +20,7 @@ describe('UserService', () => {
       remove: jasmine.Spy;
     };
   };
-  let taskSupabaseServiceMock: {
+  let taskNeonServiceMock: {
     createUser: jasmine.Spy;
     bulkUpload: jasmine.Spy;
     download: jasmine.Spy;
@@ -44,7 +44,7 @@ describe('UserService', () => {
       },
     };
 
-    taskSupabaseServiceMock = {
+    taskNeonServiceMock = {
       createUser: jasmine.createSpy('createUser').and.resolveTo(42),
       bulkUpload: jasmine.createSpy('bulkUpload').and.resolveTo(),
       download: jasmine.createSpy('download').and.resolveTo(),
@@ -66,7 +66,7 @@ describe('UserService', () => {
       providers: [
         UserService,
         { provide: TaskService, useValue: taskServiceMock },
-        { provide: TaskSupabaseService, useValue: taskSupabaseServiceMock },
+        { provide: TaskNeonService, useValue: taskNeonServiceMock },
         { provide: PinHashService, useValue: pinHashServiceMock },
         { provide: MatDialog, useValue: dialogMock },
         { provide: MatSnackBar, useValue: snackBarMock },
@@ -88,16 +88,14 @@ describe('UserService', () => {
 
     expect(pinHashServiceMock.generatePin).toHaveBeenCalled();
     expect(pinHashServiceMock.hashPin).toHaveBeenCalledWith('1234');
-    expect(taskSupabaseServiceMock.createUser).toHaveBeenCalledWith(
-      'hash-1234',
-    );
+    expect(taskNeonServiceMock.createUser).toHaveBeenCalledWith('hash-1234');
     expect(taskServiceMock.userId()).toBe(42);
     expect(service.userId()).toBe(42);
     expect(taskServiceMock.storage.set).toHaveBeenCalledWith(
       'pinHash',
       'hash-1234',
     );
-    expect(taskSupabaseServiceMock.bulkUpload).toHaveBeenCalled();
+    expect(taskNeonServiceMock.bulkUpload).toHaveBeenCalled();
     expect(dialogMock.open).toHaveBeenCalled();
     expect(snackBarMock.open).not.toHaveBeenCalledWith(
       'Failed to create user',
@@ -107,7 +105,7 @@ describe('UserService', () => {
   });
 
   it('should show failed message when user creation returns null', async () => {
-    taskSupabaseServiceMock.createUser.and.resolveTo(null);
+    taskNeonServiceMock.createUser.and.resolveTo(null);
 
     await service.createUser();
 
@@ -122,7 +120,7 @@ describe('UserService', () => {
   });
 
   it('should show error message when createUser throws', async () => {
-    taskSupabaseServiceMock.createUser.and.rejectWith(new Error('boom'));
+    taskNeonServiceMock.createUser.and.rejectWith(new Error('boom'));
 
     await service.createUser();
 
@@ -140,7 +138,7 @@ describe('UserService', () => {
 
     await service.getUser();
 
-    expect(taskSupabaseServiceMock.download).not.toHaveBeenCalled();
+    expect(taskNeonServiceMock.download).not.toHaveBeenCalled();
     expect(service.pinHash()).toBeNull();
   });
 
@@ -149,15 +147,13 @@ describe('UserService', () => {
 
     await service.getUser();
 
-    expect(taskSupabaseServiceMock.download).toHaveBeenCalledWith(
-      'stored-hash',
-    );
+    expect(taskNeonServiceMock.download).toHaveBeenCalledWith('stored-hash');
     expect(service.pinHash()).toBe('stored-hash');
   });
 
   it('should clear session data when getUser fails', async () => {
     taskServiceMock.storage.get.and.resolveTo('stored-hash');
-    taskSupabaseServiceMock.download.and.rejectWith(new Error('download-fail'));
+    taskNeonServiceMock.download.and.rejectWith(new Error('download-fail'));
 
     await service.getUser();
 
@@ -172,7 +168,7 @@ describe('UserService', () => {
 
     await service.delete(21);
 
-    expect(taskSupabaseServiceMock.deleteUser).toHaveBeenCalledWith(21);
+    expect(taskNeonServiceMock.deleteUser).toHaveBeenCalledWith(21);
     expect(taskServiceMock.userId()).toBe(0);
     expect(service.userId()).toBe(0);
     expect(service.pinHash()).toBeNull();
@@ -186,7 +182,7 @@ describe('UserService', () => {
   });
 
   it('should throw when delete fails', async () => {
-    taskSupabaseServiceMock.deleteUser.and.rejectWith(new Error('delete-fail'));
+    taskNeonServiceMock.deleteUser.and.rejectWith(new Error('delete-fail'));
 
     await expectAsync(service.delete(5)).toBeRejected();
     expect(snackBarMock.open).toHaveBeenCalledWith(

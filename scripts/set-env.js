@@ -1,14 +1,12 @@
 /**
  * Script to generate environment.local.ts files from .env or process.env
- * 
+ *
  * Priority order:
  * 1. Process environment variables (e.g. Netlify dashboard env vars)
  * 2. .env file in the project root
  * 3. .env.example as a fallback template (will abort for local dev)
- * 
- * This ensures:
- * - CI/CD (Netlify) works with dashboard env vars even without a .env file
- * - Local dev works by reading the .env file
+ *
+ * Frontend only needs API_BASE_URL (Neon DATABASE_URL stays server-side).
  */
 
 const fs = require('fs');
@@ -17,18 +15,17 @@ const path = require('path');
 const envPath = path.join(__dirname, '..', '.env');
 const envExamplePath = path.join(__dirname, '..', '.env.example');
 
+function resolveApiBaseUrl(fromEnv) {
+  return fromEnv || '/api';
+}
+
 // --- Step 1: Check process.env first (Netlify / CI) ---
-const processSupabaseUrl = process.env.SUPABASE_URL;
-const processSupabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+const processApiBaseUrl = process.env.API_BASE_URL;
 
-if (processSupabaseUrl && processSupabaseAnonKey) {
+if (process.env.CI || process.env.NETLIFY || processApiBaseUrl) {
   console.log('🌐 Found environment variables from process (CI/CD)');
-  console.log('   SUPABASE_URL:', processSupabaseUrl);
-  console.log('   SUPABASE_ANON_KEY (first 30 chars):',
-    processSupabaseAnonKey.substring(0, 30) + '...');
-  console.log('   SUPABASE_ANON_KEY length:', processSupabaseAnonKey.length);
-
-  generateEnvFiles(processSupabaseUrl, processSupabaseAnonKey);
+  console.log('   API_BASE_URL:', resolveApiBaseUrl(processApiBaseUrl));
+  generateEnvFiles(resolveApiBaseUrl(processApiBaseUrl));
   process.exit(0);
 }
 
@@ -42,7 +39,7 @@ if (!fs.existsSync(envPath)) {
   if (fs.existsSync(envExamplePath)) {
     fs.copyFileSync(envExamplePath, envPath);
     console.log('✅ .env file created from template');
-    console.log('⚠️  Please edit .env and add your actual Supabase credentials');
+    console.log('⚠️  Please edit .env and add your Neon DATABASE_URL');
     process.exit(1);
   } else {
     console.error('❌ .env.example not found either!');
@@ -54,8 +51,7 @@ if (!fs.existsSync(envPath)) {
 const envContent = fs.readFileSync(envPath, 'utf8');
 const envVars = {};
 
-envContent.split('\n').forEach(line => {
-  // Skip comments and empty lines
+envContent.split('\n').forEach((line) => {
   if (line.trim().startsWith('#') || !line.trim()) {
     return;
   }
@@ -66,35 +62,27 @@ envContent.split('\n').forEach(line => {
   }
 });
 
-// Log what was read from .env
 console.log('\n📖 Reading .env file...');
-console.log('   SUPABASE_URL:', envVars.SUPABASE_URL || '(not set)');
-console.log('   SUPABASE_ANON_KEY (first 30 chars):',
-  envVars.SUPABASE_ANON_KEY ? envVars.SUPABASE_ANON_KEY.substring(0, 30) + '...' : '(not set)');
-console.log('   SUPABASE_ANON_KEY length:', envVars.SUPABASE_ANON_KEY ? envVars.SUPABASE_ANON_KEY.length : 0);
+console.log('   API_BASE_URL:', envVars.API_BASE_URL || '/api (default)');
+console.log(
+  '   DATABASE_URL:',
+  envVars.DATABASE_URL
+    ? envVars.DATABASE_URL.replace(/:[^:@/]+@/, ':***@').slice(0, 60) + '...'
+    : '(not set — required for local API / Netlify functions)',
+);
 
-// Validate required variables
-if (!envVars.SUPABASE_URL || !envVars.SUPABASE_ANON_KEY) {
-  console.error('\n❌ Missing required environment variables in .env file:');
-  if (!envVars.SUPABASE_URL) console.error('  - SUPABASE_URL');
-  if (!envVars.SUPABASE_ANON_KEY) console.error('  - SUPABASE_ANON_KEY');
-  console.log('\n📝 Please update your .env file with the correct values');
-  process.exit(1);
+if (
+  envVars.DATABASE_URL &&
+  (envVars.DATABASE_URL.includes('your-') ||
+    envVars.DATABASE_URL.includes('USER:PASSWORD'))
+) {
+  console.warn('⚠️  Warning: DATABASE_URL appears to be a placeholder');
+  console.warn('   Update .env with your Neon connection string\n');
 }
 
-// Check if using placeholder values
-if (envVars.SUPABASE_ANON_KEY.includes('your-') ||
-    envVars.SUPABASE_ANON_KEY.includes('YOUR_') ||
-    envVars.SUPABASE_ANON_KEY === 'your-actual-supabase-anon-key-here') {
-  console.warn('⚠️  Warning: SUPABASE_ANON_KEY appears to be a placeholder');
-  console.warn('   Please update .env with your actual Supabase anon key');
-  console.warn('   Get it from: https://supabase.com/dashboard > Settings > API\n');
-}
+generateEnvFiles(resolveApiBaseUrl(envVars.API_BASE_URL));
 
-generateEnvFiles(envVars.SUPABASE_URL, envVars.SUPABASE_ANON_KEY);
-
-// --- Helper: generate the environment TS files ---
-function generateEnvFiles(supabaseUrl, supabaseAnonKey) {
+function generateEnvFiles(apiBaseUrl) {
   const devEnvContent = `// This file is auto-generated from .env or process.env
 // DO NOT COMMIT THIS FILE
 
@@ -103,11 +91,8 @@ export const environment = {
   // Legacy API (deprecated)
   baseUrl: 'https://api-workspace-wczh.onrender.com/tasks-manager',
 
-  // Supabase Configuration
-  supabase: {
-    url: '${supabaseUrl}',
-    anonKey: '${supabaseAnonKey}'
-  }
+  // Neon-backed API (Netlify Functions locally via proxy)
+  apiBaseUrl: '${apiBaseUrl}'
 };
 `;
 
@@ -119,28 +104,21 @@ export const environment = {
   // Legacy API (deprecated)
   baseUrl: 'https://api-workspace-wczh.onrender.com/tasks-manager',
 
-  // Supabase Configuration
-  supabase: {
-    url: '${supabaseUrl}',
-    anonKey: '${supabaseAnonKey}'
-  }
+  // Neon-backed API (Netlify Functions)
+  apiBaseUrl: '${apiBaseUrl}'
 };
 `;
 
   const envDir = path.join(__dirname, '..', 'src', 'environments');
 
-  fs.writeFileSync(
-    path.join(envDir, 'environment.local.ts'),
-    devEnvContent
-  );
-
+  fs.writeFileSync(path.join(envDir, 'environment.local.ts'), devEnvContent);
   fs.writeFileSync(
     path.join(envDir, 'environment.prod.local.ts'),
-    prodEnvContent
+    prodEnvContent,
   );
 
   console.log('✅ Environment files generated successfully!');
   console.log('   - src/environments/environment.local.ts');
   console.log('   - src/environments/environment.prod.local.ts');
-  console.log('\n🔒 These files are gitignored and contain your secrets');
+  console.log('\n🔒 These files are gitignored and contain no database secrets');
 }

@@ -6,22 +6,22 @@ import {
   Task,
   TaskDTO,
 } from 'src/app/tabs/tab-list/types/task';
-import { SupabaseService } from './supabase.service';
+import { NeonApiService } from './neon-api.service';
 import { TaskService } from './task.service';
 
 @Injectable({
   providedIn: 'root',
 })
-export class TaskSupabaseService {
+export class TaskNeonService {
   private router = inject(Router);
   private snackbar = inject(MatSnackBar);
   private taskService = inject(TaskService);
-  private supabase = inject(SupabaseService);
+  private neon = inject(NeonApiService);
 
   private tasks = this.taskService.tasks;
 
   /**
-   * Upload/Create a new task to Supabase
+   * Upload/Create a new task to Neon
    */
   public async upload(
     task: TaskDTO,
@@ -33,10 +33,9 @@ export class TaskSupabaseService {
     const localId = task.id;
 
     try {
-      console.log('Uploading task to Supabase...', task, userId);
+      console.log('Uploading task to Neon...', task, userId);
 
-      // Verify user PIN first
-      const isValidUser = await this.supabase.verifyUserPin(userId, pinHash);
+      const isValidUser = await this.neon.verifyUserPin(userId, pinHash);
 
       if (!isValidUser) {
         this.snackbar.open('Invalid user credentials', 'Close', {
@@ -45,8 +44,7 @@ export class TaskSupabaseService {
         return;
       }
 
-      // Create the task
-      const newTask = await this.supabase.createTask({
+      const newTask = await this.neon.createTask({
         title: task.title!,
         description: task.description || '',
         done: task.done || false,
@@ -58,8 +56,6 @@ export class TaskSupabaseService {
 
       console.log('Task uploaded successfully:', newTask);
 
-      // Replace the local temporary ID with the real Supabase ID
-      // so that future updates/deletes target the correct row
       if (localId && newTask.id !== localId) {
         this.tasks.update((tasks) =>
           tasks.map((t) => (t.id === localId ? { ...t, id: newTask.id } : t)),
@@ -82,7 +78,7 @@ export class TaskSupabaseService {
   }
 
   /**
-   * Edit an existing task in Supabase
+   * Edit an existing task in Neon
    */
   public async editTask(
     task: TaskDTO,
@@ -92,10 +88,9 @@ export class TaskSupabaseService {
     if (!userId || !task.id) return;
 
     try {
-      console.log('Editing task in Supabase...', task, userId);
+      console.log('Editing task in Neon...', task, userId);
 
-      // Verify user PIN first
-      const isValidUser = await this.supabase.verifyUserPin(userId, pinHash);
+      const isValidUser = await this.neon.verifyUserPin(userId, pinHash);
 
       if (!isValidUser) {
         this.snackbar.open('Invalid user credentials', 'Close', {
@@ -104,8 +99,7 @@ export class TaskSupabaseService {
         return;
       }
 
-      // Update the task
-      const updatedTask = await this.supabase.updateTask(task.id, {
+      const updatedTask = await this.neon.updateTask(task.id, {
         title: task.title,
         description: task.description,
         done: task.done,
@@ -131,7 +125,7 @@ export class TaskSupabaseService {
   }
 
   /**
-   * Delete a task from Supabase
+   * Delete a task from Neon
    */
   public async deleteTask(
     taskId: number,
@@ -141,10 +135,9 @@ export class TaskSupabaseService {
     if (!userId || !taskId) return;
 
     try {
-      console.log('Deleting task from Supabase...', taskId, userId);
+      console.log('Deleting task from Neon...', taskId, userId);
 
-      // Verify user PIN first
-      const isValidUser = await this.supabase.verifyUserPin(userId, pinHash);
+      const isValidUser = await this.neon.verifyUserPin(userId, pinHash);
 
       if (!isValidUser) {
         this.snackbar.open('Invalid user credentials', 'Close', {
@@ -153,8 +146,7 @@ export class TaskSupabaseService {
         return;
       }
 
-      // Delete the task
-      await this.supabase.deleteTask(taskId);
+      await this.neon.deleteTask(taskId);
 
       console.log('Task deleted successfully:', taskId);
     } catch (error) {
@@ -177,7 +169,7 @@ export class TaskSupabaseService {
    */
   public async createUser(pinHash: string): Promise<number | null> {
     try {
-      const userId = await this.supabase.createUser(pinHash);
+      const userId = await this.neon.createUser(pinHash);
 
       this.taskService.userId.set(userId);
       this.snackbar.open('User created successfully', '', {
@@ -195,14 +187,13 @@ export class TaskSupabaseService {
   }
 
   /**
-   * Download all tasks for a user from Supabase (PIN-only login)
+   * Download all tasks for a user from Neon (PIN-only login)
    */
   public async download(pinHash: string): Promise<void> {
     try {
       console.log('🔐 Logging in with PIN...');
 
-      // Get user by PIN hash
-      const user = await this.supabase.getUserByPinHash(pinHash);
+      const user = await this.neon.getUserByPinHash(pinHash);
 
       if (!user) {
         this.snackbar.open('Invalid PIN. Please try again.', 'Close', {
@@ -213,14 +204,11 @@ export class TaskSupabaseService {
 
       console.log('✅ User authenticated:', user.id);
 
-      // Get all tasks for the user
-      const tasks = await this.supabase.getTasks(user.id);
+      const tasks = await this.neon.getTasks(user.id);
 
-      // Store PIN hash and user ID locally (session data)
       await this.taskService.storage?.set('pinHash', pinHash);
       await this.taskService.storage?.set('userId', user.id);
 
-      // Update task service
       this.taskService.userId.set(user.id);
       this.tasks.set(tasks);
 
@@ -242,7 +230,7 @@ export class TaskSupabaseService {
    */
   public async deleteUser(userId: number): Promise<void> {
     try {
-      await this.supabase.deleteUser(userId);
+      await this.neon.deleteUser(userId);
       this.taskService.userId.set(0);
       this.tasks.set([]);
       this.snackbar.open('User deleted successfully', '', {
@@ -258,7 +246,7 @@ export class TaskSupabaseService {
   }
 
   /**
-   * Bulk upload local tasks to Supabase (for initial sync)
+   * Bulk upload local tasks to Neon (for initial sync)
    */
   public async bulkUpload(tasks: Task[], userId: number): Promise<void> {
     try {
@@ -272,18 +260,17 @@ export class TaskSupabaseService {
         updated_at: new Date(),
       }));
 
-      const uploadedTasks = await this.supabase.bulkUploadTasks(tasksToUpload);
+      const uploadedTasks = await this.neon.bulkUploadTasks(tasksToUpload);
 
-      // Replace local task IDs with the real Supabase IDs
       if (uploadedTasks.length === tasks.length) {
         this.tasks.update((currentTasks) => {
           const updated = [...currentTasks];
           for (let i = 0; i < tasks.length; i++) {
             const localId = tasks[i].id;
-            const supabaseId = uploadedTasks[i].id;
+            const neonId = uploadedTasks[i].id;
             const idx = updated.findIndex((t) => t.id === localId);
             if (idx !== -1) {
-              updated[idx] = { ...updated[idx], id: supabaseId };
+              updated[idx] = { ...updated[idx], id: neonId };
             }
           }
           return updated;
@@ -305,43 +292,14 @@ export class TaskSupabaseService {
   }
 
   /**
-   * Enable realtime sync for tasks
+   * Realtime sync is not supported with Neon REST API.
    */
   public enableRealtimeSync(userId: number): void {
-    this.supabase.subscribeToTasks(userId, (payload) => {
-      console.log('Realtime change detected:', payload);
-
-      const { eventType, new: newRecord, old: oldRecord } = payload;
-
-      switch (eventType) {
-        case 'INSERT':
-          // Add new task to local state
-          this.tasks.update((tasks) => [...tasks, newRecord as Task]);
-          break;
-
-        case 'UPDATE':
-          // Update existing task in local state
-          this.tasks.update((tasks) =>
-            tasks.map((task) =>
-              task.id === newRecord.id ? (newRecord as Task) : task,
-            ),
-          );
-          break;
-
-        case 'DELETE':
-          // Remove task from local state
-          this.tasks.update((tasks) =>
-            tasks.filter((task) => task.id !== oldRecord.id),
-          );
-          break;
-      }
-    });
+    void userId;
+    console.warn('Realtime sync is not supported with Neon.');
   }
 
-  /**
-   * Disable realtime sync
-   */
   public async disableRealtimeSync(): Promise<void> {
-    await this.supabase.unsubscribeAll();
+    await this.neon.unsubscribeAll();
   }
 }

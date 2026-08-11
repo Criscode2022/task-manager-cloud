@@ -2,16 +2,16 @@ import { inject, Injectable, signal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PinDialogComponent } from '../../components/pin-dialog/pin-dialog.component';
-import { TaskService } from '../task.service';
-import { TaskSupabaseService } from '../task-supabase.service';
 import { PinHashService } from '../pin-hash.service';
+import { TaskNeonService } from '../task-neon.service';
+import { TaskService } from '../task.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
   private readonly taskService = inject(TaskService);
-  private readonly taskSupabaseService = inject(TaskSupabaseService);
+  private readonly taskNeonService = inject(TaskNeonService);
   private readonly pinHashService = inject(PinHashService);
   private readonly dialog = inject(MatDialog);
   private readonly snackbar = inject(MatSnackBar);
@@ -23,7 +23,7 @@ export class UserService {
    * Create a new user with a securely hashed PIN
    */
   public async createUser(): Promise<void> {
-    console.log('Creating new user with Supabase...');
+    console.log('Creating new user with Neon...');
 
     try {
       const tasks = await this.taskService.getTasks();
@@ -34,8 +34,8 @@ export class UserService {
       // Hash the PIN securely using SHA-256
       const hashedPin = await this.pinHashService.hashPin(pin);
 
-      // Create user in Supabase
-      const userId = await this.taskSupabaseService.createUser(hashedPin);
+      // Create user in Neon
+      const userId = await this.taskNeonService.createUser(hashedPin);
 
       if (userId) {
         console.log('User created successfully', userId);
@@ -49,7 +49,7 @@ export class UserService {
 
         // Upload existing tasks if any
         if (tasks.length > 0) {
-          await this.taskSupabaseService.bulkUpload(tasks, userId);
+          await this.taskNeonService.bulkUpload(tasks, userId);
         }
 
         // Show PIN to user (they need to save this!)
@@ -77,7 +77,7 @@ export class UserService {
   }
 
   /**
-   * Get user data and download tasks from Supabase (auto-login on page load)
+   * Get user data and download tasks from Neon (auto-login on page load)
    */
   public async getUser(): Promise<void> {
     console.log('🔄 Checking for existing session...');
@@ -93,7 +93,7 @@ export class UserService {
       console.log('✅ Session found, logging in automatically...');
 
       // Download tasks using stored PIN hash (this validates the session)
-      await this.taskSupabaseService.download(storedPinHash);
+      await this.taskNeonService.download(storedPinHash);
 
       this.pinHash.set(storedPinHash);
       console.log('✅ Auto-login successful');
@@ -113,7 +113,7 @@ export class UserService {
    */
   public async delete(userId: number): Promise<void> {
     try {
-      await this.taskSupabaseService.deleteUser(userId);
+      await this.taskNeonService.deleteUser(userId);
 
       // Clean up all stored data
       await this.taskService.storage?.remove('pinHash');

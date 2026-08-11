@@ -19,7 +19,7 @@ Task Cloud is an Ionic + Angular Progressive Web App for personal task managemen
 - Angular 19
 - Ionic 8
 - Tailwind CSS
-- Supabase
+- Neon Postgres (via Netlify Functions)
 - Jasmine + Karma
 - ESLint
 
@@ -38,15 +38,25 @@ cd task-manager-ionic
 npm install
 ```
 
-3. Start the development server.
+3. Configure Neon (see `NEON_SETUP.md`), then copy env template:
 
 ```bash
-npm start
+cp .env.example .env
+# set DATABASE_URL from Neon Console
+```
+
+4. Start the API and development server.
+
+```bash
+npm run api    # terminal 1 — Neon API on :3001
+npm start      # terminal 2 — Angular with /api proxy
 ```
 
 ## Useful Scripts
 
-- `npm start`: Start local development server
+- `npm run api`: Start local Neon API server
+- `npm start`: Start Angular dev server (proxies `/api`)
+- `npm run start:full`: Start API + Angular together
 - `npm run build`: Build production app
 - `npm run lint`: Run ESLint checks
 - `npm run test`: Run tests in watch mode
@@ -72,9 +82,9 @@ This repository includes a GitHub Actions workflow that runs on every push and p
 
 Workflow file: `.github/workflows/ci.yml`
 
-## Supabase Setup
+## Neon Setup
 
-See `SUPABASE_SETUP.md` and the migration files in the project root for backend setup details.
+See `NEON_SETUP.md` and `neon-migration.sql` for backend setup details.
 
 ## Contributing
 
