@@ -61,4 +61,19 @@ describe('TabListPage', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should collapse the create form after adding a task', async () => {
+    component['isFormVisible'].set(true);
+    component.form.setValue({
+      title: 'New task',
+      description: '',
+      priority: 'medium',
+      tagsInput: '',
+    });
+
+    await component['addTask']();
+
+    expect(component['isFormVisible']()).toBeFalse();
+    expect(taskServiceMock.tasks().length).toBe(1);
+  });
 });

@@ -364,6 +364,7 @@ export class TabListPage extends TaskForm {
       tagsInput: '',
     });
     this.tagsAutocompleteInput.set('');
+    this.isFormVisible.set(false);
 
     // Remove from newly added set after animation completes
     setTimeout(() => {
@@ -528,6 +529,18 @@ export class TabListPage extends TaskForm {
 
   protected getPriorityClass(priority: TaskPriority): string {
     return `priority-${priority}`;
+  }
+
+  /** Explicit selected text so ion-select shows the value without an extra click. */
+  protected getPrioritySelectLabelKey(priority: unknown): string {
+    return this.getPriorityTranslationKey(this.normalizePriority(priority));
+  }
+
+  protected getPriorityFilterLabelKey(): string {
+    const value = this.selectedPriorityFilter();
+    return value === 'all'
+      ? 'TASKS.ALL_PRIORITIES'
+      : this.getPriorityTranslationKey(value);
   }
 
   protected onPriorityFilterChange(value: unknown): void {

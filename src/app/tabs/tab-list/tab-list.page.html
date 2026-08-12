@@ -93,7 +93,11 @@
 
       <ion-item lines="none" class="priority-selector mt-2">
         <ion-label>{{ 'TASKS.PRIORITY_LABEL' | translate }}</ion-label>
-        <ion-select formControlName="priority" interface="popover">
+        <ion-select
+          formControlName="priority"
+          interface="popover"
+          [selectedText]="getPrioritySelectLabelKey(priority?.value) | translate"
+        >
           <ion-select-option value="high">
             {{ 'TASKS.PRIORITY.HIGH' | translate }}
           </ion-select-option>
@@ -162,6 +166,7 @@
         [value]="selectedPriorityFilter()"
         (ionChange)="onPriorityFilterChange($event.detail.value)"
         interface="popover"
+        [selectedText]="getPriorityFilterLabelKey() | translate"
       >
         <ion-select-option value="all"
           >{{ 'TASKS.ALL_PRIORITIES' | translate }}</ion-select-option
@@ -184,6 +189,7 @@
         [value]="selectedTagFilter()"
         (ionChange)="onTagFilterChange($event.detail.value)"
         interface="popover"
+        [selectedText]="selectedTagFilter() === 'all' ? ('TASKS.ALL_TAGS' | translate) : ('#' + selectedTagFilter())"
       >
         <ion-select-option value="all"
           >{{ 'TASKS.ALL_TAGS' | translate }}</ion-select-option
