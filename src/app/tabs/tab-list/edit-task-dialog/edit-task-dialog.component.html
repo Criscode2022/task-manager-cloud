@@ -24,20 +24,16 @@
       />
     </mat-form-field>
 
-    <ion-item lines="none" class="priority-selector">
-      <ion-label>{{ 'TASKS.PRIORITY_LABEL' | translate }}</ion-label>
-      <ion-select formControlName="priority" interface="popover">
-        <ion-select-option value="high">
-          {{ 'TASKS.PRIORITY.HIGH' | translate }}
-        </ion-select-option>
-        <ion-select-option value="medium">
-          {{ 'TASKS.PRIORITY.MEDIUM' | translate }}
-        </ion-select-option>
-        <ion-select-option value="low">
-          {{ 'TASKS.PRIORITY.LOW' | translate }}
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
+    <mat-form-field appearance="outline" class="dialog-field priority-field">
+      <mat-label>{{ 'TASKS.PRIORITY_LABEL' | translate }}</mat-label>
+      <mat-select formControlName="priority" panelClass="edit-task-priority-panel">
+        @for (option of priorityOptions; track option.value) {
+        <mat-option [value]="option.value">
+          {{ option.labelKey | translate }}
+        </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
 
     <mat-form-field appearance="outline" class="dialog-field">
       <mat-label>{{ 'TASKS.TAGS_OPTIONAL' | translate }}</mat-label>
