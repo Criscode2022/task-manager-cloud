@@ -68,19 +68,30 @@
 
 .filter-chips {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 0.4rem;
-  padding-block: 0.2rem;
+  min-width: 0;
+  padding: 0.3rem 0.35rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--ion-color-primary) 40%, transparent) transparent;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--ion-color-primary) 40%, transparent);
+    border-radius: 9999px;
+  }
 }
 
 @media (min-width: 768px) {
-  .filter-chips:not(.filter-chips--tags) {
-    flex-wrap: nowrap;
-  }
-
   .filter-chips:not(.filter-chips--tags) .filter-chip {
-    flex: 1 1 auto;
+    flex: 1 0 auto;
     justify-content: center;
     white-space: nowrap;
     padding-inline: 0.55rem;
@@ -88,22 +99,20 @@
 }
 
 .filter-chips--tags {
-  max-height: 7.5rem;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding-block: 0.3rem;
-  padding-inline: 0.35rem 0.2rem;
+  max-height: none;
 }
 
 .filter-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   gap: 0.35rem;
   box-sizing: border-box;
   min-height: 32px;
   padding: 0.35rem 0.75rem;
   overflow: visible;
+  white-space: nowrap;
   border: 1px solid var(--ion-border-color);
   border-radius: 9999px;
   background: var(--ion-background-color);
@@ -226,21 +235,7 @@
   }
 
   .filter-chips {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
     padding: 0.35rem 0.35rem 0.3rem;
-    -webkit-overflow-scrolling: touch;
-
-    &::-webkit-scrollbar {
-      height: 0;
-    }
-  }
-
-  .filter-chips--tags {
-    max-height: none;
-    overflow-x: auto;
-    overflow-y: hidden;
   }
 
   .filter-chip {
@@ -531,8 +526,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.4rem;
-  min-height: 2.5rem;
+  gap: 0.25rem;
 
   &.done {
     .task-title {
@@ -548,11 +542,9 @@
 
 .task-title,
 .task-description {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
   overflow: hidden;
-  overflow-wrap: anywhere;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .task-title {
@@ -560,7 +552,6 @@
   font-weight: 600;
   color: var(--ion-text-color);
   line-height: 1.35;
-  -webkit-line-clamp: 2;
 
   @media (min-width: 768px) {
     font-size: 1.0625rem;
@@ -571,7 +562,6 @@
   font-size: 0.8125rem;
   color: var(--ion-text-color-secondary);
   line-height: 1.4;
-  -webkit-line-clamp: 1;
 
   @media (min-width: 768px) {
     font-size: 0.875rem;
