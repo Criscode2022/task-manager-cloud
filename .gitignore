@@ -12,27 +12,33 @@ $RECYCLE.BIN/
 *.log
 log.txt
 
-
 /.sourcemaps
 /.versions
 /coverage
 
-# Ionic
+# Ionic / Angular web app
 /.ionic
 /www
+apps/web/www
 /platforms
 /plugins
 
 # Compiled output
 /dist
+apps/*/dist
 /tmp
 /out-tsc
 /bazel-out
 
 # Node
 /node_modules
+apps/*/node_modules
+packages/*/node_modules
 npm-debug.log
 yarn-error.log
+
+# Turbo
+.turbo
 
 # IDEs and editors
 .idea/
@@ -52,15 +58,16 @@ yarn-error.log
 !.vscode/extensions.json
 .history/*
 
-
 # Miscellaneous
 /.angular
+apps/web/.angular
 /.angular/cache
 .sass-cache/
 /.nx
 /.nx/cache
 /connect.lock
 /coverage
+apps/*/coverage
 /libpeerconnection.log
 testem.log
 /typings
@@ -76,9 +83,15 @@ mcp-server/.venv/
 .env
 .env.local
 .env.*.local
+apps/web/src/environments/environment.local.ts
+apps/web/src/environments/environment.prod.local.ts
+apps/web/src/environments/*.local.ts
 src/environments/environment.local.ts
 src/environments/environment.prod.local.ts
 src/environments/*.local.ts
 
 # Netlify
 .netlify
+
+# Vercel
+.vercel
