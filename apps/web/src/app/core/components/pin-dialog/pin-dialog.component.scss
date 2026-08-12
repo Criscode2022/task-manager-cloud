@@ -135,6 +135,11 @@
   word-break: break-all;
   line-height: 1.4;
 
+  @media (max-width: 767px) {
+    font-size: 1.2rem;
+    letter-spacing: 0.06em;
+  }
+
   @media (min-width: 768px) {
     font-size: 2rem;
   }
@@ -213,6 +218,19 @@
     color: var(--ion-text-color);
     margin-left: 0.75rem;
     line-height: 1.4;
+  }
+
+  @media (max-width: 767px) {
+    padding: 0.65rem 0.75rem;
+
+    .custom-checkbox {
+      --size: 20px;
+    }
+
+    .checkbox-label {
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+    }
   }
 }
 
