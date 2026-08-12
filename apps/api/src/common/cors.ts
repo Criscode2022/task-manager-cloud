@@ -14,3 +14,22 @@ export function allowedOrigins(config?: ConfigService): string[] {
     .filter(Boolean);
   return fromEnv.length ? fromEnv : DEFAULT_ORIGINS;
 }
+
+/** Match exact allowlist, plus optional Vercel preview hosts (*.vercel.app). */
+export function isOriginAllowed(
+  origin: string | undefined,
+  config?: ConfigService,
+): boolean {
+  if (!origin) return true;
+  const allowed = allowedOrigins(config);
+  if (allowed.includes(origin)) return true;
+
+  const allowPreviews =
+    (config?.get<string>('ALLOW_VERCEL_PREVIEWS') ||
+      process.env.ALLOW_VERCEL_PREVIEWS ||
+      'true') === 'true';
+  if (allowPreviews && /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) {
+    return true;
+  }
+  return false;
+}

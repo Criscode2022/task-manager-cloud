@@ -25,8 +25,11 @@ Core task features do not need the API; only cloud sync does.
   `set-env.js` copies `.env.example` to `.env` and then exits with code 1 — run
   `npm run config` (or `npm start`) again once `.env` exists.
 - Locally, `API_BASE_URL=/api` and `apps/web/proxy.conf.json` proxies to Nest on
-  `API_PORT` (default `3001`). In production, set `API_BASE_URL` to the full Nest
-  API URL (e.g. `https://your-api.example.com/api`).
+  `API_PORT` (default `3001`). On Vercel, set web `API_BASE_URL` to the Nest
+  project URL ending in `/api` (e.g. `https://task-cloud-api.vercel.app/api`).
+- Vercel config: `apps/web/vercel.json`, `apps/api/vercel.json`. See `VERCEL.md`.
+  Deploy as two projects with Root Directory set per app; enable files outside
+  the root directory so npm workspaces resolve from the repo root.
 
 ### Running / testing / linting
 

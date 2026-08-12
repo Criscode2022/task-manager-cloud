@@ -31,3 +31,8 @@ Smoke test (API must be running with real `DATABASE_URL` + secrets):
 ```bash
 npm run test:api
 ```
+
+## Vercel
+
+`vercel.json` configures NestJS + Turborepo. Deploy with Root Directory `apps/api`.
+See `/VERCEL.md` at the repo root.

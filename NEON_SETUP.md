@@ -80,29 +80,25 @@ Or both:
 npm run start:full
 ```
 
-## Step 5: Deploy
+## Step 5: Deploy (Vercel)
 
-### Web (Netlify)
+See **[VERCEL.md](./VERCEL.md)** for the Turborepo two-project flow.
 
-Netlify builds the static PWA from `apps/web`. Set `API_BASE_URL` in **Netlify →
-Site settings → Environment variables** to your Nest API public URL, for example:
+### API project (`apps/api`)
 
-```text
-https://your-nest-api.example.com/api
-```
-
-### API (Nest)
-
-Deploy `apps/api` to a Node host. Required env vars:
+Required env vars on Vercel:
 
 - `DATABASE_URL`
 - `JWT_SECRET`
 - `PIN_PEPPER`
-- `ALLOWED_ORIGINS` (include your Netlify site origin)
+- `ALLOWED_ORIGINS` (include your web production origin)
 
-Optional: `API_PORT`, `SESSION_TTL_SECONDS`, `AUTH_RATE_LIMIT`, `AUTH_RATE_WINDOW_MS`.
+Optional: `ALLOW_VERCEL_PREVIEWS`, `SESSION_TTL_SECONDS`, `AUTH_RATE_LIMIT`,
+`AUTH_RATE_WINDOW_MS`. Vercel sets `PORT` automatically.
 
-Start command: `npm run start:prod -w @task-cloud/api` (after `npm run build:api`).
+### Web project (`apps/web`)
+
+Set `API_BASE_URL` to `https://<your-api-project>.vercel.app/api`.
 
 ## Step 6: MCP server
 

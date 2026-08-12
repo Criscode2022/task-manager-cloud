@@ -17,8 +17,8 @@ Task Cloud is an Ionic + Angular Progressive Web App for personal task managemen
 ## Monorepo layout
 
 ```
-apps/web     Ionic + Angular PWA (Netlify static host)
-apps/api     NestJS API (deploy separately; Neon Postgres)
+apps/web     Ionic + Angular PWA (Vercel static)
+apps/api     NestJS API (Vercel Function + Neon Postgres)
 mcp-server/  Optional Python MCP tools (uv)
 packages/    Shared packages (reserved)
 ```
@@ -28,6 +28,7 @@ packages/    Shared packages (reserved)
 - Turborepo + npm workspaces
 - Angular 19 / Ionic 8
 - NestJS 11
+- Vercel (Turborepo remote cache)
 - Tailwind CSS
 - Neon Postgres
 - Jasmine + Karma (web)
@@ -102,12 +103,16 @@ CHROME_BIN=/usr/local/bin/google-chrome npm run test:ci
 
 See `NEON_SETUP.md` and `neon-migration.sql` for database setup.
 
-## Deploy
+## Deploy (Vercel + Turborepo)
 
-- **Web**: Netlify builds `@task-cloud/web` and publishes `apps/web/www`. Set
-  `API_BASE_URL` to your Nest API public URL (must end with `/api`).
-- **API**: Deploy `apps/api` to any Node host (Render, Fly, Railway, etc.) with
-  `DATABASE_URL`, `JWT_SECRET`, `PIN_PEPPER`, and `ALLOWED_ORIGINS`.
+Deploy as **two Vercel projects** (root directories `apps/api` then `apps/web`).
+Full steps: **[VERCEL.md](./VERCEL.md)**.
+
+Quick checklist:
+
+1. Import repo → Root Directory `apps/api` → set `DATABASE_URL`, `JWT_SECRET`, `PIN_PEPPER`, `ALLOWED_ORIGINS`
+2. Import repo again → Root Directory `apps/web` → set `API_BASE_URL=https://<api>.vercel.app/api`
+3. Add the web origin to the API `ALLOWED_ORIGINS` and redeploy the API
 
 ## Contributing
 

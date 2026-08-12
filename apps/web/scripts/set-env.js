@@ -25,7 +25,12 @@ function resolveApiBaseUrl(fromEnv) {
 // --- Step 1: Check process.env first (CI/CD) ---
 const processApiBaseUrl = process.env.API_BASE_URL;
 
-if (process.env.CI || process.env.NETLIFY || processApiBaseUrl) {
+if (
+  process.env.CI ||
+  process.env.NETLIFY ||
+  process.env.VERCEL ||
+  processApiBaseUrl
+) {
   console.log('🌐 Found environment variables from process (CI/CD)');
   console.log('   API_BASE_URL:', resolveApiBaseUrl(processApiBaseUrl));
   generateEnvFiles(resolveApiBaseUrl(processApiBaseUrl));

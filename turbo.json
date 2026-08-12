@@ -1,9 +1,25 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "www/**"]
+      "env": [
+        "VERCEL",
+        "CI",
+        "API_BASE_URL",
+        "DATABASE_URL",
+        "JWT_SECRET",
+        "PIN_PEPPER",
+        "ALLOWED_ORIGINS",
+        "ALLOW_VERCEL_PREVIEWS",
+        "SESSION_TTL_SECONDS",
+        "AUTH_RATE_LIMIT",
+        "AUTH_RATE_WINDOW_MS",
+        "API_PORT",
+        "PORT"
+      ],
+      "outputs": ["dist/**", "www/**", ".vercel/output/**"]
     },
     "dev": {
       "cache": false,
@@ -30,7 +46,8 @@
       "cache": false
     },
     "config": {
-      "cache": false
+      "cache": false,
+      "env": ["API_BASE_URL", "VERCEL", "CI", "NETLIFY"]
     }
   }
 }

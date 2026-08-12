@@ -1,14 +1,15 @@
+# Optional legacy static host for apps/web.
+# Primary deploy target is Vercel (see VERCEL.md) with two Turborepo projects.
+
 [build]
   base = "."
   command = "npm run build --workspace=@task-cloud/web"
   publish = "apps/web/www"
 
 [build.environment]
-  # Point the PWA at your deployed Nest API, e.g. https://api.example.com/api
-  # Local/dev defaults to /api (Angular proxy → Nest on :3001)
+  # Point the PWA at your deployed Nest API, e.g. https://task-cloud-api.vercel.app/api
   API_BASE_URL = "/api"
 
-# SPA fallback for the Ionic/Angular client
 [[redirects]]
   from = "/*"
   to = "/index.html"

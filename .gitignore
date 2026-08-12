@@ -92,3 +92,6 @@ src/environments/*.local.ts
 
 # Netlify
 .netlify
+
+# Vercel
+.vercel
