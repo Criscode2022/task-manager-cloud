@@ -1,9 +1,9 @@
 /**
- * End-to-end smoke test against the hardened Neon API.
+ * End-to-end smoke test against the Nest Neon API.
  *
- * Usage:
- *   DATABASE_URL=... JWT_SECRET=... PIN_PEPPER=... npm run api
- *   node scripts/test-neon-api.mjs
+ * Usage (from repo root):
+ *   npm run api
+ *   npm run test:api
  */
 import { randomInt } from 'node:crypto';
 

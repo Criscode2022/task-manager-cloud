@@ -1,22 +1,24 @@
-# Neon Integration Setup Guide
+# Neon + Nest API Setup Guide
 
-This guide sets up Neon Postgres as the database backend for Task Cloud.
+This guide sets up Neon Postgres and the NestJS API for Task Cloud.
 
 ## Architecture
 
 ```
-Angular PWA ──HTTP──► Netlify Functions (/api/*) ──► Neon Postgres
-MCP server  ──────────────────psycopg────────────────► Neon Postgres
+Angular PWA (apps/web) ──HTTP──► NestJS (apps/api) ──► Neon Postgres
+MCP server  ────────────────────psycopg────────────────► Neon Postgres
 ```
 
-`DATABASE_URL` stays server-side only. The browser talks to `/api`, never to Postgres directly.
+`DATABASE_URL` stays server-side only. The browser talks to `/api` (or a full API
+URL in production), never to Postgres directly.
 
-Protected `/api` routes require an `X-Pin-Hash` header that matches the user. Public routes: `GET /api/health`, `POST /api/users`, `GET /api/users/by-pin/:hash`.
+Protected `/api` routes require `Authorization: Bearer <jwt>`. Public routes:
+`GET /api/health`, `POST /api/users`, `POST /api/auth/login`.
 
 ## Prerequisites
 
 - A [Neon](https://console.neon.tech) account (free tier is enough)
-- Node.js 18+
+- Node.js 20+
 - For the MCP server: Python 3.10+ and [uv](https://docs.astral.sh/uv/)
 
 ## Step 1: Create a Neon project
@@ -29,11 +31,13 @@ Or use Neon MCP from Cursor after authenticating the Neon server.
 
 ## Step 2: Apply the schema
 
-Run `neon-migration.sql` in the Neon SQL Editor, via `neonctl`, or with Neon MCP `run_sql` / `run_sql_transaction`.
+Run `neon-migration.sql` in the Neon SQL Editor, via `neonctl`, or with Neon MCP
+`run_sql` / `run_sql_transaction`.
 
-You should end up with `public.users` and `public.tasks`.
+You should end up with `public.users` and `public.tasks`. Auth sessions /
+`pin_lookup` are ensured at Nest API startup (see also `neon-auth-migration.sql`).
 
-## Step 3: Configure the app
+## Step 3: Configure the monorepo
 
 ```bash
 cp .env.example .env
@@ -50,8 +54,6 @@ SESSION_TTL_SECONDS=86400
 TASK_MANAGER_PIN=
 ```
 
-Also set `JWT_SECRET` and `PIN_PEPPER` in Netlify env. Auth uses bcrypt + short-lived JWTs; see `neon-auth-migration.sql`.
-
 Generate Angular env files:
 
 ```bash
@@ -60,7 +62,7 @@ npm run config
 
 ## Step 4: Local development
 
-Terminal A — Neon API:
+Terminal A — Nest API:
 
 ```bash
 npm run api
@@ -78,11 +80,29 @@ Or both:
 npm run start:full
 ```
 
-## Step 5: Netlify deploy
+## Step 5: Deploy
 
-Set `DATABASE_URL` in **Netlify → Site settings → Environment variables** (all contexts that need the API).
+### Web (Netlify)
 
-`API_BASE_URL` defaults to `/api` via `netlify.toml`.
+Netlify builds the static PWA from `apps/web`. Set `API_BASE_URL` in **Netlify →
+Site settings → Environment variables** to your Nest API public URL, for example:
+
+```text
+https://your-nest-api.example.com/api
+```
+
+### API (Nest)
+
+Deploy `apps/api` to a Node host. Required env vars:
+
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `PIN_PEPPER`
+- `ALLOWED_ORIGINS` (include your Netlify site origin)
+
+Optional: `API_PORT`, `SESSION_TTL_SECONDS`, `AUTH_RATE_LIMIT`, `AUTH_RATE_WINDOW_MS`.
+
+Start command: `npm run start:prod -w @task-cloud/api` (after `npm run build:api`).
 
 ## Step 6: MCP server
 
@@ -97,11 +117,5 @@ uv run server.py
 
 1. Open the app → Options → create account (save the PIN)
 2. Add / edit / delete tasks
-3. Reload — session should restore via stored PIN hash
-4. Optional: `curl http://localhost:3001/api/health`
-
-## Migrating away from Supabase
-
-Old Supabase SQL files remain for reference (`supabase-migration*.sql`, `SUPABASE_SETUP.md`). New installs should use `neon-migration.sql` only.
-
-If you still have data in Supabase, export `users` / `tasks` and import into Neon (same column shapes).
+3. Reload — session should restore via stored token
+4. Optional: `npm run test:api` against a running API
