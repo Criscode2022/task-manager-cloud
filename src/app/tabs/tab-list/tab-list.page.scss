@@ -130,7 +130,7 @@
 .form-container {
   display: flex;
   justify-content: center;
-  padding: 1.5rem 1rem;
+  padding: 1rem 1rem 0.75rem;
   width: 100%;
   animation: fadeInSubtle 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   animation-fill-mode: both;
@@ -140,16 +140,36 @@
   background: var(--ion-surface-color);
   border-radius: var(--border-radius-xl);
   box-shadow: var(--shadow-lg);
-  padding: 1rem 1.5rem 0 1.5rem;
+  padding: 0.75rem 1.1rem 0;
   width: 100%;
-  max-width: 600px;
+  max-width: 480px;
 
   @media (min-width: 768px) {
-    max-width: 500px;
+    max-width: 440px;
   }
 
   @media (min-width: 1024px) {
-    max-width: 550px;
+    max-width: 480px;
+  }
+
+  .form-field {
+    font-size: 0.9rem;
+
+    ::ng-deep {
+      .mat-mdc-form-field-infix {
+        min-height: 44px;
+        padding-top: 12px;
+        padding-bottom: 12px;
+      }
+
+      .mat-mdc-text-field-wrapper {
+        padding-bottom: 0;
+      }
+
+      .mat-mdc-form-field-subscript-wrapper {
+        margin-top: 2px;
+      }
+    }
   }
 }
 
@@ -157,7 +177,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.85rem;
   transition: all 0.3s ease;
 
   &:hover {
@@ -166,13 +186,13 @@
 }
 
 .header-icon {
-  font-size: 2rem;
+  font-size: 1.6rem;
   color: var(--ion-color-primary);
 }
 
 .form-title {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--ion-text-color);
 }
@@ -198,12 +218,14 @@
 
 .priority-selector {
   --background: var(--ion-item-background);
+  --min-height: 42px;
   border: 1px solid var(--ion-border-color);
   border-radius: var(--border-radius-md);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 
   ion-label {
     font-weight: 600;
+    font-size: 0.9rem;
     color: var(--ion-text-color);
   }
 }
@@ -213,9 +235,9 @@
   --box-shadow: var(--shadow-md);
   font-weight: 600;
   text-transform: none;
-  height: 48px;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  height: 42px;
+  margin-top: 0.65rem;
+  margin-bottom: 0.75rem;
 
   &:hover:not([disabled]) {
     --box-shadow: var(--shadow-lg);
@@ -235,6 +257,10 @@
   width: 100%;
   animation: fadeInSubtle 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.15s;
   animation-fill-mode: both;
+
+  @media (max-width: 767px) {
+    padding-top: 0;
+  }
 
   @media (min-width: 1280px) {
     margin-top: 5rem;
@@ -488,6 +514,15 @@
   @media (min-width: 768px) {
     grid-column: 1 / -1;
   }
+
+  @media (max-width: 767px) {
+    justify-content: flex-start;
+    align-self: flex-start;
+    width: 100%;
+    min-height: 0;
+    padding: 0.25rem 1rem 1rem;
+    margin-top: -0.25rem;
+  }
 }
 
 .empty-icon {
@@ -500,6 +535,15 @@
     font-size: 4rem;
     opacity: 0.3;
   }
+
+  @media (max-width: 767px) {
+    font-size: 2.75rem;
+    margin-bottom: 0.35rem;
+
+    &.empty-icon-subtle {
+      font-size: 2.25rem;
+    }
+  }
 }
 
 .empty-title {
@@ -507,12 +551,22 @@
   font-weight: 700;
   color: var(--ion-text-color);
   margin: 0 0 0.5rem;
+
+  @media (max-width: 767px) {
+    font-size: 1.05rem;
+    margin-bottom: 0.25rem;
+  }
 }
 
 .empty-text {
   font-size: 1rem;
   color: var(--ion-text-color-secondary);
   margin: 0 0 1.5rem;
+
+  @media (max-width: 767px) {
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+  }
 }
 
 .filter-suggestion-button {

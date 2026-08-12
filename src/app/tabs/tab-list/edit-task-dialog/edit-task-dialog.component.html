@@ -1,0 +1,67 @@
+<div class="edit-task-dialog">
+  <h2 class="dialog-title">{{ 'TASKS.EDIT_TASK' | translate }}</h2>
+
+  <form [formGroup]="form" class="dialog-form" (ngSubmit)="confirm()">
+    <mat-form-field appearance="outline" class="dialog-field">
+      <mat-label>{{ 'TASKS.TASK_TITLE' | translate }}</mat-label>
+      <input
+        matInput
+        type="text"
+        formControlName="title"
+        [placeholder]="'TASKS.TITLE_PLACEHOLDER' | translate"
+        maxlength="40"
+      />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="dialog-field">
+      <mat-label>{{ 'TASKS.DESCRIPTION_OPTIONAL' | translate }}</mat-label>
+      <input
+        matInput
+        type="text"
+        formControlName="description"
+        [placeholder]="'TASKS.DESCRIPTION_PLACEHOLDER_EDIT' | translate"
+        maxlength="30"
+      />
+    </mat-form-field>
+
+    <ion-item lines="none" class="priority-selector">
+      <ion-label>{{ 'TASKS.PRIORITY_LABEL' | translate }}</ion-label>
+      <ion-select formControlName="priority" interface="popover">
+        <ion-select-option value="high">
+          {{ 'TASKS.PRIORITY.HIGH' | translate }}
+        </ion-select-option>
+        <ion-select-option value="medium">
+          {{ 'TASKS.PRIORITY.MEDIUM' | translate }}
+        </ion-select-option>
+        <ion-select-option value="low">
+          {{ 'TASKS.PRIORITY.LOW' | translate }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <mat-form-field appearance="outline" class="dialog-field">
+      <mat-label>{{ 'TASKS.TAGS_OPTIONAL' | translate }}</mat-label>
+      <input
+        matInput
+        type="text"
+        formControlName="tags"
+        [placeholder]="'TASKS.TAGS_PLACEHOLDER_EDIT' | translate"
+        maxlength="80"
+      />
+    </mat-form-field>
+
+    <div class="dialog-actions">
+      <ion-button
+        type="button"
+        fill="outline"
+        color="medium"
+        (click)="cancel()"
+      >
+        {{ 'COMMON.CANCEL' | translate }}
+      </ion-button>
+      <ion-button type="submit" color="primary" [disabled]="form.invalid">
+        {{ 'COMMON.CONFIRM' | translate }}
+      </ion-button>
+    </div>
+  </form>
+</div>

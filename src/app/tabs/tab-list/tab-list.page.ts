@@ -16,14 +16,19 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { AlertController, IonicModule } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
 import { TaskNeonService } from '../../core/services/task-neon.service';
 import { TaskService } from '../../core/services/task.service';
+import {
+  EditTaskDialogComponent,
+  EditTaskDialogResult,
+} from './edit-task-dialog/edit-task-dialog.component';
 import { TaskForm } from './task.form';
 import { StatusEnum } from './types/statusEnum';
 import {
@@ -54,7 +59,7 @@ import {
 })
 export class TabListPage extends TaskForm {
   private readonly taskNeonService = inject(TaskNeonService);
-  private readonly alertController = inject(AlertController);
+  private readonly dialog = inject(MatDialog);
   private readonly translate = inject(TranslateService);
   protected readonly taskService = inject(TaskService);
   private readonly userService = inject(UserService);
@@ -250,81 +255,35 @@ export class TabListPage extends TaskForm {
     });
   }
 
-  protected async presentEditAlert(task: Task): Promise<void> {
-    type EditTaskAlertData = {
-      title?: string;
-      description?: string;
-      priority?: string;
-      tags?: string;
-      id: number | string;
-    };
-
-    const alert = await this.alertController.create({
-      header: this.translate.instant('TASKS.EDIT_TASK'),
-      inputs: [
-        {
-          name: 'title',
-          type: 'text',
-          placeholder: this.translate.instant('TASKS.TITLE_PLACEHOLDER'),
-          value: task.title,
-        },
-        {
-          name: 'description',
-          type: 'text',
-          placeholder: this.translate.instant(
-            'TASKS.DESCRIPTION_PLACEHOLDER_EDIT',
-          ),
-          value: task.description,
-        },
-        {
-          name: 'priority',
-          type: 'text',
-          placeholder: this.translate.instant(
-            'TASKS.PRIORITY_PLACEHOLDER_EDIT',
-          ),
-          value: task.priority,
-        },
-        {
-          name: 'tags',
-          type: 'text',
-          placeholder: this.translate.instant('TASKS.TAGS_PLACEHOLDER_EDIT'),
-          value: task.tags.join(', '),
-        },
-        {
-          name: 'id',
-          value: task.id,
-          attributes: {
-            type: 'hidden',
-          },
-        },
-      ],
-      buttons: [
-        {
-          text: this.translate.instant('COMMON.CANCEL'),
-          role: 'cancel',
-        },
-        {
-          text: this.translate.instant('COMMON.CONFIRM'),
-          role: 'confirm',
-          handler: (data: EditTaskAlertData) => {
-            const id = Number(data.id);
-            const updatedTitle = data.title?.trim() || task.title;
-            const updatedDescription = data.description?.trim() || '';
-            const updatedPriority = this.normalizePriority(data.priority);
-            const updatedTags = this.parseTags(data.tags);
-            this.editTask(
-              id,
-              updatedTitle,
-              updatedDescription,
-              updatedPriority,
-              updatedTags,
-            );
-          },
-        },
-      ],
+  protected presentEditAlert(task: Task): void {
+    const dialogRef = this.dialog.open<
+      EditTaskDialogComponent,
+      Task,
+      EditTaskDialogResult | undefined
+    >(EditTaskDialogComponent, {
+      data: task,
+      autoFocus: 'input',
+      panelClass: 'edit-task-dialog-panel',
     });
 
-    await alert.present();
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result) {
+        return;
+      }
+
+      const updatedTitle = result.title || task.title;
+      const updatedDescription = result.description || '';
+      const updatedPriority = this.normalizePriority(result.priority);
+      const updatedTags = this.parseTags(result.tags);
+
+      this.editTask(
+        task.id,
+        updatedTitle,
+        updatedDescription,
+        updatedPriority,
+        updatedTags,
+      );
+    });
   }
 
   protected refresh(): void {

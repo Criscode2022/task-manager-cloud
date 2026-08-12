@@ -1,5 +1,6 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
@@ -41,6 +42,12 @@ describe('TabListPage', () => {
     deleteTask: jasmine.createSpy('deleteTask').and.resolveTo(),
   };
 
+  const dialogMock = {
+    open: jasmine.createSpy('open').and.returnValue({
+      afterClosed: () => ({ subscribe: jasmine.createSpy('subscribe') }),
+    }),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [IonicModule.forRoot(), TranslateModule.forRoot(), TabListPage],
@@ -50,6 +57,7 @@ describe('TabListPage', () => {
         { provide: UserService, useValue: userServiceMock },
         { provide: LoadingService, useValue: loadingServiceMock },
         { provide: TaskNeonService, useValue: taskNeonServiceMock },
+        { provide: MatDialog, useValue: dialogMock },
       ],
     }).compileComponents();
 
