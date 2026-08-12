@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 
-from auth import hash_pin, verify_pin
+from auth import hash_pin, pin_lookup_key, verify_pin
 
 TaskPriority = Literal["low", "medium", "high"]
 
@@ -40,13 +40,32 @@ class TaskManagerDB:
             raise ValueError(
                 "No PIN provided. Set TASK_MANAGER_PIN in the environment or pass pin to the tool."
             )
-        pin_hash = hash_pin(effective_pin)
+        lookup = pin_lookup_key(effective_pin)
         with self._pool.connection() as conn:
             row = conn.execute(
-                "SELECT id FROM public.users WHERE pin_hash = %s LIMIT 1",
-                (pin_hash,),
+                """
+                SELECT id, pin_hash
+                FROM public.users
+                WHERE pin_lookup = %s
+                LIMIT 1
+                """,
+                (lookup,),
             ).fetchone()
-        if not row:
+            if not row:
+                # Legacy SHA-256 accounts without pin_lookup
+                import hashlib
+
+                legacy = hashlib.sha256(effective_pin.encode("utf-8")).hexdigest()
+                row = conn.execute(
+                    """
+                    SELECT id, pin_hash
+                    FROM public.users
+                    WHERE pin_hash = %s AND pin_lookup IS NULL
+                    LIMIT 1
+                    """,
+                    (legacy,),
+                ).fetchone()
+        if not row or not verify_pin(effective_pin, row["pin_hash"]):
             raise ValueError("Invalid PIN — no matching user found.")
         return int(row["id"])
 
@@ -220,22 +239,23 @@ class TaskManagerDB:
         if not row:
             raise RuntimeError(f"Task {task_id} not found for this user.")
 
-    def create_user(self, pin_hash: str) -> dict[str, Any]:
+    def create_user(self, pin: str) -> dict[str, Any]:
+        pin_hash = hash_pin(pin)
+        lookup = pin_lookup_key(pin)
         with self._pool.connection() as conn:
             row = conn.execute(
                 """
-                INSERT INTO public.users (pin_hash)
-                VALUES (%s)
-                RETURNING *
+                INSERT INTO public.users (pin_hash, pin_lookup)
+                VALUES (%s, %s)
+                RETURNING id, created_at
                 """,
-                (pin_hash,),
+                (pin_hash, lookup),
             ).fetchone()
             conn.commit()
         if not row:
             raise RuntimeError("Failed to create user.")
         return {
             "id": int(row["id"]),
-            "pin_hash": row["pin_hash"],
             "created_at": row["created_at"],
         }
 

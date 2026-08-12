@@ -14,7 +14,7 @@ from typing import Literal
 
 from mcp.server.fastmcp import FastMCP
 
-from auth import generate_pin, hash_pin
+from auth import generate_pin
 from database import format_tasks, get_db
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr)
@@ -199,14 +199,13 @@ def delete_task(task_id: int, pin: str | None = None) -> str:
     },
 )
 def create_user() -> str:
-    """Create a new Task Manager Cloud user with a random 4-digit PIN.
+    """Create a new Task Manager Cloud user with a random 8-digit PIN.
 
     Returns the user ID and PIN. Save the PIN — it is shown only once and
     is required for all subsequent task operations.
     """
     pin = generate_pin()
-    pin_hash = hash_pin(pin)
-    user = get_db().create_user(pin_hash)
+    user = get_db().create_user(pin)
     return (
         f"User created successfully.\n"
         f"  user_id: {user['id']}\n"

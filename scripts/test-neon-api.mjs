@@ -1,25 +1,25 @@
 /**
- * End-to-end smoke test against the local Neon API (or any API_BASE_URL).
+ * End-to-end smoke test against the hardened Neon API.
  *
  * Usage:
- *   DATABASE_URL=... npm run api   # terminal 1
- *   node scripts/test-neon-api.mjs # terminal 2
+ *   DATABASE_URL=... JWT_SECRET=... PIN_PEPPER=... npm run api
+ *   node scripts/test-neon-api.mjs
  */
-import { createHash, randomInt } from 'node:crypto';
+import { randomInt } from 'node:crypto';
 
 const base = (process.env.API_BASE_URL || 'http://localhost:3001/api').replace(
   /\/$/,
   '',
 );
 
-function hashPin(pin) {
-  return createHash('sha256').update(pin).digest('hex');
+function randomPin() {
+  return String(randomInt(10_000_000, 99_999_999));
 }
 
-async function req(method, path, body, pinHash) {
+async function req(method, path, body, token) {
   const headers = {};
   if (body) headers['Content-Type'] = 'application/json';
-  if (pinHash) headers['X-Pin-Hash'] = pinHash;
+  if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch(`${base}${path}`, {
     method,
@@ -34,9 +34,28 @@ async function req(method, path, body, pinHash) {
     data = text;
   }
   if (!res.ok) {
-    throw new Error(`${method} ${path} -> ${res.status}: ${JSON.stringify(data)}`);
+    throw new Error(
+      `${method} ${path} -> ${res.status}: ${JSON.stringify(data)}`,
+    );
   }
   return data;
+}
+
+async function expectStatus(method, path, body, token, status) {
+  const headers = {};
+  if (body) headers['Content-Type'] = 'application/json';
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(`${base}${path}`, {
+    method,
+    headers: Object.keys(headers).length ? headers : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (res.status !== status) {
+    const text = await res.text();
+    throw new Error(
+      `${method} ${path} expected ${status}, got ${res.status}: ${text}`,
+    );
+  }
 }
 
 async function main() {
@@ -45,114 +64,97 @@ async function main() {
   const health = await req('GET', '/health');
   console.log('✓ health', health);
 
-  const pin = String(randomInt(1000, 9999));
-  const pinHash = hashPin(pin);
-  const user = await req('POST', '/users', { pin_hash: pinHash });
-  console.log('✓ create user', user.id, 'pin', pin);
-  if (user.pin_hash) {
-    throw new Error('pin_hash must not be returned in user responses');
+  const pin = randomPin();
+  const created = await req('POST', '/users', { pin });
+  if (!created.token || !created.id || !created.expires_at) {
+    throw new Error('register must return id, token, expires_at');
   }
-
-  const verify = await req(
-    'POST',
-    `/users/${user.id}/verify`,
-    { pin_hash: pinHash },
-    pinHash,
-  );
-  if (!verify.valid) throw new Error('PIN verify failed');
-  console.log('✓ verify pin');
-
-  const byPin = await req(
-    'GET',
-    `/users/by-pin/${encodeURIComponent(pinHash)}`,
-  );
-  if (byPin.id !== user.id) throw new Error('by-pin mismatch');
-  console.log('✓ get user by pin');
-
-  // Unauthenticated list must fail
-  let blocked = false;
-  try {
-    await req('GET', `/tasks?userId=${user.id}`);
-  } catch (err) {
-    blocked = String(err.message).includes('401');
+  if (created.pin_hash) {
+    throw new Error('pin_hash must not be returned');
   }
-  if (!blocked) throw new Error('expected 401 without X-Pin-Hash on GET /tasks');
+  console.log('✓ register user', created.id);
+
+  await expectStatus('GET', `/tasks?userId=${created.id}`, undefined, undefined, 401);
   console.log('✓ reject unauthenticated task list');
+
+  await expectStatus(
+    'GET',
+    `/users/by-pin/${encodeURIComponent('deadbeef')}`,
+    undefined,
+    undefined,
+    410,
+  );
+  console.log('✓ reject credential-in-URL by-pin route');
 
   const task = await req(
     'POST',
     '/tasks',
     {
-      user_id: user.id,
-      title: 'Neon migration smoke test',
+      title: 'Auth hardening smoke test',
       description: 'created by scripts/test-neon-api.mjs',
       done: false,
       priority: 'high',
-      tags: ['neon', 'smoke'],
+      tags: ['neon', 'security'],
     },
-    pinHash,
+    created.token,
   );
   console.log('✓ create task', task.id);
 
   const updated = await req(
     'PUT',
     `/tasks/${task.id}`,
-    {
-      done: true,
-      priority: 'medium',
-    },
-    pinHash,
+    { done: true },
+    created.token,
   );
   if (!updated.done) throw new Error('update failed');
   console.log('✓ update task');
 
   const listed = await req(
     'GET',
-    `/tasks?userId=${user.id}`,
+    `/tasks?userId=${created.id}`,
     undefined,
-    pinHash,
+    created.token,
   );
   if (!listed.some((t) => t.id === task.id)) throw new Error('list missing task');
   console.log('✓ list tasks', listed.length);
 
-  await req('DELETE', `/tasks/${task.id}`, undefined, pinHash);
-  console.log('✓ delete task');
+  await req('POST', '/auth/logout', {}, created.token);
+  console.log('✓ logout');
+
+  await expectStatus(
+    'GET',
+    `/tasks?userId=${created.id}`,
+    undefined,
+    created.token,
+    401,
+  );
+  console.log('✓ revoked token rejected');
+
+  const login = await req('POST', '/auth/login', { pin });
+  if (!login.token) throw new Error('login must return token');
+  console.log('✓ login');
 
   const bulk = await req(
     'POST',
     '/tasks/bulk',
     {
       tasks: [
-        {
-          user_id: user.id,
-          title: 'Bulk A',
-          description: '',
-          done: false,
-          priority: 'low',
-          tags: [],
-        },
-        {
-          user_id: user.id,
-          title: 'Bulk B',
-          description: '',
-          done: false,
-          priority: 'low',
-          tags: ['b'],
-        },
+        { title: 'Bulk A', description: '', done: false, priority: 'low', tags: [] },
+        { title: 'Bulk B', description: '', done: false, priority: 'low', tags: ['b'] },
       ],
     },
-    pinHash,
+    login.token,
   );
   console.log('✓ bulk upload', bulk.length);
 
-  await req('DELETE', `/tasks?userId=${user.id}`, undefined, pinHash);
+  await req('DELETE', `/tasks?userId=${login.id}`, undefined, login.token);
   console.log('✓ delete all tasks');
 
-  await req('DELETE', `/users/${user.id}`, undefined, pinHash);
+  await req('DELETE', `/users/${login.id}`, undefined, login.token);
   console.log('✓ delete user');
 
-  console.log('\nAll Neon API smoke tests passed.');
-  console.log(`Save this test PIN if needed: ${pin}`);
+  console.log('\nAll Neon API security smoke tests passed.');
+  console.log(`PIN used during test: ${pin}`);
 }
 
 main().catch((err) => {
