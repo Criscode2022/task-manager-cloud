@@ -1,12 +1,10 @@
 ---
-title: Skill Angular (claude-workflow)
+title: Skill Angular
 ---
 
-# Skill Angular · claude-workflow
+# Skill Angular
 
-Task Cloud adopta la skill **angular** del repo interno [claude-workflow](https://github.com/Criscode2022/claude-workflow) (`.claude/skills/angular`). Vive en el monorepo en:
-
-`.claude/skills/angular/`
+La guía de estilo Angular del proyecto vive en el monorepo, en `.claude/skills/angular/`.
 
 | Archivo | Contenido |
 |---------|-----------|
@@ -46,4 +44,4 @@ La skill pide **mirar el major del repo y no mezclar eras**. Task Cloud está en
 
 ## Referencia en el repo de la app
 
-Tras clonar `task-manager-cloud`, los agentes que lean `.claude/skills/angular/SKILL.md` aplican estas reglas al tocar `apps/web`.
+Los agentes que lean `.claude/skills/angular/SKILL.md` aplican estas reglas al tocar `apps/web`.
