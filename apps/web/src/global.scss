@@ -139,6 +139,92 @@ body {
   box-shadow: none !important;
   font-size: 1rem;
   padding: 0.5rem 0;
+  color: var(--ion-text-color);
+  caret-color: var(--ion-color-primary);
+}
+
+.mat-mdc-select-value,
+.mat-mdc-select-min-line {
+  color: var(--ion-text-color);
+}
+
+ion-tab-bar {
+  --background: var(--ion-tab-bar-background);
+  --color: var(--ion-text-color-secondary);
+  --color-selected: var(--ion-color-primary);
+  --border: 1px solid var(--ion-border-color);
+}
+
+ion-tab-button {
+  --color: var(--ion-text-color-secondary);
+  --color-selected: var(--ion-color-primary);
+}
+
+body.dark-theme {
+  --mat-form-field-outlined-input-text-color: #ffffff;
+  --mat-form-field-outlined-label-text-color: rgba(255, 255, 255, 0.78);
+  --mat-form-field-outlined-hover-label-text-color: rgba(255, 255, 255, 0.88);
+  --mat-form-field-outlined-focus-label-text-color: var(--ion-color-primary);
+  --mat-form-field-outlined-input-text-placeholder-color: rgba(255, 255, 255, 0.55);
+  --mat-form-field-outlined-caret-color: #ffffff;
+  --mat-form-field-outlined-input-text-disabled-color: rgba(255, 255, 255, 0.45);
+  --mat-select-enabled-trigger-text-color: #ffffff;
+  --mat-select-placeholder-text-color: rgba(255, 255, 255, 0.55);
+  --mat-select-enabled-arrow-color: rgba(255, 255, 255, 0.75);
+  --mat-option-label-text-color: #f9fafb;
+
+  .mat-mdc-input-element,
+  .mat-mdc-select-value,
+  .mat-mdc-select-value-text,
+  .mat-mdc-select-min-line,
+  input.mat-mdc-input-element,
+  textarea.mat-mdc-input-element {
+    color: #ffffff !important;
+    caret-color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
+  }
+
+  .mat-mdc-input-element::placeholder,
+  .mat-mdc-select-placeholder {
+    color: rgba(255, 255, 255, 0.55) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.55);
+  }
+
+  .mat-mdc-form-field-label,
+  .mdc-floating-label,
+  .mat-mdc-form-field .mdc-floating-label {
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .mat-mdc-form-field-hint,
+  .mat-mdc-form-field-hint-wrapper {
+    color: rgba(255, 255, 255, 0.62);
+  }
+
+  ion-select {
+    --color: #ffffff;
+    color: #ffffff;
+  }
+
+  ion-tab-bar,
+  ion-tab-button {
+    --color: #e8edf5;
+    --color-selected: var(--ion-color-primary-tint);
+  }
+
+  ion-tab-button {
+    color: #e8edf5;
+
+    ion-label,
+    ion-icon {
+      color: inherit;
+    }
+
+    &.tab-selected {
+      --color: var(--ion-color-primary-tint);
+      color: var(--ion-color-primary-tint);
+    }
+  }
 }
 
 mat-error {

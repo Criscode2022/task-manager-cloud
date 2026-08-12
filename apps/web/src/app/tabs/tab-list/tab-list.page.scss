@@ -69,7 +69,9 @@
 .filter-chips {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.4rem;
+  padding-block: 0.2rem;
 }
 
 @media (min-width: 768px) {
@@ -87,23 +89,28 @@
 
 .filter-chips--tags {
   max-height: 7.5rem;
+  overflow-x: hidden;
   overflow-y: auto;
+  padding-block: 0.3rem;
   padding-right: 0.15rem;
 }
 
 .filter-chip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
+  box-sizing: border-box;
   min-height: 32px;
-  padding: 0.3rem 0.75rem;
+  padding: 0.35rem 0.75rem;
+  overflow: visible;
   border: 1px solid var(--ion-border-color);
   border-radius: 9999px;
   background: var(--ion-background-color);
   color: var(--ion-text-color);
   font-size: 0.8rem;
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.25;
   cursor: pointer;
   transition:
     background 0.18s ease,
@@ -221,7 +228,8 @@
   .filter-chips {
     flex-wrap: nowrap;
     overflow-x: auto;
-    padding: 0.2rem 0.1rem 0.25rem;
+    overflow-y: hidden;
+    padding: 0.35rem 0.1rem 0.3rem;
     -webkit-overflow-scrolling: touch;
 
     &::-webkit-scrollbar {
@@ -229,11 +237,18 @@
     }
   }
 
+  .filter-chips--tags {
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
   .filter-chip {
     flex-shrink: 0;
-    min-height: 26px;
-    padding: 0.2rem 0.55rem;
-    font-size: 0.72rem;
+    min-height: 32px;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8rem;
+    line-height: 1.25;
     box-shadow: none;
 
     &.is-active {
@@ -345,6 +360,7 @@
 
 .priority-selector {
   --background: var(--ion-item-background);
+  --color: var(--ion-text-color);
   --min-height: 42px;
   border: 1px solid var(--ion-border-color);
   border-radius: var(--border-radius-md);
@@ -353,6 +369,11 @@
   ion-label {
     font-weight: 600;
     font-size: 0.9rem;
+    color: var(--ion-text-color);
+  }
+
+  ion-select {
+    --color: var(--ion-text-color);
     color: var(--ion-text-color);
   }
 }
@@ -531,11 +552,26 @@
 
 .task-meta {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  justify-content: center;
   gap: 0.3rem;
-  max-width: 9.5rem;
+  min-width: 0;
+  max-width: 8.5rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.15rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--ion-color-primary) 45%, transparent) transparent;
+
+  &::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--ion-color-primary) 45%, transparent);
+    border-radius: 9999px;
+  }
 }
 
 .task-end {
@@ -543,15 +579,21 @@
   align-items: center;
   gap: 0.5rem;
   margin-inline-start: 0.75rem;
-  flex-shrink: 0;
+  min-width: 0;
+  width: min(58%, 16.5rem);
+  max-width: 58%;
+  flex-shrink: 1;
 }
 
 .task-end-meta {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
 }
 
 .priority-badge {
@@ -581,10 +623,13 @@
 }
 
 .tag-chip {
+  flex-shrink: 0;
   border-radius: 9999px;
   padding: 0.1rem 0.5rem;
   font-size: 0.72rem;
   font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
   background: color-mix(in srgb, var(--ion-color-primary) 18%, white);
   color: color-mix(in srgb, var(--ion-color-primary-shade) 80%, #000);
   border: 1px solid color-mix(in srgb, var(--ion-color-primary) 38%, white);
@@ -874,6 +919,7 @@
 }
 
 // Dark Theme Adjustments
+:host-context(.dark-theme),
 .dark-theme {
   .task-form {
     background: var(--ion-card-background);

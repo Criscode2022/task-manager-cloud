@@ -6,6 +6,7 @@ import { UserService } from '../core/services/user-service/user.service';
 @Component({
   selector: 'app-tabs',
   templateUrl: 'tabs.page.html',
+  styleUrls: ['tabs.page.scss'],
   standalone: false,
 })
 export class TabsPage {
