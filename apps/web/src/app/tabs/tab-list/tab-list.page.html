@@ -161,10 +161,6 @@
   @if (tasks().length) {
   <div class="advanced-filters">
     <div class="filter-group">
-      <span class="filter-group-label">
-        <ion-icon name="flag-outline" aria-hidden="true"></ion-icon>
-        {{ 'TASKS.FILTER_BY_PRIORITY' | translate }}
-      </span>
       <div class="filter-chips" role="group" [attr.aria-label]="'TASKS.FILTER_BY_PRIORITY' | translate">
         <button
           type="button"
@@ -206,10 +202,6 @@
 
     @if (availableTags().length) {
     <div class="filter-group">
-      <span class="filter-group-label">
-        <ion-icon name="pricetags-outline" aria-hidden="true"></ion-icon>
-        {{ 'TASKS.FILTER_BY_TAG' | translate }}
-      </span>
       <div class="filter-chips filter-chips--tags" role="group" [attr.aria-label]="'TASKS.FILTER_BY_TAG' | translate">
         <button
           type="button"
