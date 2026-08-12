@@ -1,0 +1,56 @@
+.edit-task-dialog {
+  background: var(--ion-surface-color);
+  border-radius: var(--border-radius-xl);
+  padding: 1.25rem 1.25rem 1rem;
+  width: min(92vw, 420px);
+  box-shadow: var(--shadow-xl);
+}
+
+.dialog-title {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ion-text-color);
+}
+
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dialog-field {
+  width: 100%;
+}
+
+.priority-selector {
+  --background: var(--ion-item-background);
+  --min-height: 44px;
+  border: 1px solid var(--ion-border-color);
+  border-radius: var(--border-radius-md);
+
+  ion-label {
+    font-weight: 600;
+    color: var(--ion-text-color);
+  }
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+
+  ion-button {
+    --border-radius: var(--border-radius-md);
+    text-transform: none;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+.dark-theme {
+  .edit-task-dialog {
+    background: var(--ion-card-background);
+  }
+}

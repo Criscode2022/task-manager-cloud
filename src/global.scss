@@ -284,6 +284,20 @@ ion-toolbar {
   animation: scaleIn 0.2s ease-out;
 }
 
+// Edit task dialog panel (MatDialog)
+.edit-task-dialog-panel {
+  .mat-mdc-dialog-container {
+    --mdc-dialog-container-shape: var(--border-radius-xl);
+    padding: 0;
+  }
+
+  .mdc-dialog__surface {
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: visible;
+  }
+}
+
 // Smooth Scrolling
 * {
   scroll-behavior: smooth;
