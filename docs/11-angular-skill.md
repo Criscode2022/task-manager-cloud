@@ -4,7 +4,7 @@ title: Skill Angular
 
 # Skill Angular
 
-La guía de estilo Angular del proyecto vive en el monorepo, en `.claude/skills/angular/`.
+La guía de estilo Angular de Task Cloud está en `.claude/skills/angular/`.
 
 | Archivo | Contenido |
 |---------|-----------|
