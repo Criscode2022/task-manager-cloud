@@ -38,10 +38,6 @@ From the **repo root** (npm workspaces + Turborepo):
 - Both: `npm run start:full` (turbo).
 - Unit tests (web): `CHROME_BIN=/usr/local/bin/google-chrome npm run test:ci`
   Headless Chrome works without a `--no-sandbox` flag in this environment.
-- There is one **pre-existing** unit-test failure: `TabListPage > should create`
-  fails with `NG05105: Unexpected synthetic property @transitionMessages found`
-  because that spec does not provide an animations module (`provideAnimations()` /
-  `NoopAnimationsModule`). This is a test defect in the repo (26/27 specs pass).
 - Lint (web): `npm run lint:ci`.
 - API smoke test (needs running API + real DB secrets): `npm run test:api`.
 
