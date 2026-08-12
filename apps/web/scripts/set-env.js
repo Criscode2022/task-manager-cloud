@@ -18,6 +18,25 @@ const webRoot = path.join(__dirname, '..');
 const envPath = path.join(repoRoot, '.env');
 const envExamplePath = path.join(repoRoot, '.env.example');
 
+function copyIoniconsIntoWorkspace() {
+  const source = path.join(
+    repoRoot,
+    'node_modules',
+    'ionicons',
+    'dist',
+    'ionicons',
+    'svg',
+  );
+  const dest = path.join(webRoot, 'src', 'ionicons-svg');
+  if (!fs.existsSync(source)) {
+    return;
+  }
+  fs.rmSync(dest, { recursive: true, force: true });
+  fs.cpSync(source, dest, { recursive: true });
+}
+
+copyIoniconsIntoWorkspace();
+
 function resolveApiBaseUrl(fromEnv) {
   return fromEnv || '/api';
 }

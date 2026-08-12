@@ -20,7 +20,7 @@ mcp-server/ (opcional, Python FastMCP) ──► Neon
 
 ## Capas
 
-1. **Cliente** — Angular 20 + Ionic 8 + Tailwind. Servicios de dominio: `TaskService`, `TaskNeonService`, `NeonApiService`.
+1. **Cliente** — Angular 21 + Ionic 8 + Tailwind. Servicios de dominio: `TaskService`, `TaskNeonService`, `NeonApiService`.
 2. **API** — NestJS 11: módulos `auth`, `users`, `tasks`, `health`, rate-limit y exception filter.
 3. **Datos** — Neon Postgres: `users`, `tasks`, `sessions`.
 4. **Deploy** — Un proyecto Vercel: turbo build web+api; output `apps/web/www`; rewrites `/api/*` → función.

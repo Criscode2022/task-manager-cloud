@@ -17,24 +17,23 @@ Task Cloud adopta la skill **angular** del repo interno [claude-workflow](https:
 | `components.md` | Standalone, `@if/@for`, SSR, Vitest |
 | `animations.md` | `animate.enter` / View Transitions |
 
-La skill pide **mirar el major del repo y no mezclar eras**. Task Cloud está en **Angular 20 + Ionic 8** (Ionic 8 soporta hasta Angular 20.x). Se aplicó el house style y las novedades de v20 que encajan con Ionic; se dejaron las APIs estables solo en v21/v22.
+La skill pide **mirar el major del repo y no mezclar eras**. Task Cloud está en **Angular 21.2 + Ionic 8.8**. v21 hace zoneless el default en apps *nuevas*; esta app declara `provideZoneChangeDetection()` porque Ionic 8 sigue apoyándose en Zone.js.
 
 ## Qué se aplicó en `apps/web`
 
-1. **`ng update` a Angular 20.3** y Material/CDK 20. TypeScript `moduleResolution: bundler`.
-2. **Control flow nativo.** Migración de `*ngIf` restantes a `@if` (lista, PIN dialog).
-3. **HTTP moderno.** Se quitó el deprecado `HttpClientModule`; `provideHttpClient(withFetch(), withInterceptors(...))` usa el backend Fetch de Angular 20.
-4. **OnPush** en `TabListPage`, `TabOptionsPage`, diálogo de edición y PIN dialog (alineado con el default implícito de majors posteriores).
-5. **Signals first.** PIN dialog: `copied`/`confirmed` como signals. `TaskService.storageReady` en vez de `BehaviorSubject`. Diálogo de edición con `firstValueFrom`.
-6. **Formularios.** Sigue `ReactiveFormsModule`: Signal Forms aún no son el default estable de v20 (lo son en v22). Ionic sigue usando `NgModule` en el shell.
+1. **Upgrade a Angular 21.2** y Material/CDK 21. TypeScript 5.9. Ionic 8.8.17 (compilado contra el runtime de v21).
+2. **HTTP Fetch.** `provideHttpClient(withFetch(), withInterceptors(...))` — sin `HttpClientModule`.
+3. **Control flow nativo** (`@if`) y **OnPush** en lista, opciones y diálogos.
+4. **Zone explícito.** `provideZoneChangeDetection()` para no heredar el default zoneless de v21.
+5. **Assets v21.** El CLI ya no copia rutas fuera del workspace; ionicons se copian a `src/ionicons-svg` en el `set-env`.
+6. **Signals first** y Reactive Forms. Signal Forms siguen experimentales en v21 (estables en v22).
 
-## Qué queda fuera a propósito (Ionic + v20)
+## Qué queda fuera a propósito
 
 - Signal Forms / `formField` (estable en Angular 22)
-- `httpResource()` / `resource()` siguen experimentales en 20.3
-- Zoneless (`provideExperimentalZonelessChangeDetection`) — Ionic 8 + zone.js es el camino soportado
-- Vitest (Karma sigue en este builder)
-- `ng update` a 21+ no cabe: Ionic 8 declara máximo Angular 20.x
+- Zoneless real (Ionic + Zone)
+- Vitest (Karma en este builder)
+- Migración completa del shell `NgModule` de Ionic
 
 ## House style (extracto)
 

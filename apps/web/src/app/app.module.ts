@@ -3,7 +3,7 @@ import {
   withFetch,
   withInterceptors,
 } from '@angular/common/http';
-import { NgModule, isDevMode } from '@angular/core';
+import { NgModule, isDevMode, provideZoneChangeDetection } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { RouteReuseStrategy } from '@angular/router';
@@ -37,6 +37,7 @@ import { StorageModule } from './storage.module';
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    provideZoneChangeDetection(),
     provideAnimationsAsync(),
     provideHttpClient(withFetch(), withInterceptors([LoadingInterceptor])),
   ],

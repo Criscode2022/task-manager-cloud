@@ -27,7 +27,7 @@
               },
               {
                 "glob": "**/*.svg",
-                "input": "../../node_modules/ionicons/dist/ionicons/svg",
+                "input": "src/ionicons-svg",
                 "output": "./svg"
               }
             ],
@@ -115,7 +115,7 @@
               },
               {
                 "glob": "**/*.svg",
-                "input": "../../node_modules/ionicons/dist/ionicons/svg",
+                "input": "src/ionicons-svg",
                 "output": "./svg"
               }
             ],

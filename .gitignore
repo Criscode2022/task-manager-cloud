@@ -86,6 +86,7 @@ mcp-server/.venv/
 apps/web/src/environments/environment.local.ts
 apps/web/src/environments/environment.prod.local.ts
 apps/web/src/environments/*.local.ts
+apps/web/src/ionicons-svg/
 src/environments/environment.local.ts
 src/environments/environment.prod.local.ts
 src/environments/*.local.ts
