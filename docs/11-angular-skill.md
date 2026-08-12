@@ -15,32 +15,32 @@ La guía de estilo Angular de Task Cloud está en `.claude/skills/angular/`.
 | `components.md` | Standalone, `@if/@for`, SSR, Vitest |
 | `animations.md` | `animate.enter` / View Transitions |
 
-La skill pide **mirar el major del repo y no mezclar eras**. Task Cloud está en **Angular 21.2 + Ionic 8.8**. v21 hace zoneless el default en apps *nuevas*; esta app declara `provideZoneChangeDetection()` porque Ionic 8 sigue apoyándose en Zone.js.
+La skill pide **mirar el major del repo y no mezclar eras**. Task Cloud está en **Angular 22.1 + Ionic 8.8.18 + TypeScript 6.0**. v22 hace zoneless el default en apps *nuevas*; esta app declara `provideZoneChangeDetection()` porque Ionic 8 sigue apoyándose en Zone.js.
 
-## Qué se aplicó en `apps/web`
+## Revisión 2026-08-13 (Angular 22)
 
-1. **Upgrade a Angular 21.2** y Material/CDK 21. TypeScript 5.9. Ionic 8.8.17 (compilado contra el runtime de v21).
-2. **HTTP Fetch.** `provideHttpClient(withFetch(), withInterceptors(...))` — sin `HttpClientModule`.
-3. **Control flow nativo** (`@if`) y **OnPush** en lista, opciones y diálogos.
-4. **Zone explícito.** `provideZoneChangeDetection()` para no heredar el default zoneless de v21.
-5. **Assets v21.** El CLI ya no copia rutas fuera del workspace; ionicons se copian a `src/ionicons-svg` en el `set-env`.
-6. **Signals first** y Reactive Forms. Signal Forms siguen experimentales en v21 (estables en v22).
+Hallazgos aplicados:
 
-## Qué queda fuera a propósito
+1. **Upgrade a Angular 22.1.1** + Material/CDK 22.1 + CLI 22.1. TypeScript **6.0.3**. Ionic **8.8.18** (peer `>=16`).
+2. **Signal Forms** en crear y editar tarea: `form()` + `FormField` + `required`/`maxLength` + `submit()`. El modelo es un `signal` plano (`taskModel` / `editModel`). `ion-select` y `mat-select` escriben el modelo (no tienen CVA de Signal Forms).
+3. **`httpResource`** para lecturas GET: `cloudTasks` (`GET /tasks`) y `meResource` (`GET /auth/me`), disparados por `session`. Mutaciones (POST/PUT/DELETE) siguen en `HttpClient`; tras mutar se llama `cloudTasks.reload()`.
+4. HTTP Fetch, `@if`, OnPush y Zone explícito se mantienen.
 
-- Signal Forms / `formField` (estable en Angular 22)
+Queda fuera a propósito:
+
 - Zoneless real (Ionic + Zone)
-- Vitest (Karma en este builder)
+- Vitest (Karma en este builder webpack)
 - Migración completa del shell `NgModule` de Ionic
+- `TaskHttpService` legado (no está en el flujo Neon)
 
 ## House style (extracto)
 
-- Estado y derivación en `signal` / `computed` / `linkedSignal`. RxJS solo para streams reales (debounce, websockets, races); al entrar, `toSignal()`.
-- `private readonly` por defecto; `protected` solo si la plantilla lo lee; público es la excepción.
+- Estado y derivación en `signal` / `computed` / `linkedSignal` / `httpResource`. RxJS solo para streams reales; al entrar, `toSignal()`.
+- `private readonly` por defecto; `protected` solo si la plantilla lo lee.
 - `const` para locales; nunca `var`.
-- Arrays/objetos por spread (`[...xs, x]`, `{ ...o, k }`, `toSorted()`), nunca `push`/`splice` sobre estado compartido.
+- Arrays/objetos por spread; nunca `push`/`splice` sobre estado compartido.
 - Guards arriba, happy path plano.
-- En código **nuevo**: standalone, `inject()`, `input()`/`output()`, `@if/@for`, no NgModules ni `@Input()`.
+- En código **nuevo**: standalone, `inject()`, `input()`/`output()`, Signal Forms, `httpResource` para lecturas.
 
 ## Referencia en el repo de la app
 

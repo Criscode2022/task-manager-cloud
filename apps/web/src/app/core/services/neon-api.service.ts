@@ -1,6 +1,9 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpResourceRef } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
+import { filter, take } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { Task } from '../../tabs/tab-list/types/task';
 
@@ -23,9 +26,80 @@ export class NeonApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiBaseUrl.replace(/\/$/, '');
 
+  /** Session for reactive GET reads (`httpResource`). Mutations stay on HttpClient. */
+  readonly session = signal<{ userId: number; token: string } | null>(null);
+
+  readonly cloudTasks = httpResource<Task[]>(
+    () => {
+      const session = this.session();
+      if (!session) {
+        return undefined;
+      }
+
+      return {
+        url: this.url('/tasks'),
+        method: 'GET',
+        params: { userId: String(session.userId) },
+        headers: { Authorization: `Bearer ${session.token}` },
+      };
+    },
+    { defaultValue: [] },
+  );
+
+  readonly meResource = httpResource<NeonUser>(() => {
+    const session = this.session();
+    if (!session) {
+      return undefined;
+    }
+
+    return {
+      url: this.url('/auth/me'),
+      method: 'GET',
+      headers: { Authorization: `Bearer ${session.token}` },
+    };
+  });
+
   constructor() {
     console.log('🔧 Neon API Configuration:');
     console.log('  API Base URL:', this.baseUrl);
+  }
+
+  clearSession(): void {
+    this.session.set(null);
+  }
+
+  async waitForTasks(): Promise<Task[]> {
+    this.cloudTasks.reload();
+    await this.waitForResource(this.cloudTasks);
+    return this.cloudTasks.value() ?? [];
+  }
+
+  async waitForMe(): Promise<NeonUser> {
+    this.meResource.reload();
+    await this.waitForResource(this.meResource);
+    const user = this.meResource.value();
+    if (!user) {
+      throw new Error('Session is not valid');
+    }
+    return user;
+  }
+
+  private async waitForResource<T>(
+    resource: HttpResourceRef<T>,
+  ): Promise<void> {
+    if (resource.status() === 'loading' || resource.status() === 'reloading' || resource.status() === 'idle') {
+      await firstValueFrom(
+        toObservable(resource.status).pipe(
+          filter((status) => status === 'resolved' || status === 'error'),
+          take(1),
+        ),
+      );
+    }
+
+    const error = resource.error();
+    if (error) {
+      throw error;
+    }
   }
 
   private url(path: string): string {
@@ -63,11 +137,11 @@ export class NeonApiService {
   }
 
   async me(token: string): Promise<NeonUser> {
-    return firstValueFrom(
-      this.http.get<NeonUser>(this.url('/auth/me'), {
-        headers: this.authHeaders(token),
-      }),
-    );
+    this.session.set({
+      userId: this.session()?.userId ?? 0,
+      token,
+    });
+    return this.waitForMe();
   }
 
   // ===========================
@@ -75,12 +149,8 @@ export class NeonApiService {
   // ===========================
 
   async getTasks(userId: number, token: string): Promise<Task[]> {
-    return firstValueFrom(
-      this.http.get<Task[]>(this.url(`/tasks`), {
-        params: { userId: String(userId) },
-        headers: this.authHeaders(token),
-      }),
-    );
+    this.session.set({ userId, token });
+    return this.waitForTasks();
   }
 
   async createTask(

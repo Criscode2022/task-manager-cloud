@@ -4,7 +4,7 @@
 
 Task Cloud is a **Turborepo monorepo**:
 
-- `apps/web` — Angular 21 + Ionic 8 PWA for personal task management. Tasks work
+- `apps/web` — Angular 22 + Ionic 8 PWA for personal task management. Tasks work
   fully offline via Ionic Storage (create / edit / complete / delete / filter).
 - `apps/api` — NestJS backend on Neon Postgres for optional cloud sync
   (PIN-based user + JWT sessions + upload/download of tasks).

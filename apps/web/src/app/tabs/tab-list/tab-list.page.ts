@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 
 import { firstValueFrom } from 'rxjs';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormField } from '@angular/forms/signals';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -48,7 +48,7 @@ import {
   imports: [
     IonicModule,
     CommonModule,
-    ReactiveFormsModule,
+    FormField,
     MatAutocompleteModule,
     MatButtonModule,
     MatCheckboxModule,
@@ -269,8 +269,11 @@ export class TabListPage extends TaskForm {
     this.userService.getUser();
   }
 
-  protected async addTask(): Promise<void> {
-    if (!(this.form.valid && this.title?.value)) {
+  protected async addTask(event?: Event): Promise<void> {
+    event?.preventDefault();
+
+    const model = this.taskModel();
+    if (this.form().invalid() || !model.title.trim()) {
       console.error('Invalid form, please check the inputs');
       return;
     }
@@ -279,11 +282,11 @@ export class TabListPage extends TaskForm {
 
     const task: TaskDTO = {
       id,
-      title: this.title?.value ?? '',
-      description: this.description?.value || '',
+      title: model.title.trim(),
+      description: model.description.trim(),
       done: false,
-      priority: this.normalizePriority(this.priority?.value),
-      tags: this.parseTags(this.tagsInput?.value),
+      priority: this.normalizePriority(model.priority),
+      tags: this.parseTags(model.tagsInput),
     };
 
     // Track the new task ID for a gentler entrance animation
@@ -295,12 +298,7 @@ export class TabListPage extends TaskForm {
 
     this.tasks.update((tasks) => [...tasks, task as Task]);
 
-    this.form.reset({
-      title: '',
-      description: '',
-      priority: DEFAULT_TASK_PRIORITY,
-      tagsInput: '',
-    });
+    this.resetTaskForm();
     this.tagsAutocompleteInput.set('');
     this.isFormVisible.set(false);
 
@@ -505,9 +503,15 @@ export class TabListPage extends TaskForm {
     this.tagsAutocompleteInput.set(value || '');
   }
 
+  protected onCreatePriorityChange(value: unknown): void {
+    this.taskModel.update((model) => ({
+      ...model,
+      priority: this.normalizePriority(value),
+    }));
+  }
+
   protected applyTagSuggestion(tag: string): void {
-    const currentValue = this.tagsInput?.value;
-    const rawInput = typeof currentValue === 'string' ? currentValue : '';
+    const rawInput = this.taskModel().tagsInput;
     const splitInput = rawInput.split(',');
     const committedTags = splitInput
       .slice(0, -1)
@@ -516,7 +520,7 @@ export class TabListPage extends TaskForm {
 
     const nextTags = [...new Set([...committedTags, tag])];
     const nextValue = `${nextTags.join(', ')}, `;
-    this.tagsInput?.setValue(nextValue);
+    this.taskModel.update((model) => ({ ...model, tagsInput: nextValue }));
     this.tagsAutocompleteInput.set(nextValue);
   }
 

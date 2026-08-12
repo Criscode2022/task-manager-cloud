@@ -74,7 +74,7 @@ describe('TabListPage', () => {
 
   it('should collapse the create form after adding a task', async () => {
     component['isFormVisible'].set(true);
-    component['form'].setValue({
+    component['taskModel'].set({
       title: 'New task',
       description: '',
       priority: 'medium',

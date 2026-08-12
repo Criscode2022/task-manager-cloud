@@ -51,6 +51,8 @@ export class TaskNeonService {
         );
         console.log(`Local task ID updated: ${localId} → ${newTask.id}`);
       }
+
+      this.neon.cloudTasks.reload();
     } catch (error) {
       console.error('Upload error:', error);
       this.snackbar
@@ -90,6 +92,7 @@ export class TaskNeonService {
       );
 
       console.log('Task edited successfully:', updatedTask);
+      this.neon.cloudTasks.reload();
     } catch (error) {
       console.error('Edit error:', error);
       this.snackbar
@@ -116,6 +119,7 @@ export class TaskNeonService {
       console.log('Deleting task from Neon...', taskId, userId);
       await this.neon.deleteTask(taskId, token);
       console.log('Task deleted successfully:', taskId);
+      this.neon.cloudTasks.reload();
     } catch (error) {
       console.error('Delete error:', error);
       this.snackbar
@@ -151,7 +155,8 @@ export class TaskNeonService {
   public async download(pin: string): Promise<AuthSession> {
     console.log('🔐 Logging in with PIN...');
     const session = await this.neon.login(pin);
-    const tasks = await this.neon.getTasks(session.id, session.token);
+    this.neon.session.set({ userId: session.id, token: session.token });
+    const tasks = await this.neon.waitForTasks();
 
     this.taskService.userId.set(session.id);
     this.tasks.set(tasks);
@@ -168,8 +173,9 @@ export class TaskNeonService {
     userId: number,
     token: string,
   ): Promise<void> {
-    await this.neon.me(token);
-    const tasks = await this.neon.getTasks(userId, token);
+    this.neon.session.set({ userId, token });
+    await this.neon.waitForMe();
+    const tasks = await this.neon.waitForTasks();
     this.taskService.userId.set(userId);
     this.tasks.set(tasks);
   }

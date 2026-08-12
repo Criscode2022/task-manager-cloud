@@ -57,6 +57,7 @@ export class UserService {
     this.accessToken.set(null);
     this.sessionExpiresAt.set(null);
     this.pinHash.set(null);
+    this.neonApi.clearSession();
   }
 
   private isExpired(expiresAt: string | null | undefined): boolean {

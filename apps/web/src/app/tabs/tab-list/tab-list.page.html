@@ -21,9 +21,9 @@
 <ion-content [scrollY]="false" class="content-background">
   <div class="form-container">
     <form
-      [formGroup]="form"
       class="task-form animate-slide-in-up"
-      (ngSubmit)="addTask()"
+      novalidate
+      (submit)="addTask($event)"
       >
       <div
         class="form-header"
@@ -49,11 +49,10 @@
             matInput
             type="text"
             [placeholder]="'TASKS.TITLE_PLACEHOLDER' | translate"
-            formControlName="title"
-            maxlength="40"
+            [formField]="form.title"
             />
-          <mat-hint align="end">{{this.title?.value?.length || 0}}/40</mat-hint>
-          @if (this.title?.value?.length) {
+          <mat-hint align="end">{{ taskModel().title.length }}/40</mat-hint>
+          @if (taskModel().title.length) {
             <button
               mat-icon-button
               type="button"
@@ -73,13 +72,10 @@
             matInput
             type="text"
             [placeholder]="'TASKS.DESCRIPTION_PLACEHOLDER' | translate"
-            formControlName="description"
-            maxlength="30"
+            [formField]="form.description"
             />
-          <mat-hint align="end"
-            >{{this.description?.value?.length || 0}}/30</mat-hint
-            >
-            @if (this.description?.value?.length) {
+          <mat-hint align="end">{{ taskModel().description.length }}/30</mat-hint>
+            @if (taskModel().description.length) {
               <button
                 mat-icon-button
                 type="button"
@@ -96,9 +92,10 @@
           <ion-item lines="none" class="priority-selector mt-1">
             <ion-label>{{ 'TASKS.PRIORITY_LABEL' | translate }}</ion-label>
             <ion-select
-              formControlName="priority"
               interface="popover"
-              [selectedText]="getPrioritySelectLabelKey(priority?.value) | translate"
+              [value]="taskModel().priority"
+              (ionChange)="onCreatePriorityChange($event.detail.value)"
+              [selectedText]="getPrioritySelectLabelKey(taskModel().priority) | translate"
               >
               <ion-select-option value="high">
                 {{ 'TASKS.PRIORITY.HIGH' | translate }}
@@ -118,13 +115,12 @@
               matInput
               type="text"
               [placeholder]="'TASKS.TAGS_PLACEHOLDER' | translate"
-              formControlName="tagsInput"
+              [formField]="form.tagsInput"
               [matAutocomplete]="tagsAutocomplete"
               (input)="onTagsInputChange($any($event.target).value)"
-              maxlength="80"
               />
             <mat-hint>{{ 'TASKS.TAGS_HELPER' | translate }}</mat-hint>
-            @if (this.tagsInput?.value?.length) {
+            @if (taskModel().tagsInput.length) {
               <button
                 mat-icon-button
                 type="button"
@@ -152,7 +148,7 @@
             expand="block"
             color="primary"
             class="submit-button"
-            [disabled]="!form.valid"
+            [disabled]="form().invalid()"
             >
             <ion-icon slot="start" name="add-outline"></ion-icon>
             {{ 'TASKS.ADD_TASK' | translate }}

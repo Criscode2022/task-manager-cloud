@@ -1,36 +1,40 @@
-import { inject } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-import { DEFAULT_TASK_PRIORITY } from './types/task';
+import { signal } from '@angular/core';
+import { form, maxLength, required } from '@angular/forms/signals';
+import { DEFAULT_TASK_PRIORITY, TaskPriority } from './types/task';
+
+export type TaskFormModel = {
+  title: string;
+  description: string;
+  priority: TaskPriority;
+  tagsInput: string;
+};
+
+const emptyTaskForm = (): TaskFormModel => ({
+  title: '',
+  description: '',
+  priority: DEFAULT_TASK_PRIORITY,
+  tagsInput: '',
+});
 
 export class TaskForm {
-  private readonly fb = inject(FormBuilder);
+  protected readonly taskModel = signal<TaskFormModel>(emptyTaskForm());
 
-  private skeleton = {
-    title: ['', [Validators.required, Validators.maxLength(40)]],
-    description: ['', [Validators.maxLength(30)]],
-    priority: [DEFAULT_TASK_PRIORITY, [Validators.required]],
-    tagsInput: ['', [Validators.maxLength(80)]],
-  };
+  protected readonly form = form(this.taskModel, (fields) => {
+    required(fields.title, { message: 'Required' });
+    maxLength(fields.title, 40);
+    maxLength(fields.description, 30);
+    required(fields.priority);
+    maxLength(fields.tagsInput, 80);
+  });
 
-  protected form = this.fb.group(this.skeleton);
-
-  get description() {
-    return this.form.get('description');
+  protected clear(field: keyof TaskFormModel): void {
+    this.taskModel.update((model) => ({
+      ...model,
+      [field]: field === 'priority' ? DEFAULT_TASK_PRIORITY : '',
+    }));
   }
 
-  get priority() {
-    return this.form.get('priority');
-  }
-
-  get tagsInput() {
-    return this.form.get('tagsInput');
-  }
-
-  get title() {
-    return this.form.get('title');
-  }
-
-  protected clear(element: string): void {
-    this.form.get(element)?.reset();
+  protected resetTaskForm(): void {
+    this.taskModel.set(emptyTaskForm());
   }
 }

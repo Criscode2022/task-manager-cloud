@@ -1,15 +1,14 @@
 <div class="edit-task-dialog">
   <h2 class="dialog-title">{{ 'TASKS.EDIT_TASK' | translate }}</h2>
 
-  <form [formGroup]="form" class="dialog-form" (ngSubmit)="confirm()">
+  <form class="dialog-form" novalidate (submit)="confirm($event)">
     <mat-form-field appearance="outline" class="dialog-field">
       <mat-label>{{ 'TASKS.TASK_TITLE' | translate }}</mat-label>
       <input
         matInput
         type="text"
-        formControlName="title"
+        [formField]="form.title"
         [placeholder]="'TASKS.TITLE_PLACEHOLDER' | translate"
-        maxlength="40"
       />
     </mat-form-field>
 
@@ -18,15 +17,18 @@
       <input
         matInput
         type="text"
-        formControlName="description"
+        [formField]="form.description"
         [placeholder]="'TASKS.DESCRIPTION_PLACEHOLDER_EDIT' | translate"
-        maxlength="30"
       />
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="dialog-field priority-field">
       <mat-label>{{ 'TASKS.PRIORITY_LABEL' | translate }}</mat-label>
-      <mat-select formControlName="priority" panelClass="edit-task-priority-panel">
+      <mat-select
+        [value]="editModel().priority"
+        (selectionChange)="editModel.update((model) => ({ ...model, priority: $event.value }))"
+        panelClass="edit-task-priority-panel"
+      >
         @for (option of priorityOptions; track option.value) {
         <mat-option [value]="option.value">
           {{ option.labelKey | translate }}
@@ -40,9 +42,8 @@
       <input
         matInput
         type="text"
-        formControlName="tags"
+        [formField]="form.tags"
         [placeholder]="'TASKS.TAGS_PLACEHOLDER_EDIT' | translate"
-        maxlength="80"
       />
     </mat-form-field>
 
@@ -55,7 +56,7 @@
       >
         {{ 'COMMON.CANCEL' | translate }}
       </ion-button>
-      <ion-button type="submit" color="primary" [disabled]="form.invalid">
+      <ion-button type="submit" color="primary" [disabled]="form().invalid()">
         {{ 'COMMON.CONFIRM' | translate }}
       </ion-button>
     </div>
