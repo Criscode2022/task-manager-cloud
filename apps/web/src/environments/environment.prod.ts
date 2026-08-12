@@ -4,9 +4,5 @@
 
 export const environment = {
   production: true,
-  // Legacy API (deprecated)
-  baseUrl: 'https://api-workspace-wczh.onrender.com/tasks-manager',
-
-  // Neon-backed API (loaded from .env via environment.prod.local.ts)
   apiBaseUrl: '/api'
 };

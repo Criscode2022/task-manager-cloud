@@ -46,7 +46,7 @@ This guide remains for historical reference only.
 ```typescript
 export const environment = {
   production: false,
-  baseUrl: 'https://api-workspace-wczh.onrender.com/tasks-manager', // Legacy API (optional)
+  apiBaseUrl: '/api',
 
   supabase: {
     url: 'https://eizqvmsubhosvawlbglw.supabase.co',
@@ -63,7 +63,7 @@ export const environment = {
 ```typescript
 export const environment = {
   production: true,
-  baseUrl: 'http://localhost:3000/tasks-manager', // Legacy API (optional)
+  apiBaseUrl: '/api',
 
   supabase: {
     url: 'https://eizqvmsubhosvawlbglw.supabase.co',

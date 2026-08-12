@@ -42,7 +42,6 @@ Ionic **8.8** declara `zone.js` como peer y sus web components (`ion-select`, ov
 
 - Vitest — el builder webpack/Karma de esta app
 - Shell `NgModule` (`IonicModule.forRoot()`, `TabsModule`) — Ionic 8 *sí* tiene `provideIonicAngular()`; no se ha migrado el andamiaje de tabs
-- `TaskHttpService` — API vieja, fuera del flujo Neon
 
 Revisar esta tabla al subir de major de Ionic. Si el peer deja de pedir `zone.js` y los `ion-*` implementan `FormValueControl`, se puede zoneless + `[formField]` en selects.
 

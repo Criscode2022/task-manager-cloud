@@ -114,10 +114,6 @@ function generateEnvFiles(apiBaseUrl) {
 
 export const environment = {
   production: false,
-  // Legacy API (deprecated)
-  baseUrl: 'https://api-workspace-wczh.onrender.com/tasks-manager',
-
-  // NestJS API (proxied locally via apps/web/proxy.conf.json)
   apiBaseUrl: '${apiBaseUrl}'
 };
 `;
@@ -127,10 +123,6 @@ export const environment = {
 
 export const environment = {
   production: true,
-  // Legacy API (deprecated)
-  baseUrl: 'https://api-workspace-wczh.onrender.com/tasks-manager',
-
-  // NestJS API — set API_BASE_URL to your deployed API origin + /api
   apiBaseUrl: '${apiBaseUrl}'
 };
 `;
