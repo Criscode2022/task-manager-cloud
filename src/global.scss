@@ -298,6 +298,11 @@ ion-toolbar {
   }
 }
 
+// Keep priority options above the edit dialog overlay
+.edit-task-priority-panel.mat-mdc-select-panel {
+  z-index: 1000;
+}
+
 // Smooth Scrolling
 * {
   scroll-behavior: smooth;

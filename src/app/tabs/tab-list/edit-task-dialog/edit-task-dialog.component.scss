@@ -23,16 +23,8 @@
   width: 100%;
 }
 
-.priority-selector {
-  --background: var(--ion-item-background);
-  --min-height: 44px;
-  border: 1px solid var(--ion-border-color);
-  border-radius: var(--border-radius-md);
-
-  ion-label {
-    font-weight: 600;
-    color: var(--ion-text-color);
-  }
+.priority-field {
+  width: 100%;
 }
 
 .dialog-actions {
