@@ -384,19 +384,8 @@ export class TabOptionsPage {
     if (!pinHash) return;
 
     try {
-      // Verify user PIN first
-      const isValidUser = await this.neon.verifyUserPin(userId, pinHash);
-      if (!isValidUser) {
-        this.snackbar.open(
-          this.translate.instant('OPTIONS.INVALID_CREDENTIALS'),
-          this.translate.instant('COMMON.CLOSE'),
-          { duration: 5000 },
-        );
-        return;
-      }
-
-      // Delete all tasks from cloud
-      await this.neon.deleteAllTasks(userId);
+      // Delete all tasks from cloud (server validates X-Pin-Hash)
+      await this.neon.deleteAllTasks(userId, pinHash);
 
       // Go offline mode (keeps local tasks)
       await this.activateOfflineMode();
@@ -435,19 +424,8 @@ export class TabOptionsPage {
     if (!pinHash) return;
 
     try {
-      // Verify user PIN first
-      const isValidUser = await this.neon.verifyUserPin(userId, pinHash);
-      if (!isValidUser) {
-        this.snackbar.open(
-          this.translate.instant('OPTIONS.INVALID_CREDENTIALS'),
-          this.translate.instant('COMMON.CLOSE'),
-          { duration: 5000 },
-        );
-        return;
-      }
-
-      // Delete all tasks from cloud
-      await this.neon.deleteAllTasks(userId);
+      // Delete all tasks from cloud (server validates X-Pin-Hash)
+      await this.neon.deleteAllTasks(userId, pinHash);
 
       // Delete all local tasks
       this.taskService.tasks.set([]);

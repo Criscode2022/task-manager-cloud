@@ -28,11 +28,22 @@ function serializeTask(row) {
 
 function serializeUser(row) {
   if (!row) return null;
+  // Never expose pin_hash to API clients
   return {
     id: Number(row.id),
-    pin_hash: row.pin_hash,
     created_at: row.created_at,
   };
+}
+
+export async function getTaskById(taskId) {
+  const sql = getSql();
+  const rows = await sql`
+    SELECT * FROM public.tasks WHERE id = ${taskId} LIMIT 1
+  `;
+  if (!rows[0]) {
+    throw Object.assign(new Error('Task not found'), { status: 404 });
+  }
+  return serializeTask(rows[0]);
 }
 
 export async function getTasks(userId) {

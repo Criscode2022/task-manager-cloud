@@ -95,7 +95,11 @@ describe('UserService', () => {
       'pinHash',
       'hash-1234',
     );
-    expect(taskNeonServiceMock.bulkUpload).toHaveBeenCalled();
+    expect(taskNeonServiceMock.bulkUpload).toHaveBeenCalledWith(
+      [{ id: 1, title: 'A', done: false }],
+      42,
+      'hash-1234',
+    );
     expect(dialogMock.open).toHaveBeenCalled();
     expect(snackBarMock.open).not.toHaveBeenCalledWith(
       'Failed to create user',
@@ -168,7 +172,7 @@ describe('UserService', () => {
 
     await service.delete(21);
 
-    expect(taskNeonServiceMock.deleteUser).toHaveBeenCalledWith(21);
+    expect(taskNeonServiceMock.deleteUser).toHaveBeenCalledWith(21, 'existing');
     expect(taskServiceMock.userId()).toBe(0);
     expect(service.userId()).toBe(0);
     expect(service.pinHash()).toBeNull();
@@ -182,6 +186,7 @@ describe('UserService', () => {
   });
 
   it('should throw when delete fails', async () => {
+    service.pinHash.set('existing');
     taskNeonServiceMock.deleteUser.and.rejectWith(new Error('delete-fail'));
 
     await expectAsync(service.delete(5)).toBeRejected();
@@ -192,5 +197,14 @@ describe('UserService', () => {
         duration: 5000,
       },
     );
+  });
+
+  it('should throw when delete is called without a PIN hash', async () => {
+    service.pinHash.set(null);
+
+    await expectAsync(service.delete(5)).toBeRejectedWithError(
+      'Missing PIN credentials',
+    );
+    expect(taskNeonServiceMock.deleteUser).not.toHaveBeenCalled();
   });
 });

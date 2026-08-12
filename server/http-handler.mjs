@@ -1,5 +1,7 @@
 /**
  * Shared HTTP router for Task Cloud Neon API.
+ * Protected routes require a matching PIN hash via X-Pin-Hash header
+ * (body/query pin_hash also accepted as fallback).
  */
 import {
   bulkUploadTasks,
@@ -8,6 +10,7 @@ import {
   deleteAllTasks,
   deleteTask,
   deleteUser,
+  getTaskById,
   getTasks,
   getUser,
   getUserByPinHash,
@@ -21,7 +24,7 @@ function json(data, status = 200, headers = {}) {
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, X-Pin-Hash',
       'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
       ...headers,
     },
@@ -44,6 +47,25 @@ async function readJson(req) {
     return await req.json();
   } catch {
     return {};
+  }
+}
+
+function extractPinHash(req, body = {}, url) {
+  return (
+    req.headers.get('x-pin-hash') ||
+    body.pin_hash ||
+    url.searchParams.get('pin_hash') ||
+    ''
+  );
+}
+
+async function requireUserPin(userId, pinHash) {
+  if (!userId || !pinHash) {
+    throw Object.assign(new Error('Authentication required'), { status: 401 });
+  }
+  const valid = await verifyUserPin(Number(userId), pinHash);
+  if (!valid) {
+    throw Object.assign(new Error('Invalid credentials'), { status: 401 });
   }
 }
 
@@ -72,12 +94,12 @@ export async function handleApiRequest(req) {
   }
 
   try {
-    // Health
+    // Health — public
     if (req.method === 'GET' && (pathname === '/' || pathname === '/health')) {
       return json({ ok: true, service: 'task-cloud-neon-api' });
     }
 
-    // Users
+    // Users — create account (public; pin_hash becomes the credential)
     if (req.method === 'POST' && pathname === '/users') {
       const body = await readJson(req);
       if (!body.pin_hash) {
@@ -87,14 +109,20 @@ export async function handleApiRequest(req) {
       return json(user, 201);
     }
 
+    // Login lookup — credential is in the path
     if (req.method === 'GET' && pathname.startsWith('/users/by-pin/')) {
       const pinHash = decodeURIComponent(pathname.slice('/users/by-pin/'.length));
+      if (!pinHash) {
+        return json({ error: 'Authentication required' }, 401);
+      }
       const user = await getUserByPinHash(pinHash);
       return json(user);
     }
 
     if (req.method === 'GET' && /^\/users\/\d+$/.test(pathname)) {
       const userId = Number(pathname.split('/')[2]);
+      const pinHash = extractPinHash(req, {}, url);
+      await requireUserPin(userId, pinHash);
       const user = await getUser(userId);
       return json(user);
     }
@@ -102,12 +130,18 @@ export async function handleApiRequest(req) {
     if (req.method === 'POST' && /^\/users\/\d+\/verify$/.test(pathname)) {
       const userId = Number(pathname.split('/')[2]);
       const body = await readJson(req);
-      const valid = await verifyUserPin(userId, body.pin_hash || '');
+      const pinHash = extractPinHash(req, body, url);
+      if (!pinHash) {
+        return json({ error: 'Authentication required' }, 401);
+      }
+      const valid = await verifyUserPin(userId, pinHash);
       return json({ valid });
     }
 
     if (req.method === 'DELETE' && /^\/users\/\d+$/.test(pathname)) {
       const userId = Number(pathname.split('/')[2]);
+      const pinHash = extractPinHash(req, {}, url);
+      await requireUserPin(userId, pinHash);
       await deleteUser(userId);
       return json({ ok: true });
     }
@@ -118,6 +152,8 @@ export async function handleApiRequest(req) {
       if (!userId) {
         return json({ error: 'userId query param is required' }, 400);
       }
+      const pinHash = extractPinHash(req, {}, url);
+      await requireUserPin(userId, pinHash);
       const tasks = await getTasks(userId);
       return json(tasks);
     }
@@ -127,15 +163,28 @@ export async function handleApiRequest(req) {
       if (!body.user_id || !body.title) {
         return json({ error: 'user_id and title are required' }, 400);
       }
+      const pinHash = extractPinHash(req, body, url);
+      await requireUserPin(body.user_id, pinHash);
       const task = await createTask(body);
       return json(task, 201);
     }
 
     if (req.method === 'POST' && pathname === '/tasks/bulk') {
       const body = await readJson(req);
-      if (!Array.isArray(body.tasks)) {
+      if (!Array.isArray(body.tasks) || body.tasks.length === 0) {
         return json({ error: 'tasks array is required' }, 400);
       }
+      const userIds = [
+        ...new Set(body.tasks.map((t) => Number(t.user_id)).filter(Boolean)),
+      ];
+      if (userIds.length !== 1) {
+        return json(
+          { error: 'All bulk tasks must belong to the same authenticated user' },
+          400,
+        );
+      }
+      const pinHash = extractPinHash(req, body, url);
+      await requireUserPin(userIds[0], pinHash);
       const tasks = await bulkUploadTasks(body.tasks);
       return json(tasks, 201);
     }
@@ -143,6 +192,9 @@ export async function handleApiRequest(req) {
     if (req.method === 'PUT' && /^\/tasks\/\d+$/.test(pathname)) {
       const taskId = Number(pathname.split('/')[2]);
       const body = await readJson(req);
+      const existing = await getTaskById(taskId);
+      const pinHash = extractPinHash(req, body, url);
+      await requireUserPin(existing.user_id, pinHash);
       const task = await updateTask(taskId, body);
       return json(task);
     }
@@ -152,12 +204,17 @@ export async function handleApiRequest(req) {
       if (!userId) {
         return json({ error: 'userId query param is required' }, 400);
       }
+      const pinHash = extractPinHash(req, {}, url);
+      await requireUserPin(userId, pinHash);
       await deleteAllTasks(userId);
       return json({ ok: true });
     }
 
     if (req.method === 'DELETE' && /^\/tasks\/\d+$/.test(pathname)) {
       const taskId = Number(pathname.split('/')[2]);
+      const existing = await getTaskById(taskId);
+      const pinHash = extractPinHash(req, {}, url);
+      await requireUserPin(existing.user_id, pinHash);
       await deleteTask(taskId);
       return json({ ok: true });
     }

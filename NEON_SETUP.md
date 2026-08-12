@@ -11,6 +11,8 @@ MCP server  ──────────────────psycopg──�
 
 `DATABASE_URL` stays server-side only. The browser talks to `/api`, never to Postgres directly.
 
+Protected `/api` routes require an `X-Pin-Hash` header that matches the user. Public routes: `GET /api/health`, `POST /api/users`, `GET /api/users/by-pin/:hash`.
+
 ## Prerequisites
 
 - A [Neon](https://console.neon.tech) account (free tier is enough)

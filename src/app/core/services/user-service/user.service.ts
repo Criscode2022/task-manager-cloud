@@ -49,7 +49,7 @@ export class UserService {
 
         // Upload existing tasks if any
         if (tasks.length > 0) {
-          await this.taskNeonService.bulkUpload(tasks, userId);
+          await this.taskNeonService.bulkUpload(tasks, userId, hashedPin);
         }
 
         // Show PIN to user (they need to save this!)
@@ -113,7 +113,11 @@ export class UserService {
    */
   public async delete(userId: number): Promise<void> {
     try {
-      await this.taskNeonService.deleteUser(userId);
+      const pinHash = this.pinHash();
+      if (!pinHash) {
+        throw new Error('Missing PIN credentials');
+      }
+      await this.taskNeonService.deleteUser(userId, pinHash);
 
       // Clean up all stored data
       await this.taskService.storage?.remove('pinHash');

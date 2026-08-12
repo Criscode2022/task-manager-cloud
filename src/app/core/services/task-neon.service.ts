@@ -28,31 +28,25 @@ export class TaskNeonService {
     userId: number,
     pinHash: string,
   ): Promise<void> {
-    if (!userId) return;
+    if (!userId || !pinHash) return;
 
     const localId = task.id;
 
     try {
       console.log('Uploading task to Neon...', task, userId);
 
-      const isValidUser = await this.neon.verifyUserPin(userId, pinHash);
-
-      if (!isValidUser) {
-        this.snackbar.open('Invalid user credentials', 'Close', {
-          duration: 5000,
-        });
-        return;
-      }
-
-      const newTask = await this.neon.createTask({
-        title: task.title!,
-        description: task.description || '',
-        done: task.done || false,
-        priority: task.priority || DEFAULT_TASK_PRIORITY,
-        tags: task.tags || [],
-        user_id: userId,
-        updated_at: new Date(),
-      });
+      const newTask = await this.neon.createTask(
+        {
+          title: task.title!,
+          description: task.description || '',
+          done: task.done || false,
+          priority: task.priority || DEFAULT_TASK_PRIORITY,
+          tags: task.tags || [],
+          user_id: userId,
+          updated_at: new Date(),
+        },
+        pinHash,
+      );
 
       console.log('Task uploaded successfully:', newTask);
 
@@ -85,28 +79,23 @@ export class TaskNeonService {
     userId: number,
     pinHash: string,
   ): Promise<void> {
-    if (!userId || !task.id) return;
+    if (!userId || !task.id || !pinHash) return;
 
     try {
       console.log('Editing task in Neon...', task, userId);
 
-      const isValidUser = await this.neon.verifyUserPin(userId, pinHash);
-
-      if (!isValidUser) {
-        this.snackbar.open('Invalid user credentials', 'Close', {
-          duration: 5000,
-        });
-        return;
-      }
-
-      const updatedTask = await this.neon.updateTask(task.id, {
-        title: task.title,
-        description: task.description,
-        done: task.done,
-        priority: task.priority,
-        tags: task.tags,
-        updated_at: new Date(),
-      });
+      const updatedTask = await this.neon.updateTask(
+        task.id,
+        {
+          title: task.title,
+          description: task.description,
+          done: task.done,
+          priority: task.priority,
+          tags: task.tags,
+          updated_at: new Date(),
+        },
+        pinHash,
+      );
 
       console.log('Task edited successfully:', updatedTask);
     } catch (error) {
@@ -132,21 +121,12 @@ export class TaskNeonService {
     userId: number,
     pinHash: string,
   ): Promise<void> {
-    if (!userId || !taskId) return;
+    if (!userId || !taskId || !pinHash) return;
 
     try {
       console.log('Deleting task from Neon...', taskId, userId);
 
-      const isValidUser = await this.neon.verifyUserPin(userId, pinHash);
-
-      if (!isValidUser) {
-        this.snackbar.open('Invalid user credentials', 'Close', {
-          duration: 5000,
-        });
-        return;
-      }
-
-      await this.neon.deleteTask(taskId);
+      await this.neon.deleteTask(taskId, pinHash);
 
       console.log('Task deleted successfully:', taskId);
     } catch (error) {
@@ -204,7 +184,7 @@ export class TaskNeonService {
 
       console.log('✅ User authenticated:', user.id);
 
-      const tasks = await this.neon.getTasks(user.id);
+      const tasks = await this.neon.getTasks(user.id, pinHash);
 
       await this.taskService.storage?.set('pinHash', pinHash);
       await this.taskService.storage?.set('userId', user.id);
@@ -228,9 +208,9 @@ export class TaskNeonService {
   /**
    * Delete user and all their tasks
    */
-  public async deleteUser(userId: number): Promise<void> {
+  public async deleteUser(userId: number, pinHash: string): Promise<void> {
     try {
-      await this.neon.deleteUser(userId);
+      await this.neon.deleteUser(userId, pinHash);
       this.taskService.userId.set(0);
       this.tasks.set([]);
       this.snackbar.open('User deleted successfully', '', {
@@ -248,7 +228,11 @@ export class TaskNeonService {
   /**
    * Bulk upload local tasks to Neon (for initial sync)
    */
-  public async bulkUpload(tasks: Task[], userId: number): Promise<void> {
+  public async bulkUpload(
+    tasks: Task[],
+    userId: number,
+    pinHash: string,
+  ): Promise<void> {
     try {
       const tasksToUpload = tasks.map((task) => ({
         title: task.title,
@@ -260,7 +244,10 @@ export class TaskNeonService {
         updated_at: new Date(),
       }));
 
-      const uploadedTasks = await this.neon.bulkUploadTasks(tasksToUpload);
+      const uploadedTasks = await this.neon.bulkUploadTasks(
+        tasksToUpload,
+        pinHash,
+      );
 
       if (uploadedTasks.length === tasks.length) {
         this.tasks.update((currentTasks) => {

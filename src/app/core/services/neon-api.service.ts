@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -6,7 +6,6 @@ import { Task } from '../../tabs/tab-list/types/task';
 
 interface NeonUser {
   id: number;
-  pin_hash: string;
   created_at: string;
 }
 
@@ -26,45 +25,73 @@ export class NeonApiService {
     return `${this.baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
   }
 
+  private authHeaders(pinHash: string): HttpHeaders {
+    return new HttpHeaders({ 'X-Pin-Hash': pinHash });
+  }
+
   // ===========================
   // TASK OPERATIONS
   // ===========================
 
-  async getTasks(userId: number): Promise<Task[]> {
+  async getTasks(userId: number, pinHash: string): Promise<Task[]> {
     return firstValueFrom(
       this.http.get<Task[]>(this.url(`/tasks`), {
         params: { userId: String(userId) },
+        headers: this.authHeaders(pinHash),
       }),
     );
   }
 
-  async createTask(task: Omit<Task, 'id' | 'created_at'>): Promise<Task> {
-    return firstValueFrom(this.http.post<Task>(this.url('/tasks'), task));
-  }
-
-  async updateTask(taskId: number, updates: Partial<Task>): Promise<Task> {
+  async createTask(
+    task: Omit<Task, 'id' | 'created_at'>,
+    pinHash: string,
+  ): Promise<Task> {
     return firstValueFrom(
-      this.http.put<Task>(this.url(`/tasks/${taskId}`), updates),
+      this.http.post<Task>(this.url('/tasks'), task, {
+        headers: this.authHeaders(pinHash),
+      }),
     );
   }
 
-  async deleteTask(taskId: number): Promise<void> {
-    await firstValueFrom(this.http.delete(this.url(`/tasks/${taskId}`)));
+  async updateTask(
+    taskId: number,
+    updates: Partial<Task>,
+    pinHash: string,
+  ): Promise<Task> {
+    return firstValueFrom(
+      this.http.put<Task>(this.url(`/tasks/${taskId}`), updates, {
+        headers: this.authHeaders(pinHash),
+      }),
+    );
   }
 
-  async deleteAllTasks(userId: number): Promise<void> {
+  async deleteTask(taskId: number, pinHash: string): Promise<void> {
+    await firstValueFrom(
+      this.http.delete(this.url(`/tasks/${taskId}`), {
+        headers: this.authHeaders(pinHash),
+      }),
+    );
+  }
+
+  async deleteAllTasks(userId: number, pinHash: string): Promise<void> {
     await firstValueFrom(
       this.http.delete(this.url('/tasks'), {
         params: { userId: String(userId) },
+        headers: this.authHeaders(pinHash),
       }),
     );
   }
 
   async bulkUploadTasks(
     tasks: Omit<Task, 'id' | 'created_at'>[],
+    pinHash: string,
   ): Promise<Task[]> {
     return firstValueFrom(
-      this.http.post<Task[]>(this.url('/tasks/bulk'), { tasks }),
+      this.http.post<Task[]>(
+        this.url('/tasks/bulk'),
+        { tasks },
+        { headers: this.authHeaders(pinHash) },
+      ),
     );
   }
 
@@ -86,9 +113,11 @@ export class NeonApiService {
     return data.id;
   }
 
-  async getUser(userId: number): Promise<NeonUser> {
+  async getUser(userId: number, pinHash: string): Promise<NeonUser> {
     return firstValueFrom(
-      this.http.get<NeonUser>(this.url(`/users/${userId}`)),
+      this.http.get<NeonUser>(this.url(`/users/${userId}`), {
+        headers: this.authHeaders(pinHash),
+      }),
     );
   }
 
@@ -107,9 +136,11 @@ export class NeonApiService {
     console.log('🔐 Verifying PIN for User ID:', userId);
     try {
       const result = await firstValueFrom(
-        this.http.post<{ valid: boolean }>(this.url(`/users/${userId}/verify`), {
-          pin_hash: pinHash,
-        }),
+        this.http.post<{ valid: boolean }>(
+          this.url(`/users/${userId}/verify`),
+          { pin_hash: pinHash },
+          { headers: this.authHeaders(pinHash) },
+        ),
       );
       console.log('🔐 PIN hashes match:', result.valid);
       return result.valid;
@@ -119,9 +150,12 @@ export class NeonApiService {
     }
   }
 
-  async deleteUser(userId: number): Promise<void> {
-    await this.deleteAllTasks(userId);
-    await firstValueFrom(this.http.delete(this.url(`/users/${userId}`)));
+  async deleteUser(userId: number, pinHash: string): Promise<void> {
+    await firstValueFrom(
+      this.http.delete(this.url(`/users/${userId}`), {
+        headers: this.authHeaders(pinHash),
+      }),
+    );
   }
 
   /**
