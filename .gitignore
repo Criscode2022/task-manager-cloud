@@ -95,3 +95,4 @@ src/environments/*.local.ts
 
 # Vercel
 .vercel
+.env*
