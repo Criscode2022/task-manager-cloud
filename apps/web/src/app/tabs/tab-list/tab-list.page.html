@@ -160,48 +160,81 @@
 
   @if (tasks().length) {
   <div class="advanced-filters">
-    <ion-item lines="none" class="advanced-filter-item">
-      <ion-label>{{ 'TASKS.FILTER_BY_PRIORITY' | translate }}</ion-label>
-      <ion-select
-        [value]="selectedPriorityFilter()"
-        (ionChange)="onPriorityFilterChange($event.detail.value)"
-        interface="popover"
-        [selectedText]="getPriorityFilterLabelKey() | translate"
-      >
-        <ion-select-option value="all"
-          >{{ 'TASKS.ALL_PRIORITIES' | translate }}</ion-select-option
+    <div class="filter-group">
+      <span class="filter-group-label">
+        <ion-icon name="flag-outline" aria-hidden="true"></ion-icon>
+        {{ 'TASKS.FILTER_BY_PRIORITY' | translate }}
+      </span>
+      <div class="filter-chips" role="group" [attr.aria-label]="'TASKS.FILTER_BY_PRIORITY' | translate">
+        <button
+          type="button"
+          class="filter-chip"
+          [class.is-active]="selectedPriorityFilter() === 'all'"
+          (click)="onPriorityFilterChange('all')"
         >
-        <ion-select-option value="high"
-          >{{ 'TASKS.PRIORITY.HIGH' | translate }}</ion-select-option
+          {{ 'TASKS.FILTER.ALL' | translate }}
+        </button>
+        <button
+          type="button"
+          class="filter-chip filter-chip--high"
+          [class.is-active]="selectedPriorityFilter() === 'high'"
+          (click)="onPriorityFilterChange('high')"
         >
-        <ion-select-option value="medium"
-          >{{ 'TASKS.PRIORITY.MEDIUM' | translate }}</ion-select-option
+          <span class="filter-dot" aria-hidden="true"></span>
+          {{ 'TASKS.PRIORITY.HIGH' | translate }}
+        </button>
+        <button
+          type="button"
+          class="filter-chip filter-chip--medium"
+          [class.is-active]="selectedPriorityFilter() === 'medium'"
+          (click)="onPriorityFilterChange('medium')"
         >
-        <ion-select-option value="low"
-          >{{ 'TASKS.PRIORITY.LOW' | translate }}</ion-select-option
+          <span class="filter-dot" aria-hidden="true"></span>
+          {{ 'TASKS.PRIORITY.MEDIUM' | translate }}
+        </button>
+        <button
+          type="button"
+          class="filter-chip filter-chip--low"
+          [class.is-active]="selectedPriorityFilter() === 'low'"
+          (click)="onPriorityFilterChange('low')"
         >
-      </ion-select>
-    </ion-item>
+          <span class="filter-dot" aria-hidden="true"></span>
+          {{ 'TASKS.PRIORITY.LOW' | translate }}
+        </button>
+      </div>
+    </div>
 
-    <ion-item lines="none" class="advanced-filter-item">
-      <ion-label>{{ 'TASKS.FILTER_BY_TAG' | translate }}</ion-label>
-      <ion-select
-        [value]="selectedTagFilter()"
-        (ionChange)="onTagFilterChange($event.detail.value)"
-        interface="popover"
-        [selectedText]="selectedTagFilter() === 'all' ? ('TASKS.ALL_TAGS' | translate) : ('#' + selectedTagFilter())"
-      >
-        <ion-select-option value="all"
-          >{{ 'TASKS.ALL_TAGS' | translate }}</ion-select-option
+    @if (availableTags().length) {
+    <div class="filter-group">
+      <span class="filter-group-label">
+        <ion-icon name="pricetags-outline" aria-hidden="true"></ion-icon>
+        {{ 'TASKS.FILTER_BY_TAG' | translate }}
+      </span>
+      <div class="filter-chips filter-chips--tags" role="group" [attr.aria-label]="'TASKS.FILTER_BY_TAG' | translate">
+        <button
+          type="button"
+          class="filter-chip"
+          [class.is-active]="selectedTagFilter() === 'all'"
+          (click)="onTagFilterChange('all')"
         >
+          {{ 'TASKS.FILTER.ALL' | translate }}
+        </button>
         @for (tag of availableTags(); track tag) {
-        <ion-select-option [value]="tag">#{{ tag }}</ion-select-option>
+        <button
+          type="button"
+          class="filter-chip filter-chip--tag"
+          [class.is-active]="selectedTagFilter() === tag"
+          (click)="onTagFilterChange(tag)"
+        >
+          #{{ tag }}
+        </button>
         }
-      </ion-select>
-    </ion-item>
+      </div>
+    </div>
+    }
 
     @if (hasAdvancedFilters()) {
-    <button class="clear-advanced-filters" (click)="clearAdvancedFilters()">
+    <button type="button" class="clear-advanced-filters" (click)="clearAdvancedFilters()">
       <ion-icon name="close-circle-outline"></ion-icon>
       {{ 'TASKS.CLEAR_EXTRA_FILTERS' | translate }}
     </button>
