@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 
+import { firstValueFrom } from 'rxjs';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
@@ -92,7 +93,7 @@ export class TabListPage extends TaskForm {
       });
     });
 
-    return [...uniqueTags].sort();
+    return [...uniqueTags].toSorted();
   });
 
   protected tagSuggestions = computed(() => {
@@ -122,32 +123,12 @@ export class TabListPage extends TaskForm {
     }
   });
 
-  public filteredTasks = computed(() => {
-    const animating = this.animatingTaskIds();
-    const allTasks = this.tasks();
+  protected readonly filteredTasks = computed(() => {
     const selectedPriority = this.selectedPriorityFilter();
     const selectedTag = this.selectedTagFilter();
 
-    let statusFilteredTasks: Task[];
-
-    switch (this.filter()) {
-      case StatusEnum.All:
-        statusFilteredTasks = allTasks;
-        break;
-      case StatusEnum.Done:
-        statusFilteredTasks = allTasks.filter(
-          (task) => task.done || animating.has(task.id),
-        );
-        break;
-      case StatusEnum.Undone:
-        statusFilteredTasks = allTasks.filter(
-          (task) => !task.done || animating.has(task.id),
-        );
-        break;
-    }
-
     return this.sortTasksByPriority(
-      statusFilteredTasks.filter(
+      this.filterTasksByStatus().filter(
         (task) =>
           (selectedPriority === 'all' || task.priority === selectedPriority) &&
           (selectedTag === 'all' || task.tags.includes(selectedTag)),
@@ -199,9 +180,11 @@ export class TabListPage extends TaskForm {
 
   protected switchToAlternativeFilter(): void {
     const info = this.alternativeFilterInfo();
-    if (info) {
-      this.taskService.filter.set(info.filter);
+    if (!info) {
+      return;
     }
+
+    this.taskService.filter.set(info.filter);
   }
 
   protected get installButtons() {
@@ -255,7 +238,7 @@ export class TabListPage extends TaskForm {
     });
   }
 
-  protected presentEditAlert(task: Task): void {
+  protected async presentEditAlert(task: Task): Promise<void> {
     const dialogRef = this.dialog.open<
       EditTaskDialogComponent,
       Task,
@@ -266,24 +249,18 @@ export class TabListPage extends TaskForm {
       panelClass: 'edit-task-dialog-panel',
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (!result) {
-        return;
-      }
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (!result) {
+      return;
+    }
 
-      const updatedTitle = result.title || task.title;
-      const updatedDescription = result.description || '';
-      const updatedPriority = this.normalizePriority(result.priority);
-      const updatedTags = this.parseTags(result.tags);
-
-      this.editTask(
-        task.id,
-        updatedTitle,
-        updatedDescription,
-        updatedPriority,
-        updatedTags,
-      );
-    });
+    this.editTask(
+      task.id,
+      result.title || task.title,
+      result.description || '',
+      this.normalizePriority(result.priority),
+      this.parseTags(result.tags),
+    );
   }
 
   protected refresh(): void {
@@ -544,6 +521,20 @@ export class TabListPage extends TaskForm {
   protected clearTagsInput(): void {
     this.clear('tagsInput');
     this.tagsAutocompleteInput.set('');
+  }
+
+  private filterTasksByStatus(): Task[] {
+    const allTasks = this.tasks();
+    const animating = this.animatingTaskIds();
+
+    switch (this.filter()) {
+      case StatusEnum.Done:
+        return allTasks.filter((task) => task.done || animating.has(task.id));
+      case StatusEnum.Undone:
+        return allTasks.filter((task) => !task.done || animating.has(task.id));
+      default:
+        return allTasks;
+    }
   }
 
   private sortTasksByPriority(tasks: Task[]): Task[] {

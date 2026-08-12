@@ -12,11 +12,11 @@ import { TaskService } from './task.service';
   providedIn: 'root',
 })
 export class TaskNeonService {
-  private snackbar = inject(MatSnackBar);
-  private taskService = inject(TaskService);
-  private neon = inject(NeonApiService);
+  private readonly snackbar = inject(MatSnackBar);
+  private readonly taskService = inject(TaskService);
+  private readonly neon = inject(NeonApiService);
 
-  private tasks = this.taskService.tasks;
+  private readonly tasks = this.taskService.tasks;
 
   public async upload(
     task: TaskDTO,

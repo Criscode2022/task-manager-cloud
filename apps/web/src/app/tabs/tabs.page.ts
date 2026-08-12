@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import { TaskService } from '../core/services/task.service';
 import { ThemeService } from '../core/services/theme.service';
 import { UserService } from '../core/services/user-service/user.service';
@@ -8,38 +8,38 @@ import { UserService } from '../core/services/user-service/user.service';
   templateUrl: 'tabs.page.html',
   standalone: false,
 })
-export class TabsPage implements OnInit {
+export class TabsPage {
   private readonly themeService = inject(ThemeService);
   private readonly userService = inject(UserService);
   private readonly taskService = inject(TaskService);
 
-  private tasks = this.taskService.tasks;
-
-  ngOnInit(): void {
+  constructor() {
     this.themeService.setTheme();
-
     this.checkInstallAlert();
 
-    this.taskService.storageInitialized.subscribe(async () => {
-      if (!this.taskService.storage) {
+    effect(() => {
+      if (!this.taskService.storageReady()) {
         return;
       }
 
-      this.userService.getUser();
-
-      this.tasks.set(await this.taskService.getTasks());
+      void this.loadStoredTasks();
     });
   }
 
+  private async loadStoredTasks(): Promise<void> {
+    this.userService.getUser();
+    this.taskService.tasks.set(await this.taskService.getTasks());
+  }
+
   private checkInstallAlert(): void {
-    console.log('install', localStorage.getItem('install'));
-    if (
+    const hideInstall =
       window.matchMedia('(display-mode: standalone)').matches ||
-      localStorage.getItem('install') === 'false'
-    ) {
-      console.log('install', localStorage.getItem('install'));
-      console.log('shouldShowInstall', this.taskService.shouldShowInstall());
-      this.taskService.shouldShowInstall.set(false);
+      localStorage.getItem('install') === 'false';
+
+    if (!hideInstall) {
+      return;
     }
+
+    this.taskService.shouldShowInstall.set(false);
   }
 }

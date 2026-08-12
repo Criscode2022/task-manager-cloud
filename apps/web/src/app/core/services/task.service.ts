@@ -1,6 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Storage } from '@ionic/storage-angular';
-import { BehaviorSubject } from 'rxjs';
 import {
   StatusEnum,
   StatusEnumArray,
@@ -15,56 +14,76 @@ import {
   providedIn: 'root',
 })
 export class TaskService {
-  private _storage = inject(Storage);
-  public storage: Storage | null = null;
-  public filter = signal<StatusEnum>(StatusEnum.All);
+  private readonly storageEngine = inject(Storage);
+  private storageInstance: Storage | null = null;
 
-  public storageInitialized = new BehaviorSubject<void>(undefined);
+  readonly filter = signal<StatusEnum>(StatusEnum.All);
+  readonly storageReady = signal(false);
+  readonly shouldShowInstall = signal(true);
+  readonly tasks = signal<Task[]>([]);
+  readonly userId = signal(0);
 
-  public shouldShowInstall = signal(true);
-  public tasks = signal<Task[]>([]);
-  public userId = signal(0);
+  private readonly indexStatus = computed(() =>
+    StatusEnumArray.indexOf(this.filter()),
+  );
 
-  protected indexStatus = computed(() => {
-    return StatusEnumArray.indexOf(this.filter());
-  });
+  get storage(): Storage | null {
+    return this.storageInstance;
+  }
 
   constructor() {
-    this.init();
+    void this.init();
   }
 
   async init(): Promise<void> {
-    this.storage = await this._storage.create();
-    this.storageInitialized.next();
+    this.storageInstance = await this.storageEngine.create();
     this.filter.set(await this.getFilter());
+    this.storageReady.set(true);
   }
 
-  public async getTasks(): Promise<Task[]> {
-    if (!this.storage) {
+  async getTasks(): Promise<Task[]> {
+    if (!this.storageInstance) {
       return [];
     }
 
-    const storedTasks = ((await this.storage.get('tasks')) || []) as Task[];
+    const storedTasks = ((await this.storageInstance.get('tasks')) ||
+      []) as Task[];
     return storedTasks.map((task) => this.normalizeTask(task));
   }
 
-  public async saveTasks(tasks: Task[]): Promise<void> {
-    console.log('Saving tasks to storage:', tasks);
-    await this.storage?.set(
+  async saveTasks(tasks: Task[]): Promise<void> {
+    await this.storageInstance?.set(
       'tasks',
       tasks.map((task) => this.normalizeTask(task)),
     );
   }
 
+  async getFilter(): Promise<StatusEnum> {
+    const stored = await this.storageInstance?.get('filter');
+    if (!stored) {
+      return StatusEnum.All;
+    }
+
+    return stored;
+  }
+
+  changeFilter(): void {
+    const nextIndex = (this.indexStatus() + 1) % StatusEnumArray.length;
+    this.filter.set(StatusEnumArray[nextIndex]);
+  }
+
+  async saveFilter(filter: string): Promise<void> {
+    await this.storageInstance?.set('filter', filter);
+  }
+
   private normalizeTask(task: Task): Task {
-    const priority = this.normalizePriority(task.priority);
     const tags = Array.isArray(task.tags)
       ? task.tags.map((tag) => tag?.trim().toLowerCase()).filter(Boolean)
       : [];
 
     return {
       ...task,
-      priority,
+      priority: this.normalizePriority(task.priority),
       tags,
     };
   }
@@ -75,30 +94,5 @@ export class TaskService {
     }
 
     return DEFAULT_TASK_PRIORITY;
-  }
-
-  //=======================================================================================================
-
-  public async getFilter(): Promise<StatusEnum> {
-    if (!(await this.storage?.get('filter'))) {
-      return StatusEnum.All;
-    }
-
-    return await this.storage?.get('filter');
-  }
-
-  public changeFilter(): void {
-    let index = this.indexStatus();
-
-    index += 1;
-    if (index === 3) {
-      index = 0;
-    }
-
-    this.filter.set(StatusEnumArray[index]);
-  }
-
-  public async saveFilter(filter: string): Promise<void> {
-    await this.storage?.set('filter', filter);
   }
 }

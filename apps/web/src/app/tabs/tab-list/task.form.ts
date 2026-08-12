@@ -3,7 +3,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { DEFAULT_TASK_PRIORITY } from './types/task';
 
 export class TaskForm {
-  private fb = inject(FormBuilder);
+  private readonly fb = inject(FormBuilder);
 
   private skeleton = {
     title: ['', [Validators.required, Validators.maxLength(40)]],

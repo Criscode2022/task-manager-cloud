@@ -14,5 +14,8 @@ Documentación de producto y arquitectura usada también en el portfolio ([crist
 | 08 | [Deploy Vercel](./08-deploy-vercel.md) |
 | 09 | [Decisiones](./09-decisions.md) |
 | 10 | [Retos y resultados](./10-challenges-results.md) |
+| 11 | [Skill Angular (claude-workflow)](./11-angular-skill.md) |
+
+La skill completa está en [`.claude/skills/angular/`](../.claude/skills/angular/).
 
 Otros setup notes en la raíz del repo: `README.MD`, `NEON_SETUP.md`, `VERCEL.md`.

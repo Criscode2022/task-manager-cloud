@@ -1,7 +1,6 @@
 import { CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
-import { BehaviorSubject } from 'rxjs';
 import { TaskService } from '../core/services/task.service';
 import { ThemeService } from '../core/services/theme.service';
 import { UserService } from '../core/services/user-service/user.service';
@@ -16,7 +15,7 @@ describe('TabsPage', () => {
     tasks: signal([]),
     shouldShowInstall: signal(true),
     storage: {},
-    storageInitialized: new BehaviorSubject<void>(undefined),
+    storageReady: signal(true),
     getTasks: jasmine.createSpy('getTasks').and.resolveTo([]),
   };
 
