@@ -53,6 +53,8 @@ describe('TabListPage', () => {
       ],
     }).compileComponents();
 
+    taskServiceMock.tasks.set([]);
+    taskServiceMock.filter.set(StatusEnum.All);
     fixture = TestBed.createComponent(TabListPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -64,7 +66,7 @@ describe('TabListPage', () => {
 
   it('should collapse the create form after adding a task', async () => {
     component['isFormVisible'].set(true);
-    component.form.setValue({
+    component['form'].setValue({
       title: 'New task',
       description: '',
       priority: 'medium',
