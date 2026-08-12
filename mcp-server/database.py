@@ -1,4 +1,4 @@
-"""Supabase data access for Task Manager Cloud."""
+"""Neon Postgres data access for Task Manager Cloud."""
 
 from __future__ import annotations
 
@@ -7,7 +7,8 @@ import os
 from typing import Any, Literal
 
 from dotenv import load_dotenv
-from supabase import Client, create_client
+from psycopg.rows import dict_row
+from psycopg_pool import ConnectionPool
 
 from auth import hash_pin, verify_pin
 
@@ -18,16 +19,19 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 
 class TaskManagerDB:
-    """Thin wrapper around Supabase PostgREST for tasks and users."""
+    """Thin wrapper around Neon/Postgres for tasks and users."""
 
     def __init__(self) -> None:
-        url = os.environ.get("SUPABASE_URL")
-        key = os.environ.get("SUPABASE_ANON_KEY")
-        if not url or not key:
-            raise RuntimeError(
-                "SUPABASE_URL and SUPABASE_ANON_KEY must be set in the environment."
-            )
-        self._client: Client = create_client(url, key)
+        database_url = os.environ.get("DATABASE_URL")
+        if not database_url:
+            raise RuntimeError("DATABASE_URL must be set in the environment.")
+        self._pool = ConnectionPool(
+            conninfo=database_url,
+            kwargs={"row_factory": dict_row},
+            min_size=1,
+            max_size=5,
+            open=True,
+        )
 
     def resolve_user_id(self, pin: str | None = None) -> int:
         """Resolve user id from an explicit PIN or TASK_MANAGER_PIN env var."""
@@ -37,38 +41,37 @@ class TaskManagerDB:
                 "No PIN provided. Set TASK_MANAGER_PIN in the environment or pass pin to the tool."
             )
         pin_hash = hash_pin(effective_pin)
-        response = (
-            self._client.table("users")
-            .select("id")
-            .eq("pin_hash", pin_hash)
-            .single()
-            .execute()
-        )
-        if not response.data:
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                "SELECT id FROM public.users WHERE pin_hash = %s LIMIT 1",
+                (pin_hash,),
+            ).fetchone()
+        if not row:
             raise ValueError("Invalid PIN — no matching user found.")
-        return int(response.data["id"])
+        return int(row["id"])
 
     def verify_user_pin(self, user_id: int, pin: str) -> bool:
-        response = (
-            self._client.table("users")
-            .select("pin_hash")
-            .eq("id", user_id)
-            .single()
-            .execute()
-        )
-        if not response.data:
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                "SELECT pin_hash FROM public.users WHERE id = %s LIMIT 1",
+                (user_id,),
+            ).fetchone()
+        if not row:
             return False
-        return verify_pin(pin, response.data["pin_hash"])
+        return verify_pin(pin, row["pin_hash"])
 
     def list_tasks(self, user_id: int) -> list[dict[str, Any]]:
-        response = (
-            self._client.table("tasks")
-            .select("*")
-            .eq("user_id", user_id)
-            .order("created_at", desc=True)
-            .execute()
-        )
-        return response.data or []
+        with self._pool.connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT *
+                FROM public.tasks
+                WHERE user_id = %s
+                ORDER BY created_at DESC
+                """,
+                (user_id,),
+            ).fetchall()
+        return [self._normalize_task(row) for row in rows]
 
     def search_tasks(
         self,
@@ -115,15 +118,17 @@ class TaskManagerDB:
         return None
 
     def get_task_by_id(self, user_id: int, task_id: int) -> dict[str, Any] | None:
-        response = (
-            self._client.table("tasks")
-            .select("*")
-            .eq("id", task_id)
-            .eq("user_id", user_id)
-            .single()
-            .execute()
-        )
-        return response.data
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                """
+                SELECT *
+                FROM public.tasks
+                WHERE id = %s AND user_id = %s
+                LIMIT 1
+                """,
+                (task_id, user_id),
+            ).fetchone()
+        return self._normalize_task(row) if row else None
 
     def create_task(
         self,
@@ -134,18 +139,20 @@ class TaskManagerDB:
         priority: TaskPriority = "medium",
         tags: list[str] | None = None,
     ) -> dict[str, Any]:
-        payload = {
-            "user_id": user_id,
-            "title": title,
-            "description": description,
-            "done": done,
-            "priority": priority,
-            "tags": tags or [],
-        }
-        response = self._client.table("tasks").insert(payload).select().single().execute()
-        if not response.data:
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                """
+                INSERT INTO public.tasks (
+                    user_id, title, description, done, priority, tags, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, NOW())
+                RETURNING *
+                """,
+                (user_id, title, description, done, priority, tags or []),
+            ).fetchone()
+            conn.commit()
+        if not row:
             raise RuntimeError("Failed to create task.")
-        return response.data
+        return self._normalize_task(row)
 
     def update_task(
         self,
@@ -158,41 +165,95 @@ class TaskManagerDB:
         if not payload:
             raise ValueError("No valid fields to update.")
 
-        response = (
-            self._client.table("tasks")
-            .update(payload)
-            .eq("id", task_id)
-            .eq("user_id", user_id)
-            .select()
-            .single()
-            .execute()
-        )
-        if not response.data:
+        current = self.get_task_by_id(user_id, task_id)
+        if not current:
             raise RuntimeError(f"Task {task_id} not found for this user.")
-        return response.data
+
+        merged = {
+            "title": payload.get("title", current["title"]),
+            "description": payload.get("description", current["description"]),
+            "done": payload.get("done", current["done"]),
+            "priority": payload.get("priority", current["priority"]),
+            "tags": payload.get("tags", current["tags"]),
+        }
+
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                """
+                UPDATE public.tasks
+                SET
+                    title = %s,
+                    description = %s,
+                    done = %s,
+                    priority = %s,
+                    tags = %s,
+                    updated_at = NOW()
+                WHERE id = %s AND user_id = %s
+                RETURNING *
+                """,
+                (
+                    merged["title"],
+                    merged["description"],
+                    merged["done"],
+                    merged["priority"],
+                    merged["tags"],
+                    task_id,
+                    user_id,
+                ),
+            ).fetchone()
+            conn.commit()
+        if not row:
+            raise RuntimeError(f"Task {task_id} not found for this user.")
+        return self._normalize_task(row)
 
     def delete_task(self, user_id: int, task_id: int) -> None:
-        response = (
-            self._client.table("tasks")
-            .delete()
-            .eq("id", task_id)
-            .eq("user_id", user_id)
-            .execute()
-        )
-        if not response.data:
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                """
+                DELETE FROM public.tasks
+                WHERE id = %s AND user_id = %s
+                RETURNING id
+                """,
+                (task_id, user_id),
+            ).fetchone()
+            conn.commit()
+        if not row:
             raise RuntimeError(f"Task {task_id} not found for this user.")
 
     def create_user(self, pin_hash: str) -> dict[str, Any]:
-        response = (
-            self._client.table("users")
-            .insert({"pin_hash": pin_hash})
-            .select()
-            .single()
-            .execute()
-        )
-        if not response.data:
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                """
+                INSERT INTO public.users (pin_hash)
+                VALUES (%s)
+                RETURNING *
+                """,
+                (pin_hash,),
+            ).fetchone()
+            conn.commit()
+        if not row:
             raise RuntimeError("Failed to create user.")
-        return response.data
+        return {
+            "id": int(row["id"]),
+            "pin_hash": row["pin_hash"],
+            "created_at": row["created_at"],
+        }
+
+    @staticmethod
+    def _normalize_task(row: dict[str, Any] | None) -> dict[str, Any]:
+        if not row:
+            return {}
+        return {
+            "id": int(row["id"]),
+            "user_id": int(row["user_id"]),
+            "title": row["title"],
+            "description": row.get("description") or "",
+            "done": bool(row.get("done")),
+            "priority": row.get("priority") or "medium",
+            "tags": list(row.get("tags") or []),
+            "created_at": row.get("created_at"),
+            "updated_at": row.get("updated_at"),
+        }
 
 
 _db: TaskManagerDB | None = None

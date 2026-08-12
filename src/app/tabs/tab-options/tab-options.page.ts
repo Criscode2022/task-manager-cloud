@@ -12,8 +12,8 @@ import { LoadingService } from 'src/app/core/services/loading.service';
 import { ThemeService } from 'src/app/core/services/theme.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
 import { PinHashService } from '../../core/services/pin-hash.service';
-import { SupabaseService } from '../../core/services/supabase.service';
-import { TaskSupabaseService } from '../../core/services/task-supabase.service';
+import { NeonApiService } from '../../core/services/neon-api.service';
+import { TaskNeonService } from '../../core/services/task-neon.service';
 import { TaskService } from '../../core/services/task.service';
 import { User } from './types/user';
 
@@ -32,13 +32,13 @@ import { User } from './types/user';
   ],
 })
 export class TabOptionsPage {
-  private readonly tasksSupabaseService = inject(TaskSupabaseService);
+  private readonly tasksNeonService = inject(TaskNeonService);
   private readonly taskService = inject(TaskService);
   private readonly loadingService = inject(LoadingService);
   private readonly snackbar = inject(MatSnackBar);
   private readonly pinHashService = inject(PinHashService);
   private readonly alertController = inject(AlertController);
-  private readonly supabase = inject(SupabaseService);
+  private readonly neon = inject(NeonApiService);
   private readonly translate = inject(TranslateService);
   protected readonly languageService = inject(LanguageService);
   protected readonly themeService = inject(ThemeService);
@@ -185,7 +185,7 @@ export class TabOptionsPage {
       );
 
       // Download tasks (this looks up user by PIN and downloads tasks)
-      await this.tasksSupabaseService.download(pinHash);
+      await this.tasksNeonService.download(pinHash);
 
       // Store PIN hash locally for session persistence
       this.userService.pinHash.set(pinHash);
@@ -385,7 +385,7 @@ export class TabOptionsPage {
 
     try {
       // Verify user PIN first
-      const isValidUser = await this.supabase.verifyUserPin(userId, pinHash);
+      const isValidUser = await this.neon.verifyUserPin(userId, pinHash);
       if (!isValidUser) {
         this.snackbar.open(
           this.translate.instant('OPTIONS.INVALID_CREDENTIALS'),
@@ -396,7 +396,7 @@ export class TabOptionsPage {
       }
 
       // Delete all tasks from cloud
-      await this.supabase.deleteAllTasks(userId);
+      await this.neon.deleteAllTasks(userId);
 
       // Go offline mode (keeps local tasks)
       await this.activateOfflineMode();
@@ -436,7 +436,7 @@ export class TabOptionsPage {
 
     try {
       // Verify user PIN first
-      const isValidUser = await this.supabase.verifyUserPin(userId, pinHash);
+      const isValidUser = await this.neon.verifyUserPin(userId, pinHash);
       if (!isValidUser) {
         this.snackbar.open(
           this.translate.instant('OPTIONS.INVALID_CREDENTIALS'),
@@ -447,7 +447,7 @@ export class TabOptionsPage {
       }
 
       // Delete all tasks from cloud
-      await this.supabase.deleteAllTasks(userId);
+      await this.neon.deleteAllTasks(userId);
 
       // Delete all local tasks
       this.taskService.tasks.set([]);

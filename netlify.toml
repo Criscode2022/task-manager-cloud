@@ -1,7 +1,16 @@
 [build]
   command = "npm run build"
   publish = "www"
+  functions = "netlify/functions"
 
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["server/**"]
+
+[build.environment]
+  API_BASE_URL = "/api"
+
+# SPA fallback — Netlify function path `/api/*` takes precedence
 [[redirects]]
   from = "/*"
   to = "/index.html"

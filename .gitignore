@@ -79,3 +79,6 @@ mcp-server/.venv/
 src/environments/environment.local.ts
 src/environments/environment.prod.local.ts
 src/environments/*.local.ts
+
+# Netlify
+.netlify

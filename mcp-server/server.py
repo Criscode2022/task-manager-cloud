@@ -23,7 +23,7 @@ logger = logging.getLogger("task-manager-mcp")
 mcp = FastMCP(
     "task-manager-cloud",
     instructions=(
-        "MCP server for Task Manager Cloud (Ionic/Angular + Supabase). "
+        "MCP server for Task Manager Cloud (Ionic/Angular + Neon Postgres). "
         "Use tools to search, create, edit, and delete tasks. "
         "Use create_user to register a new account (returns a one-time PIN). "
         "Set TASK_MANAGER_PIN in the environment for authenticated task operations, "

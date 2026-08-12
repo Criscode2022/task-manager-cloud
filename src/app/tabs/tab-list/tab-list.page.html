@@ -236,37 +236,41 @@
                 @if(task.description){
                 <div class="task-description">{{ task?.description }}</div>
                 }
+                @if(task.tags?.length){
                 <div class="task-meta">
-                  <span
-                    class="priority-badge"
-                    [ngClass]="getPriorityClass(task.priority)"
-                  >
-                    {{ getPriorityTranslationKey(task.priority) | translate }}
-                  </span>
                   @for(tag of task.tags; track tag){
                   <span class="tag-chip">#{{ tag }}</span>
                   }
                 </div>
+                }
               </ion-label>
             </div>
 
-            <div class="task-actions">
-              <ion-button
-                fill="clear"
-                class="edit-button hidden md:flex"
-                (click)="presentEditAlert(task)"
-                [matTooltip]="'TASKS.EDIT_TASK' | translate"
+            <div class="task-end" slot="end">
+              <span
+                class="priority-badge"
+                [ngClass]="getPriorityClass(task.priority)"
               >
-                <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-              </ion-button>
-              <ion-icon
-                slot="end"
-                color="danger"
-                name="trash-outline"
-                (dblclick)="deleteTask(task.id)"
-                class="delete-icon hidden sm:block"
-                [matTooltip]="'TASKS.DOUBLE_CLICK_DELETE' | translate"
-              ></ion-icon>
+                {{ getPriorityTranslationKey(task.priority) | translate }}
+              </span>
+
+              <div class="task-actions">
+                <ion-button
+                  fill="clear"
+                  class="edit-button hidden md:flex"
+                  (click)="presentEditAlert(task)"
+                  [matTooltip]="'TASKS.EDIT_TASK' | translate"
+                >
+                  <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+                </ion-button>
+                <ion-icon
+                  color="danger"
+                  name="trash-outline"
+                  (dblclick)="deleteTask(task.id)"
+                  class="delete-icon hidden sm:block"
+                  [matTooltip]="'TASKS.DOUBLE_CLICK_DELETE' | translate"
+                ></ion-icon>
+              </div>
             </div>
           </ion-item>
 

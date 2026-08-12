@@ -9,8 +9,8 @@ import { LoadingService } from 'src/app/core/services/loading.service';
 import { ThemeService } from 'src/app/core/services/theme.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
 import { PinHashService } from '../../core/services/pin-hash.service';
-import { SupabaseService } from '../../core/services/supabase.service';
-import { TaskSupabaseService } from '../../core/services/task-supabase.service';
+import { NeonApiService } from '../../core/services/neon-api.service';
+import { TaskNeonService } from '../../core/services/task-neon.service';
 import { TaskService } from '../../core/services/task.service';
 
 import { TabOptionsPage } from './tab-options.page';
@@ -49,7 +49,7 @@ describe('TabOptionsPage', () => {
     isDark: signal(false),
   };
 
-  const taskSupabaseServiceMock = {
+  const taskNeonServiceMock = {
     download: jasmine.createSpy('download').and.resolveTo(),
   };
 
@@ -57,8 +57,10 @@ describe('TabOptionsPage', () => {
     hashPin: jasmine.createSpy('hashPin').and.resolveTo('hashed-pin'),
   };
 
-  const supabaseServiceMock = {
+  const neonApiServiceMock = {
     deleteUser: jasmine.createSpy('deleteUser').and.resolveTo(),
+    verifyUserPin: jasmine.createSpy('verifyUserPin').and.resolveTo(true),
+    deleteAllTasks: jasmine.createSpy('deleteAllTasks').and.resolveTo(),
   };
 
   const snackBarMock = jasmine.createSpyObj('MatSnackBar', ['open']);
@@ -77,9 +79,9 @@ describe('TabOptionsPage', () => {
         { provide: UserService, useValue: userServiceMock },
         { provide: LanguageService, useValue: languageServiceMock },
         { provide: ThemeService, useValue: themeServiceMock },
-        { provide: TaskSupabaseService, useValue: taskSupabaseServiceMock },
+        { provide: TaskNeonService, useValue: taskNeonServiceMock },
         { provide: PinHashService, useValue: pinHashServiceMock },
-        { provide: SupabaseService, useValue: supabaseServiceMock },
+        { provide: NeonApiService, useValue: neonApiServiceMock },
         { provide: MatSnackBar, useValue: snackBarMock },
       ],
     }).compileComponents();

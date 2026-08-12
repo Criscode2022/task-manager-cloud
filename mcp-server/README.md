@@ -1,6 +1,6 @@
 # Task Manager Cloud — MCP Server
 
-Python [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server for [Task Manager Cloud](../README.MD). It lets AI assistants (Cursor, Claude Desktop, and other MCP hosts) search, create, edit, and delete tasks, manage users, and read task context — all against the same Supabase database as the Ionic/Angular PWA.
+Python [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server for [Task Manager Cloud](../README.MD). It lets AI assistants (Cursor, Claude Desktop, and other MCP hosts) search, create, edit, and delete tasks, manage users, and read task context — all against the same Neon Postgres database as the Ionic/Angular PWA.
 
 Built with the [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk) (`FastMCP`) and managed with [uv](https://docs.astral.sh/uv/).
 
@@ -28,7 +28,7 @@ Built with the [MCP Python SDK](https://github.com/modelcontextprotocol/python-s
 
 ## Overview
 
-Task Manager Cloud is a frontend-only Ionic/Angular app that stores tasks in Supabase. This MCP server exposes that data and functionality to LLM clients through three MCP primitives:
+Task Manager Cloud is an Ionic/Angular app that stores tasks in Neon Postgres via a Netlify Functions API. This MCP server connects to the same Neon database through three MCP primitives:
 
 | Primitive | Purpose | Who invokes it |
 |-----------|---------|----------------|
@@ -53,18 +53,18 @@ Task Manager Cloud is a frontend-only Ionic/Angular app that stores tasks in Sup
 ## Architecture
 
 ```
-┌─────────────────┐     stdio      ┌──────────────────┐     PostgREST    ┌──────────────┐
-│  MCP Host       │ ◄────────────► │  server.py       │ ◄──────────────► │  Supabase    │
-│  (Cursor, etc.) │   JSON-RPC     │  (FastMCP)       │   supabase-py    │  PostgreSQL  │
+┌─────────────────┐     stdio      ┌──────────────────┐     psycopg      ┌──────────────┐
+│  MCP Host       │ ◄────────────► │  server.py       │ ◄──────────────► │  Neon        │
+│  (Cursor, etc.) │   JSON-RPC     │  (FastMCP)       │                  │  PostgreSQL  │
 └─────────────────┘                └────────┬─────────┘                  └──────────────┘
                                             │
                                    ┌────────┴─────────┐
-                                   │  database.py     │  Supabase queries
+                                   │  database.py     │  Neon SQL queries
                                    │  auth.py         │  SHA-256 PIN hashing
                                    └──────────────────┘
 ```
 
-The server runs as a **stdio** process. The host spawns it, communicates over stdin/stdout, and the server talks to Supabase using the same anon key and tables as the Angular app (`users`, `tasks`).
+The server runs as a **stdio** process. The host spawns it, communicates over stdin/stdout, and the server talks to Neon using `DATABASE_URL` and the same tables as the Angular app (`users`, `tasks`).
 
 Search is performed **client-side** after fetching the user's tasks — the same approach as the Angular `tab-list` component. This keeps filter behavior consistent between the app and the MCP server.
 
@@ -76,7 +76,7 @@ Search is performed **client-side** after fetching the user's tasks — the same
 |-------------|-----------------|
 | Python | 3.10+ (project uses 3.14 via uv) |
 | [uv](https://docs.astral.sh/uv/getting-started/installation/) | Package manager and virtualenv |
-| Supabase project | Same project configured in the Angular app |
+| Neon project | Same `DATABASE_URL` configured for the Angular/Netlify API |
 | Task Manager PIN | 4-digit PIN from the app or `create_user` tool |
 
 Install uv (if needed):
@@ -100,7 +100,7 @@ cd mcp-server
 uv sync
 ```
 
-This creates a `.venv` and installs `mcp[cli]`, `supabase`, and `python-dotenv`.
+This creates a `.venv` and installs `mcp[cli]`, `psycopg`, `psycopg-pool`, and `python-dotenv`.
 
 ### 2. Configure environment
 
@@ -113,11 +113,10 @@ The server loads env vars from **two locations** (in order):
 cp .env.example .env
 ```
 
-Fill in your Supabase credentials. You can copy them from the app root `.env` or from **Supabase Dashboard → Settings → API**.
+Fill in your Neon `DATABASE_URL`. You can copy it from the app root `.env` or from **Neon Console → Connection Details**.
 
 ```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=eyJ...your-anon-key
+DATABASE_URL=postgresql://USER:PASSWORD@ep-xxxx.region.aws.neon.tech/neondb?sslmode=require
 TASK_MANAGER_PIN=1234
 ```
 
@@ -153,8 +152,7 @@ Opens a browser UI where you can list tools, call `create_user`, and inspect res
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `SUPABASE_URL` | **Yes** | — | Supabase project URL, e.g. `https://abc.supabase.co` |
-| `SUPABASE_ANON_KEY` | **Yes** | — | Supabase anon/public JWT key (starts with `eyJ`) |
+| `DATABASE_URL` | **Yes** | — | Neon Postgres connection string |
 | `TASK_MANAGER_PIN` | For task ops | — | 4-digit PIN for the authenticated user |
 
 **Where to set them:**
@@ -169,7 +167,7 @@ Opens a browser UI where you can list tools, call `create_user`, and inspect res
 
 ## Authentication
 
-The Angular app does **not** use Supabase Auth. Instead, each user gets a random 4-digit PIN that is hashed with SHA-256 and stored in the `users.pin_hash` column. The MCP server uses the same scheme (`auth.py`).
+The Angular app does **not** use Neon Auth. Instead, each user gets a random 4-digit PIN that is hashed with SHA-256 and stored in the `users.pin_hash` column. The MCP server uses the same scheme (`auth.py`).
 
 ```
 User PIN "4821"
@@ -376,7 +374,7 @@ Equivalent to the slash command: `/read Buy milk`
 
 ## Data model
 
-The MCP server reads and writes the same Supabase tables as the Angular app.
+The MCP server reads and writes the same Neon tables as the Angular app.
 
 ### `users`
 
@@ -400,7 +398,7 @@ The MCP server reads and writes the same Supabase tables as the Angular app.
 | `created_at` | `timestamptz` | Creation timestamp |
 | `updated_at` | `timestamptz` | Last update timestamp (auto-set by trigger) |
 
-Schema source: [`supabase-migration-clean.sql`](../supabase-migration-clean.sql)
+Schema source: [`neon-migration.sql`](../neon-migration.sql)
 
 ---
 
@@ -429,7 +427,7 @@ The repo ships a ready-made config at [`.cursor/mcp.json`](../.cursor/mcp.json):
 **Steps:**
 
 1. Ensure `uv` is on your PATH.
-2. Configure `.env` with Supabase credentials and `TASK_MANAGER_PIN`.
+2. Configure `.env` with `DATABASE_URL` and `TASK_MANAGER_PIN`.
 3. Restart Cursor (or reload MCP servers from **Settings → MCP**).
 4. The `task-manager-cloud` server should appear with 5 tools, 1 resource, and 1 prompt.
 
@@ -449,8 +447,7 @@ Add to `claude_desktop_config.json` (path varies by OS):
         "server.py"
       ],
       "env": {
-        "SUPABASE_URL": "https://your-project.supabase.co",
-        "SUPABASE_ANON_KEY": "eyJ...",
+        "DATABASE_URL": "postgresql://USER:PASSWORD@ep-xxxx.region.aws.neon.tech/neondb?sslmode=require",
         "TASK_MANAGER_PIN": "1234"
       }
     }
@@ -523,7 +520,7 @@ mcp-server/
 | File | Responsibility |
 |------|----------------|
 | `server.py` | MCP protocol surface — decorators register tools/resources/prompts |
-| `database.py` | All Supabase I/O; loads `.env` from `mcp-server/` and project root |
+| `database.py` | All Neon/Postgres I/O; loads `.env` from `mcp-server/` and project root |
 | `auth.py` | Cryptographic PIN handling, compatible with the Angular app |
 
 ---
@@ -532,7 +529,7 @@ mcp-server/
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| `SUPABASE_URL and SUPABASE_ANON_KEY must be set` | Missing env vars | Create `.env` with valid Supabase credentials |
+| `DATABASE_URL must be set` | Missing env vars | Create `.env` with a valid Neon connection string |
 | `No PIN provided` | `TASK_MANAGER_PIN` not set | Call `create_user` or set the PIN in `.env` |
 | `Invalid PIN — no matching user found` | Wrong PIN | Verify the 4-digit PIN from account creation |
 | `Task N not found for this user` | Wrong `task_id` or different user | Use `search_tasks` or `tasks://list` to find the correct ID |
@@ -550,16 +547,16 @@ Open **Cursor Settings → MCP**, select `task-manager-cloud`, and inspect the s
 ## Security notes
 
 - **PIN is the only credential.** Treat `TASK_MANAGER_PIN` like a password. Do not commit it to git.
-- **Anon key exposure.** The Supabase anon key is designed for client-side use, but RLS policies in this project are permissive (`USING (true)`). Anyone with the anon key can read/write all rows. PIN verification happens in application code, not at the database level.
+- **Database URL secrecy.** Keep `DATABASE_URL` server-side only (Netlify env / MCP env). The browser never receives it; PIN verification happens in application code.
 - **`.env` is gitignored.** Both `mcp-server/.env` and the project root `.env` are excluded from version control.
 - **`create_user` PIN is one-time.** The server returns the plaintext PIN once. If lost, create a new user or use the PWA to manage tasks under a new account.
-- **Delete is permanent.** `delete_task` removes the row from Supabase with no soft-delete or undo.
+- **Delete is permanent.** `delete_task` removes the row from Neon with no soft-delete or undo.
 
 ---
 
 ## Related documentation
 
 - [Task Manager Cloud README](../README.MD) — Angular/Ionic app overview
-- [Supabase setup guide](../SUPABASE_SETUP.md) — Database provisioning
+- [Neon setup guide](../NEON_SETUP.md) — Database provisioning
 - [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk) — Framework reference
 - [uv documentation](https://docs.astral.sh/uv/) — Package manager

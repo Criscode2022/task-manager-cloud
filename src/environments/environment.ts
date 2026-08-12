@@ -7,9 +7,6 @@ export const environment = {
   // Legacy API (deprecated)
   baseUrl: 'https://api-workspace-wczh.onrender.com/tasks-manager',
 
-  // Supabase Configuration (loaded from .env via environment.local.ts)
-  supabase: {
-    url: '',
-    anonKey: ''
-  }
+  // Neon-backed API (loaded from .env via environment.local.ts)
+  apiBaseUrl: '/api'
 };
