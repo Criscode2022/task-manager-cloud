@@ -520,8 +520,9 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.4rem;
-  margin-top: 0.3rem;
+  justify-content: center;
+  gap: 0.3rem;
+  max-width: 9.5rem;
 }
 
 .task-end {
@@ -530,6 +531,14 @@
   gap: 0.5rem;
   margin-inline-start: 0.75rem;
   flex-shrink: 0;
+}
+
+.task-end-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
 }
 
 .priority-badge {
