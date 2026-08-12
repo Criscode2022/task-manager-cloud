@@ -80,25 +80,17 @@ Or both:
 npm run start:full
 ```
 
-## Step 5: Deploy (Vercel)
+## Step 5: Deploy (Vercel, single project)
 
-See **[VERCEL.md](./VERCEL.md)** for the Turborepo two-project flow.
+See **[VERCEL.md](./VERCEL.md)**. Import the repo as one Vercel project (Root
+Directory = repo root) and set these env vars:
 
-### API project (`apps/api`)
+- `DATABASE_URL` (required)
+- `JWT_SECRET` (required)
+- `PIN_PEPPER` (required)
 
-Required env vars on Vercel:
-
-- `DATABASE_URL`
-- `JWT_SECRET`
-- `PIN_PEPPER`
-- `ALLOWED_ORIGINS` (include your web production origin)
-
-Optional: `ALLOW_VERCEL_PREVIEWS`, `SESSION_TTL_SECONDS`, `AUTH_RATE_LIMIT`,
-`AUTH_RATE_WINDOW_MS`. Vercel sets `PORT` automatically.
-
-### Web project (`apps/web`)
-
-Set `API_BASE_URL` to `https://<your-api-project>.vercel.app/api`.
+Optional: `SESSION_TTL_SECONDS`, `AUTH_RATE_LIMIT`, `AUTH_RATE_WINDOW_MS`.
+`API_BASE_URL` defaults to `/api` (same origin), so leave it unset.
 
 ## Step 6: MCP server
 

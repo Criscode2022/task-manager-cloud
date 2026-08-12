@@ -103,16 +103,17 @@ CHROME_BIN=/usr/local/bin/google-chrome npm run test:ci
 
 See `NEON_SETUP.md` and `neon-migration.sql` for database setup.
 
-## Deploy (Vercel + Turborepo)
+## Deploy (Vercel, single project)
 
-Deploy as **two Vercel projects** (root directories `apps/api` then `apps/web`).
+One Vercel project serves both apps: the Angular PWA as static files and the
+Nest API as a serverless function behind `/api/*` (same origin, no CORS).
 Full steps: **[VERCEL.md](./VERCEL.md)**.
 
 Quick checklist:
 
-1. Import repo → Root Directory `apps/api` → set `DATABASE_URL`, `JWT_SECRET`, `PIN_PEPPER`, `ALLOWED_ORIGINS`
-2. Import repo again → Root Directory `apps/web` → set `API_BASE_URL=https://<api>.vercel.app/api`
-3. Add the web origin to the API `ALLOWED_ORIGINS` and redeploy the API
+1. Import the repo at [vercel.com/new](https://vercel.com/new), keep Root Directory at the repo root
+2. Set env vars: `DATABASE_URL`, `JWT_SECRET`, `PIN_PEPPER`
+3. Deploy — verify `https://<project>.vercel.app/api/health`
 
 ## Contributing
 

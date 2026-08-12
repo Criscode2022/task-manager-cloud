@@ -34,5 +34,6 @@ npm run test:api
 
 ## Vercel
 
-`vercel.json` configures NestJS + Turborepo. Deploy with Root Directory `apps/api`.
-See `/VERCEL.md` at the repo root.
+Deployed as part of the single-project monorepo deploy: the root `api/index.js`
+serverless entry wraps this app's compiled `dist` output. Shared configuration
+lives in `src/app.setup.ts` (`configureApp`). See `/VERCEL.md` at the repo root.

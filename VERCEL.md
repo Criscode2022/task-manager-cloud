@@ -1,76 +1,72 @@
-# Deploy Task Cloud on Vercel (Turborepo)
+# Deploy Task Cloud on Vercel (single project)
 
-This monorepo deploys as **two Vercel projects** (recommended Turborepo pattern):
+The whole Turborepo deploys as **one Vercel project**:
 
-| Project | Root Directory | Role |
-|---------|----------------|------|
-| `task-cloud-web` | `apps/web` | Ionic/Angular static PWA |
-| `task-cloud-api` | `apps/api` | NestJS API (single Vercel Function) |
+- `apps/web` builds to static files (`apps/web/www`) served by Vercel's CDN
+- `apps/api` (NestJS) compiles to `apps/api/dist` and runs as **one serverless
+  function** via the root `api/index.js` entry
+- `/api/*` is rewritten to the function; everything else falls back to the SPA
+- Frontend and API share the same origin, so no CORS configuration is needed in
+  production and the web `API_BASE_URL` can stay at its default `/api`
 
-## 1. Import the repo twice
+Everything is wired in the root `vercel.json`.
+
+## 1. Import the repo
 
 1. Open [vercel.com/new](https://vercel.com/new) and import this Git repository.
-2. Set **Root Directory** to `apps/api`.
-   - Framework: NestJS (auto-detected via `apps/api/vercel.json`)
-   - Keep “Include source files outside of the Root Directory in the Build Step” enabled.
-3. Add API env vars (Production + Preview):
+2. Leave **Root Directory** at the repository root (do not select a subfolder).
+3. Framework preset: **Other** (the root `vercel.json` provides build/output
+   settings — build command `turbo run build` for both apps, output
+   `apps/web/www`).
 
-   | Name | Notes |
-   |------|--------|
-   | `DATABASE_URL` | Neon connection string |
-   | `JWT_SECRET` | `openssl rand -hex 32` |
-   | `PIN_PEPPER` | `openssl rand -hex 32` |
-   | `ALLOWED_ORIGINS` | Comma-separated web origins (add the web production URL) |
-   | `ALLOW_VERCEL_PREVIEWS` | `true` (default) allows `*.vercel.app` |
+## 2. Set environment variables
 
-4. Deploy the API and copy its production URL, e.g. `https://task-cloud-api.vercel.app`.
+Project → Settings → Environment Variables (Production + Preview):
 
-5. Import the **same repo again** for the web app.
-6. Set **Root Directory** to `apps/web`.
-7. Add web env vars:
+| Name | Required | Notes |
+|------|----------|-------|
+| `DATABASE_URL` | yes | Neon connection string |
+| `JWT_SECRET` | yes | `openssl rand -hex 32` |
+| `PIN_PEPPER` | yes | `openssl rand -hex 32` |
+| `SESSION_TTL_SECONDS` | no | default `86400` |
+| `AUTH_RATE_LIMIT` / `AUTH_RATE_WINDOW_MS` | no | default `10` / `900000` |
+| `API_BASE_URL` | no | defaults to `/api` (same origin) — leave unset |
+| `ALLOWED_ORIGINS` | no | only needed if another origin must call the API |
 
-   | Name | Value |
-   |------|--------|
-   | `API_BASE_URL` | `https://task-cloud-api.vercel.app/api` (your API URL + `/api`) |
+## 3. Deploy
 
-8. Deploy the web app. Put its origin into the API project’s `ALLOWED_ORIGINS`, then redeploy the API.
+Push to the connected branch (or click **Deploy**). Vercel runs:
 
-## 2. CLI (optional)
-
-```bash
-npm i -g vercel
-vercel login
-vercel link --repo   # maps apps/web + apps/api
+```
+npm install
+npx turbo run build --filter=@task-cloud/web --filter=@task-cloud/api
 ```
 
-Deploy one app:
-
-```bash
-cd apps/api && vercel --prod
-cd apps/web && vercel --prod
-```
-
-Local parity with Vercel’s runtime:
-
-```bash
-cd apps/api && vercel dev
-```
-
-## 3. Turborepo remote cache
-
-Vercel enables Remote Caching automatically for linked Turborepo repos. Builds use:
-
-- Web: `turbo run build --filter=@task-cloud/web`
-- API: `turbo run build --filter=@task-cloud/api`
-- Skip unaffected: `npx turbo-ignore` (`ignoreCommand` in each `vercel.json`)
+and publishes the static PWA plus the `/api/*` function.
 
 ## 4. Smoke checks
 
-- API: `GET https://<api>/api/health` → `{ "ok": true, "service": "task-cloud-nest-api" }`
-- Web: open the Vercel URL → Options → register / sync tasks
+- `GET https://<project>.vercel.app/api/health` → `{ "ok": true, "service": "task-cloud-nest-api" }`
+- Open `https://<project>.vercel.app` → Options → register (8-digit PIN) → sync tasks
 
-## Notes
+## How the API function works
 
-- Nest keeps the global prefix `/api`, so the browser base URL must end with `/api`.
-- Rate limiting is in-memory per function instance (same caveat as before on serverless).
-- Netlify (`netlify.toml`) remains optional for the static web app; Vercel is the primary target for the Turborepo setup.
+`api/index.js` boots the compiled Nest app (`apps/api/dist`) with an Express
+adapter, caches it across warm invocations, and serves every `/api/*` request.
+`apps/api/src/app.setup.ts` (`configureApp`) holds the shared pipes / filters /
+prefix so the serverless entry and the standalone server (`main.ts`) behave
+identically.
+
+Notes:
+
+- Rate limiting is in-memory per function instance (best-effort, as before).
+- The function has `maxDuration: 30` and includes `apps/api/dist/**` via
+  `vercel.json` → `functions`.
+- Turborepo Remote Caching is enabled automatically for Vercel-linked repos.
+
+## Local development (unchanged)
+
+```bash
+npm run api    # Nest on :3001
+npm start      # Angular on :4200, proxies /api
+```
