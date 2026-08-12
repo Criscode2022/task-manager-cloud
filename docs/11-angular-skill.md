@@ -26,12 +26,25 @@ Hallazgos aplicados:
 3. **`httpResource`** para lecturas GET: `cloudTasks` (`GET /tasks`) y `meResource` (`GET /auth/me`), disparados por `session`. Mutaciones (POST/PUT/DELETE) siguen en `HttpClient`; tras mutar se llama `cloudTasks.reload()`.
 4. HTTP Fetch, `@if`, OnPush y Zone explícito se mantienen.
 
-Queda fuera a propósito:
+## Qué Angular 22 no se puede (o no se debe) aplicar por Ionic 8
 
-- Zoneless real (Ionic + Zone)
-- Vitest (Karma en este builder webpack)
-- Migración completa del shell `NgModule` de Ionic
-- `TaskHttpService` legado (no está en el flujo Neon)
+Ionic **8.8** declara `zone.js` como peer y sus web components (`ion-select`, overlays, `ion-router-outlet`, tabs) no implementan las APIs signal-first de v22. Esto **no** es deuda de la skill: es un techo del runtime Ionic. No forzar estas APIs hasta que Ionic las soporte.
+
+| API Angular 22 | Por qué Ionic la bloquea | Qué hacemos aquí |
+|----------------|--------------------------|------------------|
+| **Zoneless** (`provideZonelessChangeDetection()`, quitar `zone.js`) | Peer oficial `zone.js >= 0.13`. Eventos, overlays y navegación de Ionic siguen notificando la vista vía Zone. Sin Zone, taps y modales se quedan mudos. | `provideZoneChangeDetection()` + `zone.js` |
+| **`[formField]` en controles Ionic** | `ion-select`, `ion-checkbox`, `ion-toggle`, `ion-input` no implementan `FormValueControl`. Signal Forms solo enlaza nativos / Material. | `form()` + `[formField]` en `matInput`; `ion-select` / `mat-select` escriben el `signal` del modelo |
+| **View Transitions del router Angular** | La navegación real pasa por `ion-router-outlet` + `IonicRouteStrategy`, no por las transiciones del `Router` de Angular. | Transiciones de Ionic; no `withViewTransitions()` |
+| **Angular ARIA en overlays** | Alertas, popovers y action sheets son de Ionic. Sustituirlos por Angular ARIA rompe el look y el focus trap nativo. | Overlays Ionic; ARIA solo si se añade un control *nuevo* no-Ionic |
+| **SSR / hidratación** | PWA + Capacitor + `IonicStorage` son cliente. No hay servidor de render para `ion-*`. | SPA + service worker |
+
+**No atribuir a Ionic** (queda fuera por el builder/legado, no por el peer):
+
+- Vitest — el builder webpack/Karma de esta app
+- Shell `NgModule` (`IonicModule.forRoot()`, `TabsModule`) — Ionic 8 *sí* tiene `provideIonicAngular()`; no se ha migrado el andamiaje de tabs
+- `TaskHttpService` — API vieja, fuera del flujo Neon
+
+Revisar esta tabla al subir de major de Ionic. Si el peer deja de pedir `zone.js` y los `ion-*` implementan `FormValueControl`, se puede zoneless + `[formField]` en selects.
 
 ## House style (extracto)
 
