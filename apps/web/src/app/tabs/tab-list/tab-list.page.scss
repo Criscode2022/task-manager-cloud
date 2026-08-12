@@ -92,7 +92,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   padding-block: 0.3rem;
-  padding-right: 0.15rem;
+  padding-inline: 0.35rem 0.2rem;
 }
 
 .filter-chip {
@@ -229,7 +229,7 @@
     flex-wrap: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
-    padding: 0.35rem 0.1rem 0.3rem;
+    padding: 0.35rem 0.35rem 0.3rem;
     -webkit-overflow-scrolling: touch;
 
     &::-webkit-scrollbar {
@@ -297,6 +297,11 @@
   .form-field {
     font-size: 0.9rem;
 
+    + .form-field,
+    + .priority-selector {
+      margin-top: 0.5rem;
+    }
+
     ::ng-deep {
       .mat-mdc-form-field-infix {
         min-height: 44px;
@@ -310,8 +315,13 @@
 
       .mat-mdc-form-field-subscript-wrapper {
         margin-top: 2px;
+        min-height: 1.25rem;
       }
     }
+  }
+
+  .priority-selector + .form-field {
+    margin-top: 0.5rem;
   }
 }
 
@@ -364,7 +374,9 @@
   --min-height: 42px;
   border: 1px solid var(--ion-border-color);
   border-radius: var(--border-radius-md);
-  margin-bottom: 0.25rem;
+  margin-top: 0.5rem;
+  /* Same reserved footer as mat-hint so the tags field sits as far as title→description. */
+  margin-bottom: 1.25rem;
 
   ion-label {
     font-weight: 600;
@@ -473,14 +485,21 @@
   --border-color: var(--ion-border-color);
   --padding-start: 1rem;
   --padding-end: 1rem;
+  --padding-top: 0.85rem;
+  --padding-bottom: 0.85rem;
   --min-height: 70px;
+  --inner-padding-end: 0.35rem;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--ion-border-color);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  align-items: flex-start;
+  gap: 0.85rem;
+
+  &::part(native) {
+    align-items: flex-start;
+  }
 
   &:hover {
     box-shadow: var(--shadow-md);
@@ -496,20 +515,24 @@
 
 .task-checkbox-wrapper {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 0.1rem;
 }
 
 .task-content {
-  flex: 1;
+  flex: 1 1 auto;
   cursor: pointer;
   min-width: 0;
+  padding-inline-end: 0.65rem;
 }
 
 .task-label {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.5rem;
 
   &.done {
     .task-title {
@@ -523,30 +546,35 @@
   }
 }
 
+.task-title,
+.task-description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+}
+
 .task-title {
   font-size: 1rem;
   font-weight: 600;
   color: var(--ion-text-color);
-  line-height: 1.4;
-  word-wrap: break-word;
+  line-height: 1.35;
+  -webkit-line-clamp: 2;
 
   @media (min-width: 768px) {
-    font-size: 1.125rem;
-  }
-
-  @media (min-width: 1024px) {
-    font-size: 1.25rem;
+    font-size: 1.0625rem;
   }
 }
 
 .task-description {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: var(--ion-text-color-secondary);
-  line-height: 1.3;
-  word-wrap: break-word;
+  line-height: 1.4;
+  -webkit-line-clamp: 1;
 
   @media (min-width: 768px) {
-    font-size: 1rem;
+    font-size: 0.875rem;
   }
 }
 
@@ -577,12 +605,12 @@
 .task-end {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-inline-start: 0.75rem;
+  gap: 0.45rem;
+  margin-inline-start: 0.15rem;
   min-width: 0;
-  width: min(58%, 16.5rem);
-  max-width: 58%;
-  flex-shrink: 1;
+  width: auto;
+  max-width: 44%;
+  flex-shrink: 0;
 }
 
 .task-end-meta {
@@ -596,15 +624,24 @@
   overflow: hidden;
 }
 
-.priority-badge {
+.priority-badge,
+.tag-chip {
+  box-sizing: border-box;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
   border-radius: 9999px;
   padding: 0.15rem 0.55rem;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  text-transform: uppercase;
+  line-height: 1.2;
   letter-spacing: 0.02em;
   white-space: nowrap;
+}
+
+.priority-badge {
+  text-transform: uppercase;
 }
 
 .priority-high {
@@ -623,13 +660,6 @@
 }
 
 .tag-chip {
-  flex-shrink: 0;
-  border-radius: 9999px;
-  padding: 0.1rem 0.5rem;
-  font-size: 0.72rem;
-  font-weight: 600;
-  line-height: 1.25;
-  white-space: nowrap;
   background: color-mix(in srgb, var(--ion-color-primary) 18%, white);
   color: color-mix(in srgb, var(--ion-color-primary-shade) 80%, #000);
   border: 1px solid color-mix(in srgb, var(--ion-color-primary) 38%, white);

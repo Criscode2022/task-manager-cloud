@@ -66,7 +66,7 @@
           }
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="form-field mt-2">
+        <mat-form-field appearance="outline" class="form-field">
           <mat-label>{{ 'TASKS.DESCRIPTION_OPTIONAL' | translate }}</mat-label>
           <input
             matInput
@@ -89,7 +89,7 @@
             }
           </mat-form-field>
 
-          <ion-item lines="none" class="priority-selector mt-1">
+          <ion-item lines="none" class="priority-selector">
             <ion-label>{{ 'TASKS.PRIORITY_LABEL' | translate }}</ion-label>
             <ion-select
               interface="popover"
@@ -109,7 +109,7 @@
             </ion-select>
           </ion-item>
 
-          <mat-form-field appearance="outline" class="form-field mt-2">
+          <mat-form-field appearance="outline" class="form-field">
             <mat-label>{{ 'TASKS.TAGS_OPTIONAL' | translate }}</mat-label>
             <input
               matInput
@@ -262,9 +262,9 @@
                   [class.disabled]="!canClick()"
                   >
                   <ion-label class="task-label" [class.done]="task.done">
-                    <div class="task-title">{{ task?.title }}</div>
+                    <div class="task-title" [attr.title]="task?.title">{{ task?.title }}</div>
                     @if(task.description){
-                      <div class="task-description">{{ task?.description }}</div>
+                      <div class="task-description" [attr.title]="task.description">{{ task.description }}</div>
                     }
                   </ion-label>
                 </div>
