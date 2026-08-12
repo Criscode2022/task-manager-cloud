@@ -164,13 +164,30 @@
   }
 
   &:hover {
-    background-color: var(--ion-color-primary);
+    background-color: color-mix(
+      in srgb,
+      var(--ion-color-primary) 18%,
+      var(--ion-surface-color)
+    );
 
-    .card-title,
-    .card-description,
-    .card-id,
+    .card-title {
+      color: var(--ion-color-primary-shade);
+    }
+
+    .card-description {
+      color: var(--ion-text-color);
+    }
+
     .card-title.text-danger {
-      color: var(--ion-color-primary-contrast);
+      color: var(--ion-color-danger-shade);
+    }
+
+    .action-button {
+      --background: var(--ion-color-primary-shade);
+      --background-hover: var(--ion-color-primary-shade);
+      --background-activated: var(--ion-color-primary-shade);
+      --color: #ffffff;
+      --color-hover: #ffffff;
     }
   }
 
@@ -253,6 +270,7 @@
   --border-radius: var(--border-radius-md);
   --padding-start: 1rem;
   --padding-end: 1rem;
+  --color: #ffffff;
   min-width: 48px;
   height: 48px;
   flex-shrink: 0;
@@ -260,13 +278,24 @@
   transition: all 0.2s ease;
 
   &:hover {
-    transform: scale(1.1);
+    --background: var(--ion-color-primary-shade);
+    --background-hover: var(--ion-color-primary-shade);
+    --color: #ffffff;
+    --color-hover: #ffffff;
+    transform: scale(1.08);
     box-shadow: var(--shadow-md);
   }
 
   ion-icon {
     font-size: 1.5rem;
+    color: inherit;
   }
+}
+
+.danger-card .action-button:hover {
+  --background: var(--ion-color-danger-shade);
+  --background-hover: var(--ion-color-danger-shade);
+  --color: #ffffff;
 }
 
 // Modern Toggle
@@ -369,13 +398,29 @@
     border-bottom-color: var(--ion-border-color);
 
     &:hover {
-      background-color: var(--ion-color-primary-shade);
+      background-color: color-mix(
+        in srgb,
+        var(--ion-color-primary) 22%,
+        var(--ion-surface-color)
+      );
 
-      .card-title,
-      .card-description,
-      .card-id,
+      .card-title {
+        color: var(--ion-color-primary-tint);
+      }
+
+      .card-description {
+        color: var(--ion-text-color);
+      }
+
       .card-title.text-danger {
-        color: var(--ion-color-primary-contrast);
+        color: #fecaca;
+      }
+
+      .action-button {
+        --background: var(--ion-color-primary);
+        --background-hover: var(--ion-color-primary);
+        --color: #064e3b;
+        --color-hover: #064e3b;
       }
     }
 

@@ -52,7 +52,7 @@
     top: 116px;
     right: 1rem;
     z-index: 40;
-    width: 300px;
+    width: 22rem;
     margin: 0;
     padding: 1rem;
     box-shadow: var(--shadow-lg);
@@ -70,6 +70,19 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
+}
+
+@media (min-width: 768px) {
+  .filter-chips:not(.filter-chips--tags) {
+    flex-wrap: nowrap;
+  }
+
+  .filter-chips:not(.filter-chips--tags) .filter-chip {
+    flex: 1 1 auto;
+    justify-content: center;
+    white-space: nowrap;
+    padding-inline: 0.55rem;
+  }
 }
 
 .filter-chips--tags {
