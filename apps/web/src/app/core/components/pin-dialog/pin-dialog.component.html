@@ -24,14 +24,14 @@
           class="copy-button"
           (click)="copyPin()"
           [matTooltip]="'PIN_DIALOG.COPY_TOOLTIP' | translate"
-        >
+          >
           <ion-icon
             slot="icon-only"
-            [name]="copied ? 'checkmark-circle' : 'copy-outline'"
+            [name]="copied() ? 'checkmark-circle' : 'copy-outline'"
           ></ion-icon>
         </ion-button>
       </div>
-      @if (copied) {
+      @if (copied()) {
         <p class="copy-success">{{ "PIN_DIALOG.COPY_SUCCESS" | translate }}</p>
       }
     </div>
@@ -45,10 +45,11 @@
 
     <div class="confirmation-checkbox">
       <ion-checkbox
-        [(ngModel)]="confirmed"
+        [checked]="confirmed()"
+        (ionChange)="confirmed.set($event.detail.checked)"
         class="custom-checkbox"
         labelPlacement="end"
-      >
+        >
         <span class="checkbox-label">{{
           "PIN_DIALOG.CONFIRM_CHECKBOX" | translate
         }}</span>
@@ -62,13 +63,15 @@
       color="primary"
       (click)="close()"
       class="close-button"
-      [disabled]="!confirmed"
-    >
+      [disabled]="!confirmed()"
+      >
       <ion-icon slot="start" name="checkmark"></ion-icon>
       {{ "COMMON.CONTINUE" | translate }}
     </ion-button>
-    <p class="action-hint" *ngIf="!confirmed">
-      {{ "PIN_DIALOG.CONFIRM_HINT" | translate }}
-    </p>
+    @if (!confirmed()) {
+      <p class="action-hint">
+        {{ "PIN_DIALOG.CONFIRM_HINT" | translate }}
+      </p>
+    }
   </div>
 </div>

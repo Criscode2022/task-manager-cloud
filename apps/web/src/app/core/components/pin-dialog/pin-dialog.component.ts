@@ -1,23 +1,16 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { IonButton, IonCheckbox, IonIcon } from '@ionic/angular/standalone';
+import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-pin-dialog',
   templateUrl: './pin-dialog.component.html',
-  imports: [
-    IonButton,
-    IonIcon,
-    IonCheckbox,
-    MatTooltipModule,
-    CommonModule,
-    FormsModule,
-    TranslateModule,
-  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [IonicModule, MatTooltipModule, TranslateModule],
   styleUrls: ['./pin-dialog.component.scss'],
 })
 export class PinDialogComponent {
@@ -25,13 +18,13 @@ export class PinDialogComponent {
   private readonly dialogRef = inject(MatDialogRef<PinDialogComponent>);
 
   protected readonly pin = this.dialogData?.pin;
-  protected copied = false;
-  protected confirmed = false;
+  protected readonly copied = signal(false);
+  protected readonly confirmed = signal(false);
 
   protected async copyPin(): Promise<void> {
     try {
       await navigator.clipboard.writeText(this.pin);
-      this.copied = true;
+      this.copied.set(true);
     } catch (err) {
       console.error('Failed to copy PIN:', err);
     }

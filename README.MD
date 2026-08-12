@@ -26,7 +26,7 @@ packages/    Shared packages (reserved)
 ## Tech Stack
 
 - Turborepo + npm workspaces
-- Angular 19 / Ionic 8
+- Angular 20 / Ionic 8
 - NestJS 11
 - Vercel (Turborepo remote cache)
 - Tailwind CSS

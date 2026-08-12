@@ -7,7 +7,8 @@
 // Include the common styles for Angular Material. We include this here so that you only
 // have to load a single css file for Angular Material in your app.
 // Be sure that you only ever include this mixin once!
-@include mat.core();
+@include mat.elevation-classes();
+@include mat.app-background();
 
 
 
@@ -97,11 +98,11 @@ body {
 
 .mat-mdc-form-field {
   width: 100%;
-  --mdc-outlined-text-field-outline-color: var(--ion-border-color);
-  --mdc-outlined-text-field-hover-outline-color: var(--ion-border-color);
-  --mdc-outlined-text-field-focus-outline-color: var(--ion-color-primary);
-  --mdc-outlined-text-field-disabled-outline-color: var(--ion-border-color-light);
-  --mdc-outlined-text-field-error-outline-color: var(--ion-color-danger);
+  --mat-form-field-outlined-outline-color: var(--ion-border-color);
+  --mat-form-field-outlined-hover-outline-color: var(--ion-border-color);
+  --mat-form-field-outlined-focus-outline-color: var(--ion-color-primary);
+  --mat-form-field-outlined-disabled-outline-color: var(--ion-border-color-light);
+  --mat-form-field-outlined-error-outline-color: var(--ion-color-danger);
 
   .mdc-notched-outline__leading,
   .mdc-notched-outline__notch,
@@ -233,7 +234,7 @@ ion-item {
 // Checkbox Enhancements
 mat-checkbox {
   .mdc-checkbox {
-    --mdc-checkbox-state-layer-size: 40px;
+    --mat-checkbox-state-layer-size: 40px;
   }
 
   .mdc-checkbox__background {
@@ -312,7 +313,7 @@ ion-toolbar {
 // Edit task dialog panel (MatDialog)
 .edit-task-dialog-panel {
   .mat-mdc-dialog-container {
-    --mdc-dialog-container-shape: var(--border-radius-xl);
+    --mat-dialog-container-shape: var(--border-radius-xl);
     padding: 0;
   }
 

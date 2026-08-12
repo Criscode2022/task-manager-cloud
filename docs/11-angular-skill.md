@@ -17,25 +17,24 @@ Task Cloud adopta la skill **angular** del repo interno [claude-workflow](https:
 | `components.md` | Standalone, `@if/@for`, SSR, Vitest |
 | `animations.md` | `animate.enter` / View Transitions |
 
-La skill pide **mirar el major del repo y no mezclar eras**. Task Cloud está en **Angular 19 + Ionic 8**, así que no se subió a Signal Forms, `httpResource` ni zoneless (v22). Se aplicó el **house style** y los APIs que ya existen en v19.
+La skill pide **mirar el major del repo y no mezclar eras**. Task Cloud está en **Angular 20 + Ionic 8** (Ionic 8 soporta hasta Angular 20.x). Se aplicó el house style y las novedades de v20 que encajan con Ionic; se dejaron las APIs estables solo en v21/v22.
 
 ## Qué se aplicó en `apps/web`
 
-1. **Signals first, RxJS en el borde.** Se eliminó `BehaviorSubject` de `TaskService` (`storageInitialized`) y se sustituyó por `storageReady = signal(false)`. `TabsPage` espera ese signal con `effect()` en vez de `.subscribe()`. El diálogo de edición usa `firstValueFrom(afterClosed())` (un valor, no un stream).
-2. **Visibilidad restrictiva.** Inyectados `private readonly`; estado de UI `protected` para la plantilla; `filteredTasks` dejó de ser `public`.
-3. **`const` y sin mutar arrays.** El ciclo del filtro de estado es `(index + 1) % length`. Tags únicas con `[...set].toSorted()`. El filtro de lista se deriva en `filterTasksByStatus()` + `computed`.
-4. **Early returns.** Guards al inicio en `switchToAlternativeFilter`, persistencia de storage y carga del PWA install prompt.
-5. **Formularios.** Se mantienen `ReactiveFormsModule` (la skill prohíbe Signal Forms por debajo de Angular 20). No se añadieron NgModules ni `*ngIf` nuevos.
+1. **`ng update` a Angular 20.3** y Material/CDK 20. TypeScript `moduleResolution: bundler`.
+2. **Control flow nativo.** Migración de `*ngIf` restantes a `@if` (lista, PIN dialog).
+3. **HTTP moderno.** Se quitó el deprecado `HttpClientModule`; `provideHttpClient(withFetch(), withInterceptors(...))` usa el backend Fetch de Angular 20.
+4. **OnPush** en `TabListPage`, `TabOptionsPage`, diálogo de edición y PIN dialog (alineado con el default implícito de majors posteriores).
+5. **Signals first.** PIN dialog: `copied`/`confirmed` como signals. `TaskService.storageReady` en vez de `BehaviorSubject`. Diálogo de edición con `firstValueFrom`.
+6. **Formularios.** Sigue `ReactiveFormsModule`: Signal Forms aún no son el default estable de v20 (lo son en v22). Ionic sigue usando `NgModule` en el shell.
 
-## Qué queda fuera a propósito (Angular 19)
+## Qué queda fuera a propósito (Ionic + v20)
 
-- Signal Forms / `formField`
-- `httpResource()` / `resource()`
-- `provideZonelessChangeDetection()` (sigue `zone.js`)
-- Migración completa de `NgModule` de Ionic (`TabsPage` sigue `standalone: false`)
-- Vitest (el repo sigue con Karma/Jasmine)
-
-Un `ng update` a 20+ permitiría el resto de la skill **archivo a archivo**, no mezclando APIs v22 en componentes legacy.
+- Signal Forms / `formField` (estable en Angular 22)
+- `httpResource()` / `resource()` siguen experimentales en 20.3
+- Zoneless (`provideExperimentalZonelessChangeDetection`) — Ionic 8 + zone.js es el camino soportado
+- Vitest (Karma sigue en este builder)
+- `ng update` a 21+ no cabe: Ionic 8 declara máximo Angular 20.x
 
 ## House style (extracto)
 

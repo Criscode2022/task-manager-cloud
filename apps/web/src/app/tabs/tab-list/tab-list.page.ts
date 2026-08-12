@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   afterNextRender,
+  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
@@ -43,6 +44,7 @@ import {
   selector: 'app-tab1',
   templateUrl: 'tab-list.page.html',
   styleUrls: ['tab-list.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonicModule,
     CommonModule,
@@ -93,7 +95,7 @@ export class TabListPage extends TaskForm {
       });
     });
 
-    return [...uniqueTags].toSorted();
+    return [...uniqueTags].sort((a, b) => a.localeCompare(b));
   });
 
   protected tagSuggestions = computed(() => {

@@ -1,6 +1,6 @@
 import {
-  HttpClientModule,
   provideHttpClient,
+  withFetch,
   withInterceptors,
 } from '@angular/common/http';
 import { NgModule, isDevMode } from '@angular/core';
@@ -23,7 +23,6 @@ import { StorageModule } from './storage.module';
     IonicModule.forRoot(),
     AppRoutingModule,
     StorageModule,
-    HttpClientModule,
     TranslateModule.forRoot({
       defaultLanguage: 'en',
       loader: provideTranslateHttpLoader({
@@ -33,15 +32,13 @@ import { StorageModule } from './storage.module';
     }),
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: !isDevMode(),
-      // Register the ServiceWorker as soon as the application is stable
-      // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000',
     }),
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideAnimationsAsync(),
-    provideHttpClient(withInterceptors([LoadingInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([LoadingInterceptor])),
   ],
   bootstrap: [AppComponent],
 })
