@@ -13,7 +13,6 @@ import { ThemeService } from 'src/app/core/services/theme.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
 import { PinHashService } from '../../core/services/pin-hash.service';
 import { NeonApiService } from '../../core/services/neon-api.service';
-import { TaskNeonService } from '../../core/services/task-neon.service';
 import { TaskService } from '../../core/services/task.service';
 import { User } from './types/user';
 
@@ -32,7 +31,6 @@ import { User } from './types/user';
   ],
 })
 export class TabOptionsPage {
-  private readonly tasksNeonService = inject(TaskNeonService);
   private readonly taskService = inject(TaskService);
   private readonly loadingService = inject(LoadingService);
   private readonly snackbar = inject(MatSnackBar);
@@ -117,11 +115,11 @@ export class TabOptionsPage {
 
   public alertInputs = [
     {
-      placeholder: 'Enter your 4-digit PIN',
+      placeholder: 'Enter your 8-digit PIN',
       type: 'text',
       name: 'pin',
       attributes: {
-        maxlength: 4,
+        maxlength: 8,
         inputmode: 'numeric',
       },
       label: 'PIN',
@@ -148,24 +146,11 @@ export class TabOptionsPage {
 
   protected async download(pin: User['pin']): Promise<void> {
     try {
-      // Convert PIN to string (alert input returns number)
       const pinString = String(pin);
 
-      // Validate PIN format
-      if (!pinString || pinString.length !== 4) {
+      if (!this.pinHashService.isValidPin(pinString)) {
         this.snackbar.open(
-          this.translate.instant('OPTIONS.PIN_MUST_HAVE_4_DIGITS'),
-          this.translate.instant('COMMON.CLOSE'),
-          {
-            duration: 5000,
-          },
-        );
-        return;
-      }
-
-      if (/[a-zA-Z]/.test(pinString)) {
-        this.snackbar.open(
-          this.translate.instant('OPTIONS.PIN_CANNOT_CONTAIN_LETTERS'),
+          this.translate.instant('OPTIONS.PIN_MUST_HAVE_8_DIGITS'),
           this.translate.instant('COMMON.CLOSE'),
           {
             duration: 5000,
@@ -175,21 +160,7 @@ export class TabOptionsPage {
       }
 
       console.log('🔐 Logging in with PIN...');
-      console.log('📌 PIN string:', pinString);
-
-      // Hash the PIN using SHA-256
-      const pinHash = await this.pinHashService.hashPin(pinString);
-      console.log(
-        '🔒 PIN hash (first 20 chars):',
-        pinHash.substring(0, 20) + '...',
-      );
-
-      // Download tasks (this looks up user by PIN and downloads tasks)
-      await this.tasksNeonService.download(pinHash);
-
-      // Store PIN hash locally for session persistence
-      this.userService.pinHash.set(pinHash);
-
+      await this.userService.loginWithPin(pinString);
       console.log('✅ Login successful!');
     } catch (error) {
       console.error('❌ Login error:', error);
@@ -204,9 +175,7 @@ export class TabOptionsPage {
   }
 
   protected async activateOfflineMode(): Promise<void> {
-    this.taskService.userId.set(0);
-    await this.taskService.storage?.remove('pinHash');
-    await this.taskService.storage?.remove('userId');
+    await this.userService.logout();
   }
 
   /**
@@ -222,7 +191,7 @@ export class TabOptionsPage {
           type: 'text',
           placeholder: this.translate.instant('COMMON.PIN'),
           attributes: {
-            maxlength: 4,
+            maxlength: 8,
             inputmode: 'numeric',
           },
         },
@@ -380,12 +349,12 @@ export class TabOptionsPage {
     const userId = this.userId();
     if (!userId) return;
 
-    const pinHash = this.userService.pinHash();
-    if (!pinHash) return;
+    const token = this.userService.accessToken();
+    if (!token) return;
 
     try {
-      // Delete all tasks from cloud (server validates X-Pin-Hash)
-      await this.neon.deleteAllTasks(userId, pinHash);
+      // Delete all tasks from cloud (server validates Bearer token)
+      await this.neon.deleteAllTasks(userId, token);
 
       // Go offline mode (keeps local tasks)
       await this.activateOfflineMode();
@@ -420,12 +389,12 @@ export class TabOptionsPage {
       return;
     }
 
-    const pinHash = this.userService.pinHash();
-    if (!pinHash) return;
+    const token = this.userService.accessToken();
+    if (!token) return;
 
     try {
-      // Delete all tasks from cloud (server validates X-Pin-Hash)
-      await this.neon.deleteAllTasks(userId, pinHash);
+      // Delete all tasks from cloud (server validates Bearer token)
+      await this.neon.deleteAllTasks(userId, token);
 
       // Delete all local tasks
       this.taskService.tasks.set([]);

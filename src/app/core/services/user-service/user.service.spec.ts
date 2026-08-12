@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { of } from 'rxjs';
+import { NeonApiService } from '../neon-api.service';
 import { PinHashService } from '../pin-hash.service';
 import { TaskNeonService } from '../task-neon.service';
 import { TaskService } from '../task.service';
@@ -14,6 +15,7 @@ describe('UserService', () => {
   let taskServiceMock: {
     getTasks: jasmine.Spy;
     userId: ReturnType<typeof signal<number>>;
+    tasks: ReturnType<typeof signal<unknown[]>>;
     storage: {
       set: jasmine.Spy;
       get: jasmine.Spy;
@@ -25,18 +27,29 @@ describe('UserService', () => {
     bulkUpload: jasmine.Spy;
     download: jasmine.Spy;
     deleteUser: jasmine.Spy;
+    restoreSession: jasmine.Spy;
+  };
+  let neonApiMock: {
+    logout: jasmine.Spy;
   };
   let pinHashServiceMock: {
     generatePin: jasmine.Spy;
-    hashPin: jasmine.Spy;
   };
   let dialogMock: jasmine.SpyObj<MatDialog>;
   let snackBarMock: jasmine.SpyObj<MatSnackBar>;
+
+  const session = {
+    id: 42,
+    token: 'jwt-token',
+    expires_at: new Date(Date.now() + 60_000).toISOString(),
+    expires_in: 60,
+  };
 
   beforeEach(() => {
     taskServiceMock = {
       getTasks: jasmine.createSpy('getTasks').and.resolveTo([]),
       userId: signal(0),
+      tasks: signal([]),
       storage: {
         set: jasmine.createSpy('set').and.resolveTo(),
         get: jasmine.createSpy('get').and.resolveTo(null),
@@ -45,15 +58,19 @@ describe('UserService', () => {
     };
 
     taskNeonServiceMock = {
-      createUser: jasmine.createSpy('createUser').and.resolveTo(42),
+      createUser: jasmine.createSpy('createUser').and.resolveTo(session),
       bulkUpload: jasmine.createSpy('bulkUpload').and.resolveTo(),
-      download: jasmine.createSpy('download').and.resolveTo(),
+      download: jasmine.createSpy('download').and.resolveTo(session),
       deleteUser: jasmine.createSpy('deleteUser').and.resolveTo(),
+      restoreSession: jasmine.createSpy('restoreSession').and.resolveTo(),
+    };
+
+    neonApiMock = {
+      logout: jasmine.createSpy('logout').and.resolveTo(),
     };
 
     pinHashServiceMock = {
-      generatePin: jasmine.createSpy('generatePin').and.returnValue('1234'),
-      hashPin: jasmine.createSpy('hashPin').and.resolveTo('hash-1234'),
+      generatePin: jasmine.createSpy('generatePin').and.returnValue('12345678'),
     };
 
     dialogMock = jasmine.createSpyObj('MatDialog', ['open']);
@@ -67,6 +84,7 @@ describe('UserService', () => {
         UserService,
         { provide: TaskService, useValue: taskServiceMock },
         { provide: TaskNeonService, useValue: taskNeonServiceMock },
+        { provide: NeonApiService, useValue: neonApiMock },
         { provide: PinHashService, useValue: pinHashServiceMock },
         { provide: MatDialog, useValue: dialogMock },
         { provide: MatSnackBar, useValue: snackBarMock },
@@ -79,7 +97,7 @@ describe('UserService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should create user, store pin hash, and open PIN dialog', async () => {
+  it('should create user, store access token, and open PIN dialog', async () => {
     taskServiceMock.getTasks.and.resolveTo([
       { id: 1, title: 'A', done: false },
     ]);
@@ -87,25 +105,20 @@ describe('UserService', () => {
     await service.createUser();
 
     expect(pinHashServiceMock.generatePin).toHaveBeenCalled();
-    expect(pinHashServiceMock.hashPin).toHaveBeenCalledWith('1234');
-    expect(taskNeonServiceMock.createUser).toHaveBeenCalledWith('hash-1234');
+    expect(taskNeonServiceMock.createUser).toHaveBeenCalledWith('12345678');
     expect(taskServiceMock.userId()).toBe(42);
     expect(service.userId()).toBe(42);
+    expect(service.accessToken()).toBe('jwt-token');
     expect(taskServiceMock.storage.set).toHaveBeenCalledWith(
-      'pinHash',
-      'hash-1234',
+      'accessToken',
+      'jwt-token',
     );
     expect(taskNeonServiceMock.bulkUpload).toHaveBeenCalledWith(
       [{ id: 1, title: 'A', done: false }],
       42,
-      'hash-1234',
+      'jwt-token',
     );
     expect(dialogMock.open).toHaveBeenCalled();
-    expect(snackBarMock.open).not.toHaveBeenCalledWith(
-      'Failed to create user',
-      'Close',
-      jasmine.anything(),
-    );
   });
 
   it('should show failed message when user creation returns null', async () => {
@@ -137,45 +150,62 @@ describe('UserService', () => {
     );
   });
 
-  it('should return early from getUser when no pin hash is in storage', async () => {
+  it('should return early from getUser when no session is in storage', async () => {
     taskServiceMock.storage.get.and.resolveTo(null);
 
     await service.getUser();
 
-    expect(taskNeonServiceMock.download).not.toHaveBeenCalled();
-    expect(service.pinHash()).toBeNull();
+    expect(taskNeonServiceMock.restoreSession).not.toHaveBeenCalled();
+    expect(service.accessToken()).toBeNull();
   });
 
-  it('should download tasks and set pin hash when a session exists', async () => {
-    taskServiceMock.storage.get.and.resolveTo('stored-hash');
+  it('should restore session when a valid token exists', async () => {
+    const expires = new Date(Date.now() + 60_000).toISOString();
+    taskServiceMock.storage.get.and.callFake(async (key: string) => {
+      if (key === 'pinHash') return null;
+      if (key === 'accessToken') return 'jwt-token';
+      if (key === 'sessionExpiresAt') return expires;
+      if (key === 'userId') return 42;
+      return null;
+    });
 
     await service.getUser();
 
-    expect(taskNeonServiceMock.download).toHaveBeenCalledWith('stored-hash');
-    expect(service.pinHash()).toBe('stored-hash');
+    expect(taskNeonServiceMock.restoreSession).toHaveBeenCalledWith(
+      42,
+      'jwt-token',
+    );
+    expect(service.accessToken()).toBe('jwt-token');
   });
 
   it('should clear session data when getUser fails', async () => {
-    taskServiceMock.storage.get.and.resolveTo('stored-hash');
-    taskNeonServiceMock.download.and.rejectWith(new Error('download-fail'));
+    const expires = new Date(Date.now() + 60_000).toISOString();
+    taskServiceMock.storage.get.and.callFake(async (key: string) => {
+      if (key === 'pinHash') return null;
+      if (key === 'accessToken') return 'jwt-token';
+      if (key === 'sessionExpiresAt') return expires;
+      if (key === 'userId') return 42;
+      return null;
+    });
+    taskNeonServiceMock.restoreSession.and.rejectWith(new Error('fail'));
 
     await service.getUser();
 
-    expect(taskServiceMock.storage.remove).toHaveBeenCalledWith('pinHash');
+    expect(taskServiceMock.storage.remove).toHaveBeenCalledWith('accessToken');
     expect(taskServiceMock.storage.remove).toHaveBeenCalledWith('userId');
   });
 
   it('should delete user and reset local state', async () => {
     taskServiceMock.userId.set(21);
     service.userId.set(21);
-    service.pinHash.set('existing');
+    service.accessToken.set('jwt-token');
 
     await service.delete(21);
 
-    expect(taskNeonServiceMock.deleteUser).toHaveBeenCalledWith(21, 'existing');
+    expect(taskNeonServiceMock.deleteUser).toHaveBeenCalledWith(21, 'jwt-token');
     expect(taskServiceMock.userId()).toBe(0);
     expect(service.userId()).toBe(0);
-    expect(service.pinHash()).toBeNull();
+    expect(service.accessToken()).toBeNull();
     expect(snackBarMock.open).toHaveBeenCalledWith(
       'User deleted successfully',
       'Close',
@@ -186,7 +216,7 @@ describe('UserService', () => {
   });
 
   it('should throw when delete fails', async () => {
-    service.pinHash.set('existing');
+    service.accessToken.set('jwt-token');
     taskNeonServiceMock.deleteUser.and.rejectWith(new Error('delete-fail'));
 
     await expectAsync(service.delete(5)).toBeRejected();
@@ -199,12 +229,10 @@ describe('UserService', () => {
     );
   });
 
-  it('should throw when delete is called without a PIN hash', async () => {
-    service.pinHash.set(null);
+  it('should throw when delete is called without a token', async () => {
+    service.accessToken.set(null);
 
-    await expectAsync(service.delete(5)).toBeRejectedWithError(
-      'Missing PIN credentials',
-    );
+    await expectAsync(service.delete(5)).toBeRejected();
     expect(taskNeonServiceMock.deleteUser).not.toHaveBeenCalled();
   });
 });

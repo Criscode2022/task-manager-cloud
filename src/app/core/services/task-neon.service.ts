@@ -1,34 +1,29 @@
 import { inject, Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
 import {
   DEFAULT_TASK_PRIORITY,
   Task,
   TaskDTO,
 } from 'src/app/tabs/tab-list/types/task';
-import { NeonApiService } from './neon-api.service';
+import { AuthSession, NeonApiService } from './neon-api.service';
 import { TaskService } from './task.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TaskNeonService {
-  private router = inject(Router);
   private snackbar = inject(MatSnackBar);
   private taskService = inject(TaskService);
   private neon = inject(NeonApiService);
 
   private tasks = this.taskService.tasks;
 
-  /**
-   * Upload/Create a new task to Neon
-   */
   public async upload(
     task: TaskDTO,
     userId: number,
-    pinHash: string,
+    token: string,
   ): Promise<void> {
-    if (!userId || !pinHash) return;
+    if (!userId || !token) return;
 
     const localId = task.id;
 
@@ -45,7 +40,7 @@ export class TaskNeonService {
           user_id: userId,
           updated_at: new Date(),
         },
-        pinHash,
+        token,
       );
 
       console.log('Task uploaded successfully:', newTask);
@@ -64,22 +59,19 @@ export class TaskNeonService {
         })
         .onAction()
         .subscribe(() => {
-          this.upload(task, userId, pinHash);
+          this.upload(task, userId, token);
         });
 
       throw error;
     }
   }
 
-  /**
-   * Edit an existing task in Neon
-   */
   public async editTask(
     task: TaskDTO,
     userId: number,
-    pinHash: string,
+    token: string,
   ): Promise<void> {
-    if (!userId || !task.id || !pinHash) return;
+    if (!userId || !task.id || !token) return;
 
     try {
       console.log('Editing task in Neon...', task, userId);
@@ -94,7 +86,7 @@ export class TaskNeonService {
           tags: task.tags,
           updated_at: new Date(),
         },
-        pinHash,
+        token,
       );
 
       console.log('Task edited successfully:', updatedTask);
@@ -106,28 +98,23 @@ export class TaskNeonService {
         })
         .onAction()
         .subscribe(() => {
-          this.editTask(task, userId, pinHash);
+          this.editTask(task, userId, token);
         });
 
       throw error;
     }
   }
 
-  /**
-   * Delete a task from Neon
-   */
   public async deleteTask(
     taskId: number,
     userId: number,
-    pinHash: string,
+    token: string,
   ): Promise<void> {
-    if (!userId || !taskId || !pinHash) return;
+    if (!userId || !taskId || !token) return;
 
     try {
       console.log('Deleting task from Neon...', taskId, userId);
-
-      await this.neon.deleteTask(taskId, pinHash);
-
+      await this.neon.deleteTask(taskId, token);
       console.log('Task deleted successfully:', taskId);
     } catch (error) {
       console.error('Delete error:', error);
@@ -137,26 +124,21 @@ export class TaskNeonService {
         })
         .onAction()
         .subscribe(() => {
-          this.deleteTask(taskId, userId, pinHash);
+          this.deleteTask(taskId, userId, token);
         });
 
       throw error;
     }
   }
 
-  /**
-   * Create a new user with hashed PIN
-   */
-  public async createUser(pinHash: string): Promise<number | null> {
+  public async createUser(pin: string): Promise<AuthSession | null> {
     try {
-      const userId = await this.neon.createUser(pinHash);
-
-      this.taskService.userId.set(userId);
+      const session = await this.neon.register(pin);
+      this.taskService.userId.set(session.id);
       this.snackbar.open('User created successfully', '', {
         duration: 850,
       });
-
-      return userId;
+      return session;
     } catch (error) {
       console.error('Error creating user:', error);
       this.snackbar.open('Error creating user', 'Close', {
@@ -166,51 +148,35 @@ export class TaskNeonService {
     }
   }
 
-  /**
-   * Download all tasks for a user from Neon (PIN-only login)
-   */
-  public async download(pinHash: string): Promise<void> {
-    try {
-      console.log('🔐 Logging in with PIN...');
+  public async download(pin: string): Promise<AuthSession> {
+    console.log('🔐 Logging in with PIN...');
+    const session = await this.neon.login(pin);
+    const tasks = await this.neon.getTasks(session.id, session.token);
 
-      const user = await this.neon.getUserByPinHash(pinHash);
+    this.taskService.userId.set(session.id);
+    this.tasks.set(tasks);
 
-      if (!user) {
-        this.snackbar.open('Invalid PIN. Please try again.', 'Close', {
-          duration: 5000,
-        });
-        return;
-      }
+    console.log('✅ Tasks downloaded successfully:', tasks.length, 'tasks');
+    this.snackbar.open(`Logged in! ${tasks.length} tasks synced`, '', {
+      duration: 850,
+    });
 
-      console.log('✅ User authenticated:', user.id);
-
-      const tasks = await this.neon.getTasks(user.id, pinHash);
-
-      await this.taskService.storage?.set('pinHash', pinHash);
-      await this.taskService.storage?.set('userId', user.id);
-
-      this.taskService.userId.set(user.id);
-      this.tasks.set(tasks);
-
-      console.log('✅ Tasks downloaded successfully:', tasks.length, 'tasks');
-      this.snackbar.open(`Logged in! ${tasks.length} tasks synced`, '', {
-        duration: 850,
-      });
-    } catch (error) {
-      console.error('❌ Login error:', error);
-      this.snackbar.open('Invalid PIN or server error', 'Close', {
-        duration: 5000,
-      });
-      throw error;
-    }
+    return session;
   }
 
-  /**
-   * Delete user and all their tasks
-   */
-  public async deleteUser(userId: number, pinHash: string): Promise<void> {
+  public async restoreSession(
+    userId: number,
+    token: string,
+  ): Promise<void> {
+    await this.neon.me(token);
+    const tasks = await this.neon.getTasks(userId, token);
+    this.taskService.userId.set(userId);
+    this.tasks.set(tasks);
+  }
+
+  public async deleteUser(userId: number, token: string): Promise<void> {
     try {
-      await this.neon.deleteUser(userId, pinHash);
+      await this.neon.deleteUser(userId, token);
       this.taskService.userId.set(0);
       this.tasks.set([]);
       this.snackbar.open('User deleted successfully', '', {
@@ -225,13 +191,10 @@ export class TaskNeonService {
     }
   }
 
-  /**
-   * Bulk upload local tasks to Neon (for initial sync)
-   */
   public async bulkUpload(
     tasks: Task[],
     userId: number,
-    pinHash: string,
+    token: string,
   ): Promise<void> {
     try {
       const tasksToUpload = tasks.map((task) => ({
@@ -246,7 +209,7 @@ export class TaskNeonService {
 
       const uploadedTasks = await this.neon.bulkUploadTasks(
         tasksToUpload,
-        pinHash,
+        token,
       );
 
       if (uploadedTasks.length === tasks.length) {
@@ -278,9 +241,6 @@ export class TaskNeonService {
     }
   }
 
-  /**
-   * Realtime sync is not supported with Neon REST API.
-   */
   public enableRealtimeSync(userId: number): void {
     void userId;
     console.warn('Realtime sync is not supported with Neon.');

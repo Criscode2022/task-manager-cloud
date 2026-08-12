@@ -10,7 +10,6 @@ import { ThemeService } from 'src/app/core/services/theme.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
 import { PinHashService } from '../../core/services/pin-hash.service';
 import { NeonApiService } from '../../core/services/neon-api.service';
-import { TaskNeonService } from '../../core/services/task-neon.service';
 import { TaskService } from '../../core/services/task.service';
 
 import { TabOptionsPage } from './tab-options.page';
@@ -33,8 +32,11 @@ describe('TabOptionsPage', () => {
 
   const userServiceMock = {
     pinHash: signal<string | null>(null),
+    accessToken: signal<string | null>(null),
     createUser: jasmine.createSpy('createUser').and.resolveTo(),
     delete: jasmine.createSpy('delete').and.resolveTo(),
+    logout: jasmine.createSpy('logout').and.resolveTo(),
+    loginWithPin: jasmine.createSpy('loginWithPin').and.resolveTo(),
   };
 
   const languageServiceMock = {
@@ -49,17 +51,13 @@ describe('TabOptionsPage', () => {
     isDark: signal(false),
   };
 
-  const taskNeonServiceMock = {
-    download: jasmine.createSpy('download').and.resolveTo(),
-  };
-
   const pinHashServiceMock = {
-    hashPin: jasmine.createSpy('hashPin').and.resolveTo('hashed-pin'),
+    isValidPin: jasmine.createSpy('isValidPin').and.returnValue(true),
+    generatePin: jasmine.createSpy('generatePin').and.returnValue('12345678'),
   };
 
   const neonApiServiceMock = {
     deleteUser: jasmine.createSpy('deleteUser').and.resolveTo(),
-    verifyUserPin: jasmine.createSpy('verifyUserPin').and.resolveTo(true),
     deleteAllTasks: jasmine.createSpy('deleteAllTasks').and.resolveTo(),
   };
 
@@ -79,7 +77,6 @@ describe('TabOptionsPage', () => {
         { provide: UserService, useValue: userServiceMock },
         { provide: LanguageService, useValue: languageServiceMock },
         { provide: ThemeService, useValue: themeServiceMock },
-        { provide: TaskNeonService, useValue: taskNeonServiceMock },
         { provide: PinHashService, useValue: pinHashServiceMock },
         { provide: NeonApiService, useValue: neonApiServiceMock },
         { provide: MatSnackBar, useValue: snackBarMock },

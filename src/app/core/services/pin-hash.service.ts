@@ -1,49 +1,30 @@
 import { Injectable } from '@angular/core';
 
+/** Login recovery code length (digits). */
+export const PIN_LENGTH = 8;
+
 /**
- * Service for secure PIN hashing using Web Crypto API
- * Uses SHA-256 for cryptographic hashing
+ * Client-side PIN helpers.
+ * Hashing is intentionally NOT done in the browser anymore — the raw PIN is
+ * sent once over HTTPS and hashed server-side with bcrypt + per-user salt.
  */
 @Injectable({
   providedIn: 'root',
 })
 export class PinHashService {
   /**
-   * Hash a PIN using SHA-256
-   * @param pin - The PIN to hash (4-digit string)
-   * @returns Promise with hex-encoded hash
+   * Generate a cryptographically random numeric PIN.
    */
-  async hashPin(pin: string): Promise<string> {
-    // Convert PIN string to Uint8Array
-    const encoder = new TextEncoder();
-    const data = encoder.encode(pin);
-
-    // Hash using SHA-256
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-
-    // Convert ArrayBuffer to hex string
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-    return hashHex;
+  generatePin(length = PIN_LENGTH): string {
+    const digits = new Uint32Array(length);
+    crypto.getRandomValues(digits);
+    return Array.from(digits, (n) => String(n % 10)).join('');
   }
 
   /**
-   * Generate a random 4-digit PIN
-   * @returns A random 4-digit PIN string
+   * Validate PIN format (digits only, expected length).
    */
-  generatePin(): string {
-    return Math.floor(1000 + Math.random() * 9000).toString();
-  }
-
-  /**
-   * Verify a PIN against a hash
-   * @param pin - The PIN to verify
-   * @param hash - The stored hash to compare against
-   * @returns Promise with true if PIN matches
-   */
-  async verifyPin(pin: string, hash: string): Promise<boolean> {
-    const pinHash = await this.hashPin(pin);
-    return pinHash === hash;
+  isValidPin(pin: string, length = PIN_LENGTH): boolean {
+    return new RegExp(`^\\d{${length}}$`).test(pin || '');
   }
 }

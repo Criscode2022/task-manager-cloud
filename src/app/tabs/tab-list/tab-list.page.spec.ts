@@ -26,6 +26,7 @@ describe('TabListPage', () => {
   const userServiceMock = {
     createUser: jasmine.createSpy('createUser').and.resolveTo(),
     pinHash: signal<string | null>(null),
+    accessToken: signal<string | null>(null),
   };
 
   const loadingServiceMock = {

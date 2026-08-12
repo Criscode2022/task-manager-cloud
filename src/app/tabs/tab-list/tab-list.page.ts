@@ -386,15 +386,15 @@ export class TabListPage extends TaskForm {
 
     task.user_id = userId;
 
-    const pinHash = this.userService.pinHash();
-    if (!pinHash) {
-      console.error('No PIN hash found');
+    const token = this.userService.accessToken();
+    if (!token) {
+      console.error('No access token found');
       return;
     }
 
     console.log('task,', task);
 
-    this.taskNeonService.upload(task, userId, pinHash);
+    this.taskNeonService.upload(task, userId, token);
 
     this.hasNewTask.set(true);
     setTimeout(() => {
@@ -442,9 +442,9 @@ export class TabListPage extends TaskForm {
         const task = this.tasks().find((t) => t.id === taskId);
         if (!task) return;
 
-        const pinHash = this.userService.pinHash();
-        if (!pinHash) {
-          console.error('No PIN hash found');
+        const token = this.userService.accessToken();
+        if (!token) {
+          console.error('No access token found');
           return;
         }
 
@@ -459,7 +459,7 @@ export class TabListPage extends TaskForm {
             tags: task.tags,
           },
           userId,
-          pinHash,
+          token,
         );
       }
     }, 500);
@@ -487,13 +487,13 @@ export class TabListPage extends TaskForm {
         tags,
       };
 
-      const pinHash = this.userService.pinHash();
-      if (!pinHash) {
-        console.error('No PIN hash found');
+      const token = this.userService.accessToken();
+      if (!token) {
+        console.error('No access token found');
         return;
       }
 
-      this.taskNeonService.editTask(task, this.userId(), pinHash);
+      this.taskNeonService.editTask(task, this.userId(), token);
     }
   }
 
@@ -501,13 +501,13 @@ export class TabListPage extends TaskForm {
     this.tasks.update((tasks) => tasks.filter((task) => task.id !== taskId));
 
     if (this.userId()) {
-      const pinHash = this.userService.pinHash();
-      if (!pinHash) {
-        console.error('No PIN hash found');
+      const token = this.userService.accessToken();
+      if (!token) {
+        console.error('No access token found');
         return;
       }
 
-      this.taskNeonService.deleteTask(taskId, this.userId(), pinHash);
+      this.taskNeonService.deleteTask(taskId, this.userId(), token);
     }
   }
 

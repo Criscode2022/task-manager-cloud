@@ -43,8 +43,14 @@ cp .env.example .env
 DATABASE_URL=postgresql://USER:PASSWORD@ep-xxxx.region.aws.neon.tech/neondb?sslmode=require
 API_BASE_URL=/api
 API_PORT=3001
+JWT_SECRET= # openssl rand -hex 32
+PIN_PEPPER= # openssl rand -hex 32
+ALLOWED_ORIGINS=https://task-cloud.netlify.app,http://localhost:4200
+SESSION_TTL_SECONDS=86400
 TASK_MANAGER_PIN=
 ```
+
+Also set `JWT_SECRET` and `PIN_PEPPER` in Netlify env. Auth uses bcrypt + short-lived JWTs; see `neon-auth-migration.sql`.
 
 Generate Angular env files:
 
