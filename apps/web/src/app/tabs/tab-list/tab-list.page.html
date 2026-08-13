@@ -73,31 +73,6 @@
       <div class="advanced-filters">
         <div class="filter-group">
           <div class="filter-chips" role="group" [attr.aria-label]="'TASKS.FILTER_BY_PRIORITY' | translate">
-            <label
-              class="filter-chip filter-chip--search"
-              [class.is-active]="hasSearchQuery()"
-            >
-              <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
-              <input
-                type="search"
-                [value]="searchQuery()"
-                (input)="onSearchInput($any($event.target).value)"
-                [placeholder]="'TASKS.SEARCH_SHORT' | translate"
-                [attr.aria-label]="'TASKS.SEARCH_TASKS' | translate"
-                autocomplete="off"
-                enterkeyhint="search"
-              />
-              @if (hasSearchQuery()) {
-                <button
-                  type="button"
-                  class="filter-chip-clear"
-                  (click)="clearSearch($event)"
-                  [attr.aria-label]="'TASKS.SEARCH_CLEAR' | translate"
-                >
-                  <ion-icon name="close-circle"></ion-icon>
-                </button>
-              }
-            </label>
             <button
               type="button"
               class="filter-chip"
@@ -176,7 +151,7 @@
           @for (task of filteredTasks(); track task.id; let index = $index) {
 
             <ion-item-sliding
-              class="task-item-sliding md:pt-0.5"
+              class="task-item-sliding"
               [class.animate-scale-in]="!initialLoadDone()"
               [class.animate-new-task]="newlyAddedTaskIds().has(task.id)"
               [style.animation-delay.ms]="!initialLoadDone() ? index * 50 : 0"
@@ -256,15 +231,19 @@
 
               <ion-item-options side="start" class="item-options-start md:hidden">
                 <ion-item-option color="tertiary" (click)="presentEditAlert(task)">
-                  <ion-icon slot="start" name="create-outline"></ion-icon>
-                  {{ 'COMMON.EDIT' | translate }}
+                  <span class="item-option-label">
+                    <ion-icon name="create-outline"></ion-icon>
+                    {{ 'COMMON.EDIT' | translate }}
+                  </span>
                 </ion-item-option>
               </ion-item-options>
 
               <ion-item-options side="end" class="item-options-end">
                 <ion-item-option (click)="deleteTask(task.id)" color="danger">
-                  <ion-icon slot="start" name="trash-outline"></ion-icon>
-                  {{ 'COMMON.DELETE' | translate }}
+                  <span class="item-option-label">
+                    <ion-icon name="trash-outline"></ion-icon>
+                    {{ 'COMMON.DELETE' | translate }}
+                  </span>
                 </ion-item-option>
               </ion-item-options>
             </ion-item-sliding>

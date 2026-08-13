@@ -270,31 +270,44 @@
   min-width: 0;
 }
 
+@mixin always-visible-x-scrollbar {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.4rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ion-color-primary)
+    color-mix(in srgb, var(--ion-color-primary) 18%, var(--ion-border-color));
+
+  &::-webkit-scrollbar {
+    height: 6px;
+    display: block;
+    -webkit-appearance: none;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: color-mix(in srgb, var(--ion-color-primary) 16%, var(--ion-border-color));
+    border-radius: 9999px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--ion-color-primary);
+    border-radius: 9999px;
+  }
+}
+
 .filter-chips {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   gap: 0.4rem;
   min-width: 0;
-  padding: 0.3rem 0.35rem;
-  overflow-x: auto;
-  overflow-y: hidden;
+  padding: 0.3rem 0.35rem 0.4rem;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--ion-color-primary) 40%, transparent) transparent;
-
-  &::-webkit-scrollbar {
-    height: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--ion-color-primary) 40%, transparent);
-    border-radius: 9999px;
-  }
+  @include always-visible-x-scrollbar;
 }
 
 @media (min-width: 768px) {
-  .filter-chips:not(.filter-chips--tags) .filter-chip:not(.filter-chip--search) {
+  .filter-chips:not(.filter-chips--tags) .filter-chip {
     flex: 1 0 auto;
     justify-content: center;
     white-space: nowrap;
@@ -304,65 +317,6 @@
 
 .filter-chips--tags {
   max-height: none;
-}
-
-.filter-chip--search {
-  flex: 1 1 8.5rem;
-  justify-content: flex-start;
-  min-width: 7.25rem;
-  max-width: 14rem;
-  padding-inline: 0.6rem;
-  cursor: text;
-
-  ion-icon {
-    flex-shrink: 0;
-    font-size: 1rem;
-    color: var(--ion-text-color-secondary);
-  }
-
-  input {
-    flex: 1 1 auto;
-    min-width: 0;
-    width: 100%;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    line-height: 1.2;
-    outline: none;
-
-    &::placeholder {
-      color: var(--ion-text-color-secondary);
-      font-weight: 600;
-    }
-
-    &::-webkit-search-decoration,
-    &::-webkit-search-cancel-button {
-      -webkit-appearance: none;
-    }
-  }
-
-  &.is-active ion-icon {
-    color: currentColor;
-  }
-}
-
-.filter-chip-clear {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 1.15rem;
-  height: 1.15rem;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-
-  ion-icon {
-    font-size: 1rem;
-  }
 }
 
 .filter-chip {
@@ -499,9 +453,7 @@
 
   .filter-chips {
     flex-wrap: nowrap;
-    padding: 0.35rem 0.35rem 0.3rem;
-    overflow-x: auto;
-    overflow-y: hidden;
+    padding: 0.35rem 0.35rem 0.4rem;
     overscroll-behavior-x: contain;
     touch-action: pan-x;
   }
@@ -521,12 +473,6 @@
     &.is-active {
       box-shadow: none;
     }
-  }
-
-  .filter-chip--search {
-    flex: 0 0 auto;
-    width: 9.5rem;
-    max-width: 9.5rem;
   }
 
   .filter-dot {
@@ -820,6 +766,8 @@
   height: auto;
   align-self: start;
   margin-bottom: 0.75rem;
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
 
   // Remove bottom margin on tablet+ since grid gap handles spacing
   @media (min-width: 768px) {
@@ -1006,23 +954,11 @@
   flex: 1 1 0%;
   min-width: 0;
   max-width: 14rem;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-block: 0.2rem;
+  padding-block: 0.2rem 0.4rem;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   touch-action: pan-x;
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--ion-color-primary) 45%, transparent) transparent;
-
-  &::-webkit-scrollbar {
-    height: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--ion-color-primary) 45%, transparent);
-    border-radius: 9999px;
-  }
+  @include always-visible-x-scrollbar;
 
   @media (min-width: 768px) {
     max-width: 16rem;
@@ -1107,21 +1043,44 @@
   }
 }
 
-// Item Options
+// Item Options — match the task card height instead of Ionic's taller default
 .item-options-start,
 .item-options-end {
-  height: 100%;
+  top: 0;
+  bottom: 0;
+  height: auto;
+  max-height: 100%;
   align-items: stretch;
+  overflow: hidden;
+}
+
+.item-options-start ion-item-option,
+.item-options-end ion-item-option {
+  height: 100%;
+  min-height: 0;
+  align-self: stretch;
 }
 
 .item-options-start ion-item-option {
   --background: var(--ion-color-secondary);
-  height: 100%;
 }
 
 .item-options-end ion-item-option {
   --background: var(--ion-color-danger);
-  height: 100%;
+}
+
+.item-option-label {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  ion-icon {
+    font-size: 1.15rem;
+  }
 }
 
 // Empty State
@@ -1457,13 +1416,5 @@
 
   .search-dialog-count {
     color: var(--ion-color-primary);
-  }
-
-  .filter-chip--search input {
-    color: #fff;
-
-    &::placeholder {
-      color: rgba(255, 255, 255, 0.55);
-    }
   }
 }
