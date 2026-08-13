@@ -188,7 +188,7 @@
                 [class.task-completed]="task.done"
                 [class.task-item--compact]="!task.description"
               >
-                <div class="task-checkbox-wrapper">
+                <div class="task-checkbox-wrapper" slot="start">
                   <mat-checkbox
                     [checked]="task.done"
                     (change)="canClick() ? toggleTaskState(task.id) : null"
