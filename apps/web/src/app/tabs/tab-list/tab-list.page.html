@@ -185,8 +185,10 @@
               <ion-item
                 lines="none"
                 class="task-item"
+                [ngClass]="getPriorityClass(task.priority)"
                 [class.task-completed]="task.done"
                 [class.task-item--compact]="!task.description"
+                [attr.aria-description]="getPriorityTranslationKey(task.priority) | translate"
               >
                 <div class="task-checkbox-wrapper" slot="start">
                   <mat-checkbox
@@ -218,27 +220,19 @@
                 </div>
 
                 <div class="task-end" slot="end">
-                  <div class="task-end-meta">
-                    @if (task.tags.length) {
-                      <div
-                        class="task-meta"
-                        (pointerdown)="$event.stopPropagation()"
-                        (touchstart)="$event.stopPropagation()"
-                      >
-                        <div class="task-meta-track">
-                          @for (tag of task.tags; track tag) {
-                            <span class="tag-chip">#{{ tag }}</span>
-                          }
-                        </div>
+                  @if (task.tags.length) {
+                    <div
+                      class="task-meta"
+                      (pointerdown)="$event.stopPropagation()"
+                      (touchstart)="$event.stopPropagation()"
+                    >
+                      <div class="task-meta-track">
+                        @for (tag of task.tags; track tag) {
+                          <span class="tag-chip">#{{ tag }}</span>
+                        }
                       </div>
-                    }
-                    <span
-                      class="priority-badge"
-                      [ngClass]="getPriorityClass(task.priority)"
-                      >
-                      {{ getPriorityTranslationKey(task.priority) | translate }}
-                    </span>
-                  </div>
+                    </div>
+                  }
 
                   <div class="task-actions">
                     <ion-button
