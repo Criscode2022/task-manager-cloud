@@ -144,7 +144,7 @@ describe('TabListPage', () => {
     expect(taskServiceMock.tasks().length).toBe(1);
   });
 
-  it('should render task tags in a horizontal scroller', () => {
+  it('should tint the task card by priority and keep tags in the end slot', () => {
     taskServiceMock.tasks.set([
       {
         id: 1,
@@ -152,22 +152,22 @@ describe('TabListPage', () => {
         description: '',
         tags: ['work'],
         done: false,
-        priority: 'medium' as const,
+        priority: 'high' as const,
         created_at: new Date(),
         user_id: 0,
       },
     ]);
     fixture.detectChanges();
 
-    const scroller: HTMLElement | null =
-      fixture.nativeElement.querySelector('.task-meta');
-    const track: HTMLElement | null =
-      fixture.nativeElement.querySelector('.task-meta-track');
+    const item: HTMLElement | null =
+      fixture.nativeElement.querySelector('ion-item.task-item');
+    const badge: HTMLElement | null =
+      fixture.nativeElement.querySelector('.priority-badge');
     const chip: HTMLElement | null =
       fixture.nativeElement.querySelector('.tag-chip');
 
-    expect(scroller).toBeTruthy();
-    expect(track).toBeTruthy();
+    expect(item?.classList.contains('task-priority-high')).toBeTrue();
+    expect(badge).toBeNull();
     expect(chip?.textContent).toContain('#work');
   });
 });

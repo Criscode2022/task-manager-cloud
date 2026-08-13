@@ -633,7 +633,7 @@ export class TabListPage extends TaskForm {
   }
 
   protected getPriorityClass(priority: TaskPriority): string {
-    return `priority-${priority}`;
+    return `task-priority-${priority}`;
   }
 
   /** Explicit selected text so ion-select shows the value without an extra click. */

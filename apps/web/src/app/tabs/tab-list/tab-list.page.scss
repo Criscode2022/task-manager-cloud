@@ -856,12 +856,25 @@
   &:hover {
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
-    border-color: var(--ion-color-primary-tint);
   }
 
   &.task-completed {
-    background: var(--ion-color-primary-tint);
     opacity: 0.7;
+  }
+
+  &.task-priority-high {
+    --background: color-mix(in srgb, #ef4444 16%, var(--ion-surface-color));
+    border-color: color-mix(in srgb, #ef4444 34%, var(--ion-border-color));
+  }
+
+  &.task-priority-medium {
+    --background: color-mix(in srgb, #f59e0b 18%, var(--ion-surface-color));
+    border-color: color-mix(in srgb, #f59e0b 36%, var(--ion-border-color));
+  }
+
+  &.task-priority-low {
+    --background: color-mix(in srgb, #22c55e 16%, var(--ion-surface-color));
+    border-color: color-mix(in srgb, #22c55e 32%, var(--ion-border-color));
   }
 }
 
@@ -869,7 +882,6 @@
   --padding-top: 0.35rem;
   --padding-bottom: 0.35rem;
 
-  .priority-badge,
   .tag-chip {
     min-height: 1.25rem;
     padding: 0.05rem 0.45rem;
@@ -892,7 +904,6 @@
     --padding-top: 0.4rem;
     --padding-bottom: 0.4rem;
 
-    .priority-badge,
     .tag-chip {
       min-height: 1.2rem;
       padding: 0.05rem 0.42rem;
@@ -901,19 +912,11 @@
   }
 
   .task-end[slot='end'] {
-    max-width: 56%;
-    overflow: hidden;
-  }
-
-  .task-end-meta {
-    min-width: 0;
-    max-width: 100%;
+    max-width: 58%;
     overflow: hidden;
   }
 
   .task-meta {
-    flex: 1 1 0%;
-    width: auto;
     max-width: 100%;
   }
 }
@@ -1002,7 +1005,7 @@
   display: block;
   flex: 1 1 0%;
   min-width: 0;
-  max-width: 8.5rem;
+  max-width: 14rem;
   overflow-x: auto;
   overflow-y: hidden;
   padding-block: 0.2rem;
@@ -1022,11 +1025,11 @@
   }
 
   @media (min-width: 768px) {
-    max-width: 10.5rem;
+    max-width: 16rem;
   }
 
   @media (min-width: 1280px) {
-    max-width: 12rem;
+    max-width: 18rem;
   }
 }
 
@@ -1047,23 +1050,10 @@
   margin-inline-start: 0.15rem;
   min-width: 0;
   width: auto;
-  max-width: 44%;
+  max-width: 48%;
   flex-shrink: 1;
 }
 
-.task-end-meta {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.35rem;
-  min-width: 0;
-  flex: 1 1 0%;
-  max-width: 100%;
-  overflow: hidden;
-}
-
-.priority-badge,
 .tag-chip {
   box-sizing: border-box;
   flex-shrink: 0;
@@ -1077,29 +1067,6 @@
   line-height: 1.2;
   letter-spacing: 0.02em;
   white-space: nowrap;
-}
-
-.priority-badge {
-  flex-shrink: 0;
-  text-transform: uppercase;
-}
-
-.priority-high {
-  background: rgba(239, 68, 68, 0.15);
-  color: #b91c1c;
-}
-
-.priority-medium {
-  background: rgba(245, 158, 11, 0.2);
-  color: #92400e;
-}
-
-.priority-low {
-  background: rgba(34, 197, 94, 0.2);
-  color: #166534;
-}
-
-.tag-chip {
   background: color-mix(in srgb, var(--ion-color-primary) 18%, white);
   color: color-mix(in srgb, var(--ion-color-primary-shade) 80%, #000);
   border: 1px solid color-mix(in srgb, var(--ion-color-primary) 38%, white);
@@ -1407,11 +1374,25 @@
   }
 
   .task-item {
-    --background: var(--ion-surface-color);
     border-color: var(--ion-border-color);
 
+    &.task-priority-high {
+      --background: color-mix(in srgb, #ef4444 22%, var(--ion-surface-color));
+      border-color: color-mix(in srgb, #f87171 40%, var(--ion-border-color));
+    }
+
+    &.task-priority-medium {
+      --background: color-mix(in srgb, #f59e0b 22%, var(--ion-surface-color));
+      border-color: color-mix(in srgb, #fbbf24 40%, var(--ion-border-color));
+    }
+
+    &.task-priority-low {
+      --background: color-mix(in srgb, #22c55e 20%, var(--ion-surface-color));
+      border-color: color-mix(in srgb, #34d399 38%, var(--ion-border-color));
+    }
+
     &.task-completed {
-      background: rgba(52, 211, 153, 0.1);
+      opacity: 0.7;
     }
   }
 
