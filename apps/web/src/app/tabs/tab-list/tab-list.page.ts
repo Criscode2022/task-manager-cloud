@@ -22,6 +22,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AlertController, IonicModule } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -66,6 +67,7 @@ import {
 export class TabListPage extends TaskForm {
   private readonly taskNeonService = inject(TaskNeonService);
   private readonly dialog = inject(MatDialog);
+  private readonly snackbar = inject(MatSnackBar);
   private readonly alertController = inject(AlertController);
   private readonly translate = inject(TranslateService);
   protected readonly taskService = inject(TaskService);
@@ -426,6 +428,12 @@ export class TabListPage extends TaskForm {
 
       this.clearClickTimer();
       this.suppressTaskToggle = true;
+
+      if (this.isTabletOrDesktop()) {
+        void this.copyTaskText(task);
+        return;
+      }
+
       void this.presentFullTaskText(task);
     }, 450);
   }
@@ -822,6 +830,30 @@ export class TabListPage extends TaskForm {
       buttons: [this.translate.instant('COMMON.OK')],
     });
     await alert.present();
+  }
+
+  private getTaskClipboardText(task: Task): string {
+    const title = task.title?.trim() ?? '';
+    const description = task.description?.trim() ?? '';
+    return [title, description].filter(Boolean).join('\n');
+  }
+
+  private async copyTaskText(task: Task): Promise<void> {
+    const text = this.getTaskClipboardText(task);
+    if (!text) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      this.snackbar.open(
+        this.translate.instant('TASKS.COPIED_TO_CLIPBOARD'),
+        '',
+        { duration: 2200 },
+      );
+    } catch (error) {
+      console.error('Failed to copy task text:', error);
+    }
   }
 
   private getTagInputState(input: string): {

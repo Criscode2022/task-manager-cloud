@@ -4,6 +4,25 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 0;
+  color: #fff;
+}
+
+.header-cloud {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 1.15em;
+  height: 1.15em;
+  font-size: 1.15em;
+  color: #fff;
+  --ionicon-stroke-width: 36px;
+}
+
 .toolbar-button {
   --border-radius: 12px;
   transition: all 0.2s ease;

@@ -36,17 +36,14 @@
       <ion-icon name="search-outline"></ion-icon>
     </button>
 
-    <h1
-      class="ion-text-center text-xl lg:text-4xl font-extrabold tracking-tight"
-      >
+    <h1 class="header-title ion-text-center text-xl lg:text-4xl font-extrabold tracking-tight">
       <span>{{ 'TASKS.PAGE_TITLE' | translate }}</span>
+      <ion-icon name="cloud-outline" class="header-cloud" aria-hidden="true"></ion-icon>
     </h1>
     <button
       slot="end"
       class="filter-button md:absolute md:right-8 lg:text-xl ion-margin px-4 py-2 bg-white text-black rounded-full shadow-md flex justify-center items-center hover:bg-gray-200 focus:bg-gray-300"
       (click)="taskService.changeFilter()"
-      [matTooltip]="'TASKS.FILTER_TASKS' | translate"
-      matTooltipPosition="below"
       >
       <mat-icon class="mr-1">filter_list</mat-icon>
       {{ filterLabelKey() | translate }}
