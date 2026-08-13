@@ -5,9 +5,11 @@ import {
   Component,
   computed,
   effect,
+  ElementRef,
   HostListener,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 
 import { firstValueFrom } from 'rxjs';
@@ -82,7 +84,11 @@ export class TabListPage extends TaskForm {
   protected newlyAddedTaskIds = signal<Set<number>>(new Set());
   protected selectedPriorityFilter = signal<'all' | TaskPriority>('all');
   protected selectedTagFilter = signal<string>('all');
+  protected searchQuery = signal('');
+  protected isSearchOpen = signal(false);
   protected tagsAutocompleteInput = signal('');
+  private readonly mobileSearchInput =
+    viewChild<ElementRef<HTMLInputElement>>('mobileSearchInput');
 
   protected filter = this.taskService.filter;
   protected shouldShowInstall = this.taskService.shouldShowInstall;
@@ -114,10 +120,19 @@ export class TabListPage extends TaskForm {
       .slice(0, 8);
   });
 
+  protected hasSearchQuery = computed(
+    () => this.normalizedSearchQuery().length > 0,
+  );
+
   protected hasAdvancedFilters = computed(
     () =>
       this.selectedPriorityFilter() !== 'all' ||
-      this.selectedTagFilter() !== 'all',
+      this.selectedTagFilter() !== 'all' ||
+      this.hasSearchQuery(),
+  );
+
+  private normalizedSearchQuery = computed(() =>
+    this.searchQuery().trim().toLowerCase(),
   );
 
   protected filterLabelKey = computed(() => {
@@ -134,13 +149,24 @@ export class TabListPage extends TaskForm {
   protected readonly filteredTasks = computed(() => {
     const selectedPriority = this.selectedPriorityFilter();
     const selectedTag = this.selectedTagFilter();
+    const query = this.normalizedSearchQuery();
 
     return this.sortTasksByPriority(
-      this.filterTasksByStatus().filter(
-        (task) =>
-          (selectedPriority === 'all' || task.priority === selectedPriority) &&
-          (selectedTag === 'all' || task.tags.includes(selectedTag)),
-      ),
+      this.filterTasksByStatus().filter((task) => {
+        if (selectedPriority !== 'all' && task.priority !== selectedPriority) {
+          return false;
+        }
+
+        if (selectedTag !== 'all' && !task.tags.includes(selectedTag)) {
+          return false;
+        }
+
+        if (!query) {
+          return true;
+        }
+
+        return this.taskMatchesSearch(task, query);
+      }),
     );
   });
 
@@ -343,12 +369,46 @@ export class TabListPage extends TaskForm {
   }
 
   @HostListener('document:keydown.escape')
-  protected onCreateFormEscape(): void {
-    if (!this.isFormVisible()) {
+  protected onDocumentEscape(): void {
+    if (this.isFormVisible()) {
+      void this.requestCloseCreateForm();
       return;
     }
 
-    void this.requestCloseCreateForm();
+    if (this.isSearchOpen()) {
+      this.closeSearch();
+    }
+  }
+
+  protected onSearchInput(value: string): void {
+    this.searchQuery.set(value ?? '');
+  }
+
+  protected openSearch(): void {
+    this.isSearchOpen.set(true);
+    setTimeout(() => this.mobileSearchInput()?.nativeElement.focus());
+  }
+
+  protected closeSearch(): void {
+    this.isSearchOpen.set(false);
+  }
+
+  protected clearSearch(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.searchQuery.set('');
+  }
+
+  private taskMatchesSearch(task: Task, query: string): boolean {
+    if (task.title.toLowerCase().includes(query)) {
+      return true;
+    }
+
+    if (task.description.toLowerCase().includes(query)) {
+      return true;
+    }
+
+    return task.tags.some((tag) => tag.toLowerCase().includes(query));
   }
 
   protected onTaskPressStart(task: Task, event: PointerEvent): void {
@@ -606,6 +666,7 @@ export class TabListPage extends TaskForm {
   protected clearAdvancedFilters(): void {
     this.selectedPriorityFilter.set('all');
     this.selectedTagFilter.set('all');
+    this.searchQuery.set('');
   }
 
   protected onTagsInputChange(value: string): void {

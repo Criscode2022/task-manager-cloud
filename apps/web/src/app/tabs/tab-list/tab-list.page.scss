@@ -13,6 +13,210 @@
   }
 }
 
+.toolbar-search {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.toolbar-search--desktop {
+  display: none;
+
+  @media (min-width: 768px) {
+    position: absolute;
+    left: 1.5rem;
+    display: flex;
+    width: min(28vw, 280px);
+    height: 40px;
+    padding: 0 0.75rem 0 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #fff;
+  }
+
+  @media (min-width: 1024px) {
+    left: 2rem;
+    width: min(32vw, 320px);
+    height: 44px;
+  }
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 1.15rem;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-size: 0.92rem;
+    font-weight: 500;
+    outline: none;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    &::-webkit-search-decoration,
+    &::-webkit-search-cancel-button {
+      -webkit-appearance: none;
+    }
+  }
+}
+
+.toolbar-search-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 1.15rem;
+  }
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+.toolbar-search-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 36px;
+  height: 36px;
+  margin-inline-start: 0.2rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  cursor: pointer;
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+
+  ion-icon {
+    font-size: 1.15rem;
+  }
+
+  &.has-query::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 7px;
+    height: 7px;
+    border-radius: 9999px;
+    background: #fff;
+    box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.85);
+  }
+}
+
+.search-dialog {
+  position: fixed;
+  top: 5.25rem;
+  left: 50%;
+  z-index: 201;
+  width: min(92vw, 420px);
+  transform: translateX(-50%);
+}
+
+.search-dialog-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 0.9rem 1rem 1.05rem;
+  background: var(--ion-surface-color);
+  border: 1px solid var(--ion-border-color);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.search-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.search-dialog-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 46px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--ion-border-color);
+  border-radius: 9999px;
+  background: var(--ion-background-color);
+  color: var(--ion-text-color);
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 1.15rem;
+    color: var(--ion-text-color-secondary);
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ion-text-color);
+    font-size: 1rem;
+    outline: none;
+
+    &::placeholder {
+      color: var(--ion-text-color-secondary);
+    }
+
+    &::-webkit-search-decoration,
+    &::-webkit-search-cancel-button {
+      -webkit-appearance: none;
+    }
+  }
+
+  .toolbar-search-clear {
+    color: var(--ion-text-color-secondary);
+
+    &:hover {
+      color: var(--ion-color-danger);
+    }
+  }
+}
+
+.search-dialog-hint,
+.search-dialog-count {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.search-dialog-hint {
+  color: var(--ion-text-color-secondary);
+}
+
+.search-dialog-count {
+  font-weight: 600;
+  color: var(--ion-color-primary-shade);
+}
+
 .filter-button {
   --border-radius: 20px;
   --background: rgba(255, 255, 255, 0.2);
@@ -1074,5 +1278,26 @@
 
   .filter-chip--tag.is-active {
     color: var(--ion-color-secondary);
+  }
+
+  .search-dialog-card {
+    background: var(--ion-card-background);
+  }
+
+  .search-dialog-field {
+    background: var(--ion-surface-color);
+    color: #fff;
+
+    input {
+      color: #fff;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.55);
+      }
+    }
+  }
+
+  .search-dialog-count {
+    color: var(--ion-color-primary);
   }
 }

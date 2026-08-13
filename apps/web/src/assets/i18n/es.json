@@ -24,6 +24,13 @@
   },
   "TASKS": {
     "PAGE_TITLE": "Task Cloud",
+    "SEARCH_TASKS": "Buscar tareas",
+    "SEARCH_PLACEHOLDER": "Buscar por titulo, descripcion o etiqueta",
+    "SEARCH_HINT": "El texto filtra la lista. Se mantiene al cerrar.",
+    "SEARCH_CLEAR": "Limpiar busqueda",
+    "SEARCH_NO_RESULTS": "Ninguna tarea coincide",
+    "SEARCH_NO_RESULTS_HINT": "Prueba otras palabras o limpia la busqueda",
+    "SEARCH_RESULTS": "{{count}} coincidencias",
     "FILTER_TASKS": "Filtrar tareas",
     "FILTER_BY_PRIORITY": "Filtrar por prioridad",
     "FILTER_BY_TAG": "Filtrar por etiqueta",

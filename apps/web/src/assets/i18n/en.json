@@ -24,6 +24,13 @@
   },
   "TASKS": {
     "PAGE_TITLE": "Task Cloud",
+    "SEARCH_TASKS": "Search tasks",
+    "SEARCH_PLACEHOLDER": "Search by title, description or tag",
+    "SEARCH_HINT": "Text filters the list. It stays after you close.",
+    "SEARCH_CLEAR": "Clear search",
+    "SEARCH_NO_RESULTS": "No matching tasks",
+    "SEARCH_NO_RESULTS_HINT": "Try different words or clear the search",
+    "SEARCH_RESULTS": "{{count}} matches",
     "FILTER_TASKS": "Filter tasks",
     "FILTER_BY_PRIORITY": "Filter by priority",
     "FILTER_BY_TAG": "Filter by tag",

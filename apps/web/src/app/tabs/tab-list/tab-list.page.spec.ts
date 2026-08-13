@@ -10,13 +10,14 @@ import { TaskService } from 'src/app/core/services/task.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
 import { TabListPage } from './tab-list.page';
 import { StatusEnum } from './types/statusEnum';
+import { Task } from './types/task';
 
 describe('TabListPage', () => {
   let component: TabListPage;
   let fixture: ComponentFixture<TabListPage>;
 
   const taskServiceMock = {
-    tasks: signal([]),
+    tasks: signal<Task[]>([]),
     filter: signal(StatusEnum.All),
     shouldShowInstall: signal(true),
     storageReady: signal(true),
@@ -72,6 +73,60 @@ describe('TabListPage', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should filter tasks by title, description and tag', () => {
+    taskServiceMock.tasks.set([
+      {
+        id: 1,
+        title: 'Buy milk',
+        description: '',
+        tags: [],
+        done: false,
+        priority: 'low' as const,
+        created_at: new Date(),
+        user_id: 0,
+      },
+      {
+        id: 2,
+        title: 'Call',
+        description: 'dentist appointment',
+        tags: ['health'],
+        done: false,
+        priority: 'high' as const,
+        created_at: new Date(),
+        user_id: 0,
+      },
+      {
+        id: 3,
+        title: 'Walk',
+        description: '',
+        tags: ['dog'],
+        done: false,
+        priority: 'medium' as const,
+        created_at: new Date(),
+        user_id: 0,
+      },
+    ]);
+
+    component['searchQuery'].set('dent');
+    expect(component['filteredTasks']().map((task) => task.id)).toEqual([2]);
+
+    component['searchQuery'].set('dog');
+    expect(component['filteredTasks']().map((task) => task.id)).toEqual([3]);
+
+    component['searchQuery'].set('buy');
+    expect(component['filteredTasks']().map((task) => task.id)).toEqual([1]);
+  });
+
+  it('should clear search with extra filters', () => {
+    component['searchQuery'].set('milk');
+    component['selectedPriorityFilter'].set('high');
+    component['clearAdvancedFilters']();
+
+    expect(component['searchQuery']()).toBe('');
+    expect(component['selectedPriorityFilter']()).toBe('all');
+    expect(component['hasSearchQuery']()).toBeFalse();
   });
 
   it('should collapse the create form after adding a task', async () => {

@@ -1,5 +1,41 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="toolbar-gradient md:py-4">
+    <label slot="start" class="toolbar-search toolbar-search--desktop">
+      <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+      <input
+        type="search"
+        [value]="searchQuery()"
+        (input)="onSearchInput($any($event.target).value)"
+        [placeholder]="'TASKS.SEARCH_PLACEHOLDER' | translate"
+        [attr.aria-label]="'TASKS.SEARCH_TASKS' | translate"
+        autocomplete="off"
+        enterkeyhint="search"
+      />
+      @if (hasSearchQuery()) {
+        <button
+          type="button"
+          class="toolbar-search-clear"
+          (click)="clearSearch($event)"
+          [attr.aria-label]="'TASKS.SEARCH_CLEAR' | translate"
+        >
+          <ion-icon name="close-circle"></ion-icon>
+        </button>
+      }
+    </label>
+
+    <button
+      slot="start"
+      type="button"
+      class="toolbar-search-icon"
+      [class.has-query]="hasSearchQuery()"
+      (click)="openSearch()"
+      [attr.aria-label]="'TASKS.SEARCH_TASKS' | translate"
+      [matTooltip]="'TASKS.SEARCH_TASKS' | translate"
+      matTooltipPosition="below"
+    >
+      <ion-icon name="search-outline"></ion-icon>
+    </button>
+
     <h1
       class="ion-text-center text-xl lg:text-4xl font-extrabold tracking-tight"
       >
@@ -206,7 +242,22 @@
             } @empty {
 
             <div class="empty-state">
-              @if (alternativeFilterInfo()) {
+              @if (hasSearchQuery()) {
+                <ion-icon
+                  name="search-outline"
+                  class="empty-icon empty-icon-subtle"
+                ></ion-icon>
+                <h3 class="empty-title">{{ 'TASKS.SEARCH_NO_RESULTS' | translate }}</h3>
+                <p class="empty-text">{{ 'TASKS.SEARCH_NO_RESULTS_HINT' | translate }}</p>
+                <button
+                  type="button"
+                  class="filter-suggestion-button"
+                  (click)="clearSearch()"
+                >
+                  <ion-icon name="close-circle-outline"></ion-icon>
+                  {{ 'TASKS.SEARCH_CLEAR' | translate }}
+                </button>
+              } @else if (alternativeFilterInfo()) {
                 <!-- Smart filter suggestion -->
                 <ion-icon
                   name="funnel-outline"
@@ -279,6 +330,64 @@
       </ion-button>
     }
   </ion-content>
+
+  @if (isSearchOpen()) {
+    <div
+      class="create-backdrop"
+      (click)="closeSearch()"
+      aria-hidden="true"
+    ></div>
+    <div
+      class="search-dialog"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="'TASKS.SEARCH_TASKS' | translate"
+    >
+      <div class="search-dialog-card">
+        <div class="search-dialog-header">
+          <div class="flex items-center gap-2">
+            <ion-icon name="search-outline" class="header-icon"></ion-icon>
+            <h2 class="form-title">{{ 'TASKS.SEARCH_TASKS' | translate }}</h2>
+          </div>
+          <ion-icon
+            [matTooltip]="'COMMON.CLOSE' | translate"
+            name="close-outline"
+            class="create-close"
+            (click)="closeSearch()"
+          ></ion-icon>
+        </div>
+        <label class="search-dialog-field">
+          <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+          <input
+            #mobileSearchInput
+            type="search"
+            [value]="searchQuery()"
+            (input)="onSearchInput($any($event.target).value)"
+            [placeholder]="'TASKS.SEARCH_PLACEHOLDER' | translate"
+            [attr.aria-label]="'TASKS.SEARCH_TASKS' | translate"
+            autocomplete="off"
+            enterkeyhint="search"
+          />
+          @if (hasSearchQuery()) {
+            <button
+              type="button"
+              class="toolbar-search-clear"
+              (click)="clearSearch($event)"
+              [attr.aria-label]="'TASKS.SEARCH_CLEAR' | translate"
+            >
+              <ion-icon name="close-circle"></ion-icon>
+            </button>
+          }
+        </label>
+        <p class="search-dialog-hint">{{ 'TASKS.SEARCH_HINT' | translate }}</p>
+        @if (hasSearchQuery()) {
+          <p class="search-dialog-count">
+            {{ 'TASKS.SEARCH_RESULTS' | translate:{ count: filteredTasks().length } }}
+          </p>
+        }
+      </div>
+    </div>
+  }
 
   @if (isFormVisible()) {
     <div
