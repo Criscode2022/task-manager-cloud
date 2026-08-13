@@ -18,18 +18,22 @@ title: Monorepo Turborepo
 
 | Script | Descripción |
 |--------|-------------|
-| `npm run api` | Nest en watch |
-| `npm start` | Angular + proxy `/api` |
-| `npm run start:full` | API + web vía turbo |
-| `npm run build` | Build de todos los packages |
-| `npm run build:web` / `build:api` | Build selectivo |
-| `npm run test:ci` | Tests web headless |
-| `npm run test:api` | Smoke HTTP de la API |
+| `pnpm api` | Nest en watch |
+| `pnpm start` | Angular + proxy `/api` |
+| `pnpm start:full` | API + web vía turbo |
+| `pnpm build` | Build de todos los packages |
+| `pnpm build:web` / `build:api` | Build selectivo |
+| `pnpm test:ci` | Tests web headless |
+| `pnpm test:api` | Smoke HTTP de la API |
 
 ## Workspaces
 
-```json
-"workspaces": ["apps/*", "packages/*"]
+`pnpm-workspace.yaml`:
+
+```yaml
+packages:
+  - "apps/*"
+  - "packages/*"
 ```
 
-Package manager: npm 10. Node ≥ 20.
+Package manager: pnpm 11. Node ≥ 22.

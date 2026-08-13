@@ -24,7 +24,7 @@ mcp-server/ (opcional, Python FastMCP) ──► Neon
 2. **API** — NestJS 11: módulos `auth`, `users`, `tasks`, `health`, rate-limit y exception filter.
 3. **Datos** — Neon Postgres: `users`, `tasks`, `sessions`.
 4. **Deploy** — Un proyecto Vercel: turbo build web+api; output `apps/web/www`; rewrites `/api/*` → función.
-5. **Local** — API `:3001`, web `:4200` con proxy `/api`; `npm run start:full`.
+5. **Local** — API `:3001`, web `:4200` con proxy `/api`; `pnpm start:full`.
 
 ## Principios
 

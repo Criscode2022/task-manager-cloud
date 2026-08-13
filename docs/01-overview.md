@@ -6,7 +6,7 @@ title: Visión general
 
 **Task Cloud** es una Progressive Web App de gestión de tareas personales con soporte offline real y sincronización en la nube.
 
-El repositorio es un **monorepo npm workspaces + Turborepo**:
+El repositorio es un **monorepo pnpm workspaces + Turborepo**:
 
 - `apps/web` — Angular 22 + Ionic 8 (PWA)
 - `apps/api` — NestJS 11 sobre **Neon Postgres**
@@ -23,7 +23,7 @@ En producción se despliega como **un único proyecto Vercel**: el front se sirv
 
 | Capa | Tecnología |
 |------|------------|
-| Monorepo | Turborepo + npm workspaces |
+| Monorepo | Turborepo + pnpm workspaces |
 | Web | Angular 22, Ionic 8, Tailwind, service worker |
 | API | NestJS 11, jose, bcryptjs |
 | Datos | Neon Postgres (`@neondatabase/serverless`) |

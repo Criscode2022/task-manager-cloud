@@ -38,8 +38,8 @@ Project → Settings → Environment Variables (Production + Preview):
 Push to the connected branch (or click **Deploy**). Vercel runs:
 
 ```
-npm install
-npx turbo run build --filter=@task-cloud/web --filter=@task-cloud/api
+pnpm install --frozen-lockfile
+pnpm exec turbo run build --filter=@task-cloud/web --filter=@task-cloud/api
 ```
 
 and publishes the static PWA plus the `/api/*` function.
@@ -67,6 +67,6 @@ Notes:
 ## Local development (unchanged)
 
 ```bash
-npm run api    # Nest on :3001
-npm start      # Angular on :4200, proxies /api
+pnpm api          # Nest on :3001
+pnpm start        # Angular on :4200, proxies /api
 ```

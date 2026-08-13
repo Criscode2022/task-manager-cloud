@@ -3,23 +3,19 @@
   "version": "0.0.1",
   "private": true,
   "description": "Task Cloud monorepo — Ionic/Angular PWA + NestJS API",
-  "packageManager": "npm@10.9.7",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "packageManager": "pnpm@11.21.0",
   "scripts": {
-    "dev": "turbo run start:dev --filter=@task-cloud/api --filter=@task-cloud/web",
+    "dev": "turbo run start:dev --filter=@task-cloud/api --filter=@task-cloud/web --ui=stream",
     "build": "turbo run build",
     "build:web": "turbo run build --filter=@task-cloud/web",
     "build:api": "turbo run build --filter=@task-cloud/api",
-    "start": "npm run start -w @task-cloud/web",
-    "start:full": "turbo run start:dev --filter=@task-cloud/api --filter=@task-cloud/web",
-    "api": "npm run start:dev -w @task-cloud/api",
-    "config": "npm run config -w @task-cloud/web",
+    "start": "pnpm --filter @task-cloud/web start",
+    "start:full": "turbo run start:dev --filter=@task-cloud/api --filter=@task-cloud/web --ui=stream",
+    "api": "pnpm --filter @task-cloud/api start:dev",
+    "config": "pnpm --filter @task-cloud/web run config",
     "test": "turbo run test",
     "test:ci": "turbo run test:ci --filter=@task-cloud/web",
-    "test:api": "npm run test:api -w @task-cloud/api",
+    "test:api": "pnpm --filter @task-cloud/api test:api",
     "lint": "turbo run lint",
     "lint:ci": "turbo run lint:ci --filter=@task-cloud/web"
   },
@@ -27,6 +23,7 @@
     "turbo": "^2.5.4"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22",
+    "pnpm": ">=11"
   }
 }

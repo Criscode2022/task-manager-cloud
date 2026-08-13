@@ -3,10 +3,11 @@
 
 [build]
   base = "."
-  command = "npm run build --workspace=@task-cloud/web"
+  command = "pnpm --filter @task-cloud/web build"
   publish = "apps/web/www"
 
 [build.environment]
+  NODE_VERSION = "22"
   # Point the PWA at your deployed Nest API, e.g. https://task-cloud-api.vercel.app/api
   API_BASE_URL = "/api"
 

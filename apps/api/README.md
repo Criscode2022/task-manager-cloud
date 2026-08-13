@@ -21,15 +21,15 @@ NestJS backend for Task Cloud. Replaces the former Netlify Functions + `server/*
 From repo root (loads root `.env`):
 
 ```bash
-npm run api
+pnpm api
 # or
-npm run start:dev -w @task-cloud/api
+pnpm --filter @task-cloud/api start:dev
 ```
 
 Smoke test (API must be running with real `DATABASE_URL` + secrets):
 
 ```bash
-npm run test:api
+pnpm test:api
 ```
 
 ## Vercel

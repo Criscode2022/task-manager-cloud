@@ -25,7 +25,7 @@ packages/    Shared packages (reserved)
 
 ## Tech Stack
 
-- Turborepo + npm workspaces
+- Turborepo + pnpm workspaces
 - Angular 22 / Ionic 8
 - NestJS 11
 - Vercel (Turborepo remote cache)
@@ -46,7 +46,7 @@ cd task-manager-ionic
 2. Install dependencies (from repo root).
 
 ```bash
-npm install
+pnpm install
 ```
 
 3. Configure Neon (see `NEON_SETUP.md`), then copy env template:
@@ -59,45 +59,45 @@ cp .env.example .env
 4. Start the API and development server.
 
 ```bash
-npm run api    # terminal 1 — Nest API on :3001
-npm start      # terminal 2 — Angular with /api proxy
+pnpm api          # terminal 1 — Nest API on :3001
+pnpm start        # terminal 2 — Angular with /api proxy
 ```
 
 Or both via Turborepo:
 
 ```bash
-npm run start:full
+pnpm start:full
 ```
 
 ## Useful Scripts
 
 | Script | Description |
 |--------|-------------|
-| `npm run api` | Nest API (`apps/api`) in watch mode |
-| `npm start` | Angular/Ionic dev server (`apps/web`) |
-| `npm run start:full` | API + web via turbo |
-| `npm run build` | Build all packages |
-| `npm run build:web` / `build:api` | Build one app |
-| `npm run config` | Generate web `environment.*.local.ts` |
-| `npm run lint` / `lint:ci` | ESLint |
-| `npm run test` / `test:ci` | Web unit tests |
-| `npm run test:api` | API HTTP smoke test |
+| `pnpm api` | Nest API (`apps/api`) in watch mode |
+| `pnpm start` | Angular/Ionic dev server (`apps/web`) |
+| `pnpm start:full` | API + web via turbo |
+| `pnpm build` | Build all packages |
+| `pnpm build:web` / `build:api` | Build one app |
+| `pnpm run config` | Generate web `environment.*.local.ts` |
+| `pnpm lint` / `lint:ci` | ESLint |
+| `pnpm test` / `test:ci` | Web unit tests |
+| `pnpm test:api` | API HTTP smoke test |
 
 ## Testing and Linting
 
 ```bash
-npm run lint
-CHROME_BIN=/usr/local/bin/google-chrome npm run test:ci
+pnpm lint
+CHROME_BIN=/usr/local/bin/google-chrome pnpm test:ci
 ```
 
 ## GitHub CI
 
 `.github/workflows/ci.yml` runs on push/PR to `main`:
 
-- `npm ci`
-- `npm run lint:ci`
-- `npm run test:ci`
-- `npm run build:api`
+- `pnpm install --frozen-lockfile`
+- `pnpm lint:ci`
+- `pnpm test:ci`
+- `pnpm build:api`
 
 ## Neon Setup
 

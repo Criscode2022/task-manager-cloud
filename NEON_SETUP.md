@@ -57,7 +57,7 @@ TASK_MANAGER_PIN=
 Generate Angular env files:
 
 ```bash
-npm run config
+pnpm run config
 ```
 
 ## Step 4: Local development
@@ -65,19 +65,19 @@ npm run config
 Terminal A — Nest API:
 
 ```bash
-npm run api
+pnpm api
 ```
 
 Terminal B — Angular (proxies `/api` → `localhost:3001`):
 
 ```bash
-npm start
+pnpm start
 ```
 
 Or both:
 
 ```bash
-npm run start:full
+pnpm start:full
 ```
 
 ## Step 5: Deploy (Vercel, single project)
@@ -106,4 +106,4 @@ uv run server.py
 1. Open the app → Options → create account (save the PIN)
 2. Add / edit / delete tasks
 3. Reload — session should restore via stored token
-4. Optional: `npm run test:api` against a running API
+4. Optional: `pnpm test:api` against a running API

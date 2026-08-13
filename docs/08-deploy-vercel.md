@@ -12,7 +12,7 @@ title: Deploy Vercel (Turborepo)
 
 ## Config (`vercel.json`)
 
-- `buildCommand`: `npx turbo run build --filter=@task-cloud/web --filter=@task-cloud/api`
+- `buildCommand`: `pnpm exec turbo run build --filter=@task-cloud/web --filter=@task-cloud/api`
 - `outputDirectory`: `apps/web/www`
 - `functions.api/index.js.maxDuration`: 30
 - Rewrites: `/api/:path*` → `/api/index`; resto → `/index.html`
@@ -35,8 +35,8 @@ title: Deploy Vercel (Turborepo)
 ## Local
 
 ```bash
-npm install
+pnpm install
 cp .env.example .env   # DATABASE_URL, JWT_SECRET, PIN_PEPPER
-npm run api            # :3001
-npm start              # :4200 con proxy /api
+pnpm api               # :3001
+pnpm start             # :4200 con proxy /api
 ```

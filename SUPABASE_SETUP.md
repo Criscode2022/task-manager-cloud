@@ -96,12 +96,12 @@ Stores user tasks:
 
 1. Build the application:
    ```bash
-   npm run build
+   pnpm build
    ```
 
 2. Start the development server:
    ```bash
-   npm start
+   pnpm start
    ```
 
 3. Open the application in your browser
