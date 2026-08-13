@@ -25,7 +25,6 @@
   "TASKS": {
     "PAGE_TITLE": "Task Cloud",
     "SEARCH_TASKS": "Buscar tareas",
-    "SEARCH_SHORT": "Buscar",
     "SEARCH_PLACEHOLDER": "Buscar por titulo, descripcion o etiqueta",
     "SEARCH_HINT": "El texto filtra la lista. Se mantiene al cerrar.",
     "SEARCH_CLEAR": "Limpiar busqueda",

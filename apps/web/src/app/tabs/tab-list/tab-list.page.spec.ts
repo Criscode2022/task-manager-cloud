@@ -170,4 +170,23 @@ describe('TabListPage', () => {
     expect(badge).toBeNull();
     expect(chip?.textContent).toContain('#work');
   });
+
+  it('should keep search in the header and omit the filter search chip', () => {
+    taskServiceMock.tasks.set([
+      {
+        id: 1,
+        title: 'Tagged task',
+        description: '',
+        tags: ['work'],
+        done: false,
+        priority: 'high' as const,
+        created_at: new Date(),
+        user_id: 0,
+      },
+    ]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.filter-chip--search')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.toolbar-search-icon')).toBeTruthy();
+  });
 });
