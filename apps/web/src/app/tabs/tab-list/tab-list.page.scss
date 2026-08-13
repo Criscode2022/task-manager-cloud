@@ -889,8 +889,8 @@
   }
 
   .task-item--compact {
-    --padding-top: 0.3rem;
-    --padding-bottom: 0.3rem;
+    --padding-top: 0.4rem;
+    --padding-bottom: 0.4rem;
 
     .priority-badge,
     .tag-chip {
@@ -900,18 +900,21 @@
     }
   }
 
-  .task-end {
+  .task-end[slot='end'] {
     max-width: 56%;
+    overflow: hidden;
   }
 
   .task-end-meta {
     min-width: 0;
+    max-width: 100%;
     overflow: hidden;
   }
 
   .task-meta {
-    flex: 1 1 auto;
-    max-width: none;
+    flex: 1 1 0%;
+    width: auto;
+    max-width: 100%;
   }
 }
 
@@ -996,14 +999,13 @@
 }
 
 .task-meta {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 0.3rem;
+  display: block;
+  flex: 1 1 0%;
   min-width: 0;
   max-width: 8.5rem;
   overflow-x: auto;
   overflow-y: hidden;
+  padding-block: 0.2rem;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   touch-action: pan-x;
@@ -1028,7 +1030,16 @@
   }
 }
 
-.task-end {
+.task-meta-track {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.3rem;
+  width: max-content;
+  min-width: 100%;
+}
+
+.task-end[slot='end'] {
   display: flex;
   align-items: center;
   align-self: center;
@@ -1047,7 +1058,8 @@
   justify-content: flex-end;
   gap: 0.35rem;
   min-width: 0;
-  flex: 1 1 auto;
+  flex: 1 1 0%;
+  max-width: 100%;
   overflow: hidden;
 }
 
