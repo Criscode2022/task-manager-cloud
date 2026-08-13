@@ -51,6 +51,10 @@ yarn-error.log
 *.sublime-project
 *.sublime-workspace
 
+# Windows junction contents for .agents/skills -> .claude/skills
+# The path itself is a git symlink (mode 120000); do not add files through the junction.
+.agents/skills/**
+
 # Visual Studio Code
 .vscode/*
 !.vscode/settings.json
