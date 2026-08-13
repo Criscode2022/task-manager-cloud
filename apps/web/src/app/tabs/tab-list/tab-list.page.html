@@ -259,6 +259,7 @@
                 <div
                   class="task-content"
                   (click)="onTaskContentClick(task)"
+                  (dblclick)="onTaskDoubleClick(task, $event)"
                   (pointerdown)="onTaskPressStart(task, $event)"
                   (pointerup)="onTaskPressEnd()"
                   (pointercancel)="onTaskPressEnd()"
@@ -276,12 +277,6 @@
 
                 <div class="task-end" slot="end">
                   <div class="task-end-meta">
-                    <span
-                      class="priority-badge"
-                      [ngClass]="getPriorityClass(task.priority)"
-                      >
-                      {{ getPriorityTranslationKey(task.priority) | translate }}
-                    </span>
                     @if (task.tags.length) {
                       <div class="task-meta">
                         @for (tag of task.tags; track tag) {
@@ -289,6 +284,12 @@
                         }
                       </div>
                     }
+                    <span
+                      class="priority-badge"
+                      [ngClass]="getPriorityClass(task.priority)"
+                      >
+                      {{ getPriorityTranslationKey(task.priority) | translate }}
+                    </span>
                   </div>
 
                   <div class="task-actions">

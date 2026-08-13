@@ -68,6 +68,7 @@ export class TabListPage extends TaskForm {
   protected readonly taskService = inject(TaskService);
   private readonly userService = inject(UserService);
   private longPressTimer: ReturnType<typeof setTimeout> | null = null;
+  private clickTimer: ReturnType<typeof setTimeout> | null = null;
   private suppressTaskToggle = false;
   private initialFormDecided = false;
 
@@ -291,7 +292,19 @@ export class TabListPage extends TaskForm {
       return;
     }
 
-    this.toggleTaskState(task.id);
+    this.clearClickTimer();
+    this.clickTimer = setTimeout(() => {
+      this.clickTimer = null;
+      this.toggleTaskState(task.id);
+    }, 280);
+  }
+
+  protected onTaskDoubleClick(task: Task, event: Event): void {
+    event.preventDefault();
+    this.clearClickTimer();
+    this.clearTaskPress();
+    this.suppressTaskToggle = true;
+    void this.presentFullTaskText(task);
   }
 
   protected onTaskPressStart(task: Task, event: PointerEvent): void {
@@ -307,6 +320,7 @@ export class TabListPage extends TaskForm {
         return;
       }
 
+      this.clearClickTimer();
       this.suppressTaskToggle = true;
       void this.presentFullTaskText(task);
     }, 450);
@@ -664,6 +678,15 @@ export class TabListPage extends TaskForm {
           .slice(0, 6),
       ),
     ];
+  }
+
+  private clearClickTimer(): void {
+    if (!this.clickTimer) {
+      return;
+    }
+
+    clearTimeout(this.clickTimer);
+    this.clickTimer = null;
   }
 
   private clearTaskPress(): void {
