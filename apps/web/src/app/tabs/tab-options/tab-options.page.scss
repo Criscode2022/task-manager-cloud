@@ -329,8 +329,8 @@
   width: 100%;
   flex: 0 0 auto;
   display: flex;
-  justify-content: flex-end;
-  text-align: end;
+  justify-content: center;
+  text-align: center;
   --padding-start: 8px;
   --padding-end: 8px;
   --background: var(--ion-item-background, var(--ion-color-light));
@@ -341,15 +341,14 @@
   &::part(container) {
     display: flex;
     width: 100%;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
   }
 
   &::part(text),
   &::part(placeholder) {
     flex: 1 1 auto;
-    margin-inline-start: auto;
-    text-align: end;
+    text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
