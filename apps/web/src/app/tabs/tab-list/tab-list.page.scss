@@ -294,7 +294,7 @@
 }
 
 @media (min-width: 768px) {
-  .filter-chips:not(.filter-chips--tags) .filter-chip {
+  .filter-chips:not(.filter-chips--tags) .filter-chip:not(.filter-chip--search) {
     flex: 1 0 auto;
     justify-content: center;
     white-space: nowrap;
@@ -304,6 +304,65 @@
 
 .filter-chips--tags {
   max-height: none;
+}
+
+.filter-chip--search {
+  flex: 1 1 8.5rem;
+  justify-content: flex-start;
+  min-width: 7.25rem;
+  max-width: 14rem;
+  padding-inline: 0.6rem;
+  cursor: text;
+
+  ion-icon {
+    flex-shrink: 0;
+    font-size: 1rem;
+    color: var(--ion-text-color-secondary);
+  }
+
+  input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: 1.2;
+    outline: none;
+
+    &::placeholder {
+      color: var(--ion-text-color-secondary);
+      font-weight: 600;
+    }
+
+    &::-webkit-search-decoration,
+    &::-webkit-search-cancel-button {
+      -webkit-appearance: none;
+    }
+  }
+
+  &.is-active ion-icon {
+    color: currentColor;
+  }
+}
+
+.filter-chip-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+
+  ion-icon {
+    font-size: 1rem;
+  }
 }
 
 .filter-chip {
@@ -439,7 +498,16 @@
   }
 
   .filter-chips {
+    flex-wrap: nowrap;
     padding: 0.35rem 0.35rem 0.3rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+  }
+
+  .filter-chips--tags {
+    flex-wrap: nowrap;
   }
 
   .filter-chip {
@@ -453,6 +521,12 @@
     &.is-active {
       box-shadow: none;
     }
+  }
+
+  .filter-chip--search {
+    flex: 0 0 auto;
+    width: 9.5rem;
+    max-width: 9.5rem;
   }
 
   .filter-dot {
@@ -771,6 +845,7 @@
 
   &::part(native) {
     align-items: flex-start;
+    overflow: hidden;
   }
 
   &:hover {
@@ -782,6 +857,54 @@
   &.task-completed {
     background: var(--ion-color-primary-tint);
     opacity: 0.7;
+  }
+}
+
+@media (max-width: 767px) {
+  .task-item {
+    --padding-top: 0.7rem;
+    --padding-bottom: 0.7rem;
+  }
+
+  .task-item--compact {
+    --min-height: 52px;
+    --padding-top: 0.4rem;
+    --padding-bottom: 0.4rem;
+
+    .task-checkbox-wrapper {
+      padding-top: 0;
+    }
+
+    .priority-badge,
+    .tag-chip {
+      min-height: 1.2rem;
+      padding: 0.05rem 0.42rem;
+      font-size: 0.66rem;
+    }
+  }
+
+  .task-end {
+    max-width: 56%;
+  }
+
+  .task-end-meta {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .task-meta {
+    flex: 1 1 auto;
+    max-width: none;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+  }
+
+  .item-options-start ion-item-option,
+  .item-options-end ion-item-option {
+    height: 100%;
   }
 }
 
@@ -859,6 +982,8 @@
   overflow-y: hidden;
   padding-block: 0.15rem;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--ion-color-primary) 45%, transparent) transparent;
 
@@ -1299,5 +1424,13 @@
 
   .search-dialog-count {
     color: var(--ion-color-primary);
+  }
+
+  .filter-chip--search input {
+    color: #fff;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.55);
+    }
   }
 }

@@ -73,6 +73,31 @@
       <div class="advanced-filters">
         <div class="filter-group">
           <div class="filter-chips" role="group" [attr.aria-label]="'TASKS.FILTER_BY_PRIORITY' | translate">
+            <label
+              class="filter-chip filter-chip--search"
+              [class.is-active]="hasSearchQuery()"
+            >
+              <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+              <input
+                type="search"
+                [value]="searchQuery()"
+                (input)="onSearchInput($any($event.target).value)"
+                [placeholder]="'TASKS.SEARCH_SHORT' | translate"
+                [attr.aria-label]="'TASKS.SEARCH_TASKS' | translate"
+                autocomplete="off"
+                enterkeyhint="search"
+              />
+              @if (hasSearchQuery()) {
+                <button
+                  type="button"
+                  class="filter-chip-clear"
+                  (click)="clearSearch($event)"
+                  [attr.aria-label]="'TASKS.SEARCH_CLEAR' | translate"
+                >
+                  <ion-icon name="close-circle"></ion-icon>
+                </button>
+              }
+            </label>
             <button
               type="button"
               class="filter-chip"
@@ -157,7 +182,12 @@
               [style.animation-delay.ms]="!initialLoadDone() ? index * 50 : 0"
               [disabled]="isTabletOrDesktop()"
               >
-              <ion-item lines="none" class="task-item" [class.task-completed]="task.done">
+              <ion-item
+                lines="none"
+                class="task-item"
+                [class.task-completed]="task.done"
+                [class.task-item--compact]="!task.description"
+              >
                 <div class="task-checkbox-wrapper">
                   <mat-checkbox
                     [checked]="task.done"
