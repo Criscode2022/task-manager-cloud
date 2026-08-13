@@ -37,4 +37,14 @@ export class TaskForm {
   protected resetTaskForm(): void {
     this.taskModel.set(emptyTaskForm());
   }
+
+  protected hasUnsavedCreateChanges(): boolean {
+    const model = this.taskModel();
+    return (
+      model.title.trim().length > 0 ||
+      model.description.trim().length > 0 ||
+      model.tagsInput.trim().length > 0 ||
+      model.priority !== DEFAULT_TASK_PRIORITY
+    );
+  }
 }

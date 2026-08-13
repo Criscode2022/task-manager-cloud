@@ -5,6 +5,7 @@ import {
   Component,
   computed,
   effect,
+  HostListener,
   inject,
   signal,
 } from '@angular/core';
@@ -301,10 +302,53 @@ export class TabListPage extends TaskForm {
 
   protected onTaskDoubleClick(task: Task, event: Event): void {
     event.preventDefault();
+    if (this.isTabletOrDesktop()) {
+      return;
+    }
+
     this.clearClickTimer();
     this.clearTaskPress();
     this.suppressTaskToggle = true;
     void this.presentFullTaskText(task);
+  }
+
+  protected openCreateForm(): void {
+    this.isFormVisible.set(true);
+  }
+
+  protected async requestCloseCreateForm(): Promise<void> {
+    if (!this.hasUnsavedCreateChanges()) {
+      this.closeCreateForm();
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: this.translate.instant('TASKS.UNSAVED_CHANGES_TITLE'),
+      message: this.translate.instant('TASKS.UNSAVED_CHANGES_MESSAGE'),
+      buttons: [
+        {
+          text: this.translate.instant('TASKS.KEEP_EDITING'),
+          role: 'cancel',
+        },
+        {
+          text: this.translate.instant('TASKS.DISCARD_CHANGES'),
+          role: 'confirm',
+          handler: () => {
+            this.closeCreateForm();
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  @HostListener('document:keydown.escape')
+  protected onCreateFormEscape(): void {
+    if (!this.isFormVisible()) {
+      return;
+    }
+
+    void this.requestCloseCreateForm();
   }
 
   protected onTaskPressStart(task: Task, event: PointerEvent): void {
@@ -365,7 +409,7 @@ export class TabListPage extends TaskForm {
 
     this.resetTaskForm();
     this.tagsAutocompleteInput.set('');
-    this.isFormVisible.set(false);
+    this.closeCreateForm();
 
     // Remove from newly added set after animation completes
     setTimeout(() => {
@@ -678,6 +722,12 @@ export class TabListPage extends TaskForm {
           .slice(0, 6),
       ),
     ];
+  }
+
+  private closeCreateForm(): void {
+    this.isFormVisible.set(false);
+    this.resetTaskForm();
+    this.tagsAutocompleteInput.set('');
   }
 
   private clearClickTimer(): void {

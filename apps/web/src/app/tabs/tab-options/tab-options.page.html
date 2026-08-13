@@ -165,6 +165,7 @@
           </div>
           <ion-select
             interface="popover"
+            justify="end"
             [value]="selectedLanguage()"
             (ionChange)="changeLanguage($event.detail.value)"
             [selectedText]="getLanguageLabel(selectedLanguage())"

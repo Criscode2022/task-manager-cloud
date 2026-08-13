@@ -273,6 +273,78 @@
   animation-fill-mode: both;
 }
 
+.create-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 480px;
+  padding: 0.75rem 1.1rem;
+  border: 0;
+  border-radius: var(--border-radius-xl);
+  background: var(--ion-surface-color);
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  text-align: left;
+
+  @media (min-width: 768px) {
+    max-width: 440px;
+  }
+
+  @media (min-width: 1024px) {
+    max-width: 480px;
+  }
+
+  &:hover {
+    opacity: 0.88;
+  }
+}
+
+.create-trigger-chevron {
+  font-size: 1.4rem;
+  color: var(--ion-color-primary);
+}
+
+.create-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(1px);
+}
+
+.create-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 201;
+  width: min(92vw, 480px);
+  max-height: min(88vh, 720px);
+  overflow-y: auto;
+  transform: translate(-50%, -50%);
+
+  @media (max-width: 767px) {
+    top: 5.75rem;
+    transform: translate(-50%, 0);
+    max-height: calc(100vh - 8rem);
+  }
+}
+
+.create-dialog .task-form {
+  max-width: none;
+  width: 100%;
+}
+
+.create-close {
+  font-size: 1.45rem;
+  cursor: pointer;
+  color: var(--ion-text-color-secondary);
+
+  &:hover {
+    color: var(--ion-color-danger);
+  }
+}
+
 .task-form {
   background: var(--ion-surface-color);
   border-radius: var(--border-radius-xl);
