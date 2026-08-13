@@ -20,7 +20,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { IonicModule } from '@ionic/angular';
+import { AlertController, IonicModule } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { LoadingService } from 'src/app/core/services/loading.service';
@@ -63,9 +63,13 @@ import {
 export class TabListPage extends TaskForm {
   private readonly taskNeonService = inject(TaskNeonService);
   private readonly dialog = inject(MatDialog);
+  private readonly alertController = inject(AlertController);
   private readonly translate = inject(TranslateService);
   protected readonly taskService = inject(TaskService);
   private readonly userService = inject(UserService);
+  private longPressTimer: ReturnType<typeof setTimeout> | null = null;
+  private suppressTaskToggle = false;
+  private initialFormDecided = false;
 
   protected canClick = signal(true);
   protected hasNewTask = signal(false);
@@ -224,6 +228,14 @@ export class TabListPage extends TaskForm {
     });
 
     effect(() => {
+      if (!this.taskService.storageReady() || !this.taskService.tasksHydrated()) {
+        return;
+      }
+      if (this.initialFormDecided) {
+        return;
+      }
+
+      this.initialFormDecided = true;
       if (this.tasks().length === 0 && this.isTabletOrDesktop()) {
         this.isFormVisible.set(true);
       }
@@ -267,6 +279,45 @@ export class TabListPage extends TaskForm {
 
   protected refresh(): void {
     this.userService.getUser();
+  }
+
+  protected onTaskContentClick(task: Task): void {
+    if (this.suppressTaskToggle) {
+      this.suppressTaskToggle = false;
+      return;
+    }
+
+    if (!this.canClick()) {
+      return;
+    }
+
+    this.toggleTaskState(task.id);
+  }
+
+  protected onTaskPressStart(task: Task, event: PointerEvent): void {
+    this.clearTaskPress();
+    const root = event.currentTarget;
+    if (!(root instanceof HTMLElement)) {
+      return;
+    }
+
+    this.longPressTimer = setTimeout(() => {
+      this.longPressTimer = null;
+      if (!this.isTaskTextClipped(root)) {
+        return;
+      }
+
+      this.suppressTaskToggle = true;
+      void this.presentFullTaskText(task);
+    }, 450);
+  }
+
+  protected onTaskPressEnd(): void {
+    this.clearTaskPress();
+  }
+
+  protected onTaskContextMenu(event: Event): void {
+    event.preventDefault();
   }
 
   protected async addTask(event?: Event): Promise<void> {
@@ -613,6 +664,30 @@ export class TabListPage extends TaskForm {
           .slice(0, 6),
       ),
     ];
+  }
+
+  private clearTaskPress(): void {
+    if (!this.longPressTimer) {
+      return;
+    }
+
+    clearTimeout(this.longPressTimer);
+    this.longPressTimer = null;
+  }
+
+  private isTaskTextClipped(root: HTMLElement): boolean {
+    return [...root.querySelectorAll<HTMLElement>('.task-title, .task-description')].some(
+      (node) => node.scrollWidth > node.clientWidth + 1,
+    );
+  }
+
+  private async presentFullTaskText(task: Task): Promise<void> {
+    const alert = await this.alertController.create({
+      header: task.title,
+      message: task.description || undefined,
+      buttons: [this.translate.instant('COMMON.OK')],
+    });
+    await alert.present();
   }
 
   private getTagInputState(input: string): {

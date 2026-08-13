@@ -18,7 +18,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [scrollY]="false" class="content-background">
+<ion-content [scrollY]="true" class="content-background">
   <div class="form-container">
     <form
       class="task-form animate-slide-in-up"
@@ -245,7 +245,7 @@
               [style.animation-delay.ms]="!initialLoadDone() ? index * 50 : 0"
               [disabled]="isTabletOrDesktop()"
               >
-              <ion-item class="task-item" [class.task-completed]="task.done">
+              <ion-item lines="none" class="task-item" [class.task-completed]="task.done">
                 <div class="task-checkbox-wrapper">
                   <mat-checkbox
                     [checked]="task.done"
@@ -258,7 +258,12 @@
 
                 <div
                   class="task-content"
-                  (click)="canClick() ? toggleTaskState(task.id) : null"
+                  (click)="onTaskContentClick(task)"
+                  (pointerdown)="onTaskPressStart(task, $event)"
+                  (pointerup)="onTaskPressEnd()"
+                  (pointercancel)="onTaskPressEnd()"
+                  (pointerleave)="onTaskPressEnd()"
+                  (contextmenu)="onTaskContextMenu($event)"
                   [class.disabled]="!canClick()"
                   >
                   <ion-label class="task-label" [class.done]="task.done">

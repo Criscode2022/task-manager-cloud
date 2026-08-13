@@ -30,6 +30,7 @@ export class TabsPage {
   private async loadStoredTasks(): Promise<void> {
     this.userService.getUser();
     this.taskService.tasks.set(await this.taskService.getTasks());
+    this.taskService.tasksHydrated.set(true);
   }
 
   private checkInstallAlert(): void {

@@ -425,10 +425,9 @@
 .task-list {
   width: 100%;
   max-width: 800px;
-  max-height: calc(100vh - 280px);
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
   padding: 0.5rem;
-  -webkit-overflow-scrolling: touch;
 
   // Expand max-width for tablet+ to accommodate two columns
   @media (min-width: 768px) {
@@ -477,7 +476,9 @@
 
 .task-item {
   --background: var(--ion-surface-color);
-  --border-color: var(--ion-border-color);
+  --border-color: transparent;
+  --inner-border-width: 0;
+  --highlight-height: 0;
   --padding-start: 1rem;
   --padding-end: 1rem;
   --padding-top: 0.85rem;
@@ -519,6 +520,9 @@
   cursor: pointer;
   min-width: 0;
   padding-inline-end: 0.65rem;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .task-label {

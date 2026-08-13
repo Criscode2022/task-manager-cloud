@@ -16,6 +16,7 @@ describe('TabsPage', () => {
     shouldShowInstall: signal(true),
     storage: {},
     storageReady: signal(true),
+    tasksHydrated: signal(false),
     getTasks: jasmine.createSpy('getTasks').and.resolveTo([]),
   };
 

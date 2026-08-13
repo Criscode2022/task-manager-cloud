@@ -19,6 +19,7 @@ export class TaskService {
 
   readonly filter = signal<StatusEnum>(StatusEnum.All);
   readonly storageReady = signal(false);
+  readonly tasksHydrated = signal(false);
   readonly shouldShowInstall = signal(true);
   readonly tasks = signal<Task[]>([]);
   readonly userId = signal(0);

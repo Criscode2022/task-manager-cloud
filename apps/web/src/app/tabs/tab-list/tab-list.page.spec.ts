@@ -19,6 +19,8 @@ describe('TabListPage', () => {
     tasks: signal([]),
     filter: signal(StatusEnum.All),
     shouldShowInstall: signal(true),
+    storageReady: signal(true),
+    tasksHydrated: signal(true),
     userId: signal(0),
     saveTasks: jasmine.createSpy('saveTasks').and.resolveTo(),
     saveFilter: jasmine.createSpy('saveFilter').and.resolveTo(),
