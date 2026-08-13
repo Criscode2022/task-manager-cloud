@@ -401,11 +401,15 @@
   @if (isFormVisible()) {
     <div
       class="create-backdrop"
+      animate.enter="create-backdrop-enter"
+      animate.leave="create-backdrop-leave"
       (click)="requestCloseCreateForm()"
       aria-hidden="true"
     ></div>
     <div
       class="create-dialog"
+      animate.enter="create-dialog-enter"
+      animate.leave="create-dialog-leave"
       role="dialog"
       aria-modal="true"
       [attr.aria-label]="'TASKS.CREATE_NEW_TASK' | translate"
