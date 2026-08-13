@@ -143,4 +143,31 @@ describe('TabListPage', () => {
     expect(component['isFormVisible']()).toBeFalse();
     expect(taskServiceMock.tasks().length).toBe(1);
   });
+
+  it('should render task tags in a horizontal scroller', () => {
+    taskServiceMock.tasks.set([
+      {
+        id: 1,
+        title: 'Tagged task',
+        description: '',
+        tags: ['work'],
+        done: false,
+        priority: 'medium' as const,
+        created_at: new Date(),
+        user_id: 0,
+      },
+    ]);
+    fixture.detectChanges();
+
+    const scroller: HTMLElement | null =
+      fixture.nativeElement.querySelector('.task-meta');
+    const track: HTMLElement | null =
+      fixture.nativeElement.querySelector('.task-meta-track');
+    const chip: HTMLElement | null =
+      fixture.nativeElement.querySelector('.tag-chip');
+
+    expect(scroller).toBeTruthy();
+    expect(track).toBeTruthy();
+    expect(chip?.textContent).toContain('#work');
+  });
 });

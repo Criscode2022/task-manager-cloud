@@ -220,10 +220,16 @@
                 <div class="task-end" slot="end">
                   <div class="task-end-meta">
                     @if (task.tags.length) {
-                      <div class="task-meta">
-                        @for (tag of task.tags; track tag) {
-                          <span class="tag-chip">#{{ tag }}</span>
-                        }
+                      <div
+                        class="task-meta"
+                        (pointerdown)="$event.stopPropagation()"
+                        (touchstart)="$event.stopPropagation()"
+                      >
+                        <div class="task-meta-track">
+                          @for (tag of task.tags; track tag) {
+                            <span class="tag-chip">#{{ tag }}</span>
+                          }
+                        </div>
                       </div>
                     }
                     <span
