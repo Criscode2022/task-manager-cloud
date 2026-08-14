@@ -47,3 +47,8 @@ From the **repo root** (pnpm workspaces + Turborepo):
 
 - Use `pnpm install` at the repo root. Workspaces: `apps/web`, `apps/api`.
 - If `pnpm-lock.yaml` drifts, prefer `pnpm install` over `--frozen-lockfile`.
+
+### Agent skills
+
+- Angular: `.claude/skills/angular/`
+- NestJS: `.claude/skills/nestjs/` — modules, DI, DTO/validation, guards, testing. Apply when changing `apps/api`.
