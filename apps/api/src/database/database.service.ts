@@ -19,6 +19,11 @@ export class DatabaseService {
     return this.sql;
   }
 
+  async ping(): Promise<void> {
+    const sql = this.getSql();
+    await sql`SELECT 1`;
+  }
+
   async ensureAuthSchema(): Promise<void> {
     const sql = this.getSql();
     await sql`

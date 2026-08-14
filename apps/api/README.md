@@ -18,6 +18,8 @@ NestJS backend for Task Cloud. Replaces the former Netlify Functions + `server/*
 
 ## Dev
 
+Boot fails if `DATABASE_URL`, `JWT_SECRET` (32+ chars) or `PIN_PEPPER` (32+ chars) are missing. Task payloads only accept `title`, `description`, `done`, `priority`, `tags`.
+
 From repo root (loads root `.env`):
 
 ```bash

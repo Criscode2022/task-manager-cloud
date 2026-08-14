@@ -1,10 +1,12 @@
 import {
   IsArray,
   IsBoolean,
+  IsIn,
   IsOptional,
   IsString,
   MinLength,
 } from 'class-validator';
+import { TASK_PRIORITIES } from './create-task.dto';
 
 export class UpdateTaskDto {
   @IsOptional()
@@ -21,8 +23,8 @@ export class UpdateTaskDto {
   done?: boolean;
 
   @IsOptional()
-  @IsString()
-  priority?: string;
+  @IsIn(TASK_PRIORITIES)
+  priority?: (typeof TASK_PRIORITIES)[number];
 
   @IsOptional()
   @IsArray()

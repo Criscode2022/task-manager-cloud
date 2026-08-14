@@ -37,8 +37,6 @@ export class TaskNeonService {
           done: task.done || false,
           priority: task.priority || DEFAULT_TASK_PRIORITY,
           tags: task.tags || [],
-          user_id: userId,
-          updated_at: new Date(),
         },
         token,
       );
@@ -86,7 +84,6 @@ export class TaskNeonService {
           done: task.done,
           priority: task.priority,
           tags: task.tags,
-          updated_at: new Date(),
         },
         token,
       );
@@ -209,8 +206,6 @@ export class TaskNeonService {
         done: task.done,
         priority: task.priority || DEFAULT_TASK_PRIORITY,
         tags: task.tags || [],
-        user_id: userId,
-        updated_at: new Date(),
       }));
 
       const uploadedTasks = await this.neon.bulkUploadTasks(

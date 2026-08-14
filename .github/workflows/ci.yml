@@ -34,5 +34,8 @@ jobs:
       - name: Run web unit tests
         run: pnpm test:ci
 
+      - name: Run API unit tests
+        run: pnpm --filter @task-cloud/api test
+
       - name: Build Nest API
         run: pnpm build:api

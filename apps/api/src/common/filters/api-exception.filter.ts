@@ -4,17 +4,22 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(ApiExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const res = ctx.getResponse<Response>();
+    const req = ctx.getRequest<Request & { id?: string }>();
+    const reqId = req.id;
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = 'Internal server error';
+    let message = 'Internal error';
     let retryAfterSec: number | undefined;
 
     if (exception instanceof HttpException) {
@@ -35,21 +40,17 @@ export class ApiExceptionFilter implements ExceptionFilter {
           retryAfterSec = obj.retryAfterSec;
         }
       }
-    } else if (exception && typeof exception === 'object') {
-      const err = exception as { status?: number; message?: string; retryAfterSec?: number };
-      if (typeof err.status === 'number') status = err.status;
-      if (err.message) message = err.message;
-      if (typeof err.retryAfterSec === 'number') retryAfterSec = err.retryAfterSec;
     }
 
     if (status >= 500) {
-      console.error('API error:', exception);
+      this.logger.error({ reqId, err: exception });
+      message = 'Internal error';
     }
 
     if (retryAfterSec) {
       res.setHeader('Retry-After', String(retryAfterSec));
     }
 
-    res.status(status).json({ error: message });
+    res.status(status).json({ error: message, reqId });
   }
 }

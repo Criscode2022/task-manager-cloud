@@ -77,19 +77,24 @@ export class TasksService {
     return this.serializeTask(rows[0] as Record<string, unknown>);
   }
 
-  async updateTask(
+  async requireOwnedTask(
+    userId: number,
+    taskId: number,
+  ): Promise<SerializedTask> {
+    const task = await this.getTaskById(taskId);
+    if (task.user_id !== userId) {
+      throw new NotFoundException('Task not found');
+    }
+    return task;
+  }
+
+  async updateTaskForUser(
+    userId: number,
     taskId: number,
     updates: UpdateTaskDto,
   ): Promise<SerializedTask> {
+    const current = await this.requireOwnedTask(userId, taskId);
     const sql = this.db.getSql();
-    const existing = await sql`
-      SELECT * FROM public.tasks WHERE id = ${taskId} LIMIT 1
-    `;
-    if (!existing[0]) {
-      throw new NotFoundException('Task not found');
-    }
-
-    const current = existing[0] as Record<string, unknown>;
     const title = updates.title ?? current.title;
     const description =
       updates.description !== undefined ? updates.description : current.description;
@@ -100,22 +105,28 @@ export class TasksService {
     const rows = await sql`
       UPDATE public.tasks
       SET
-        title = ${title as string},
-        description = ${description as string},
-        done = ${done as boolean},
-        priority = ${priority as string},
-        tags = ${tags as string[]},
+        title = ${title},
+        description = ${description},
+        done = ${done},
+        priority = ${priority},
+        tags = ${tags},
         updated_at = NOW()
-      WHERE id = ${taskId}
+      WHERE id = ${taskId} AND user_id = ${userId}
       RETURNING *
     `;
+    if (!rows[0]) {
+      throw new NotFoundException('Task not found');
+    }
     return this.serializeTask(rows[0] as Record<string, unknown>);
   }
 
-  async deleteTask(taskId: number): Promise<void> {
+  async deleteTaskForUser(userId: number, taskId: number): Promise<void> {
+    await this.requireOwnedTask(userId, taskId);
     const sql = this.db.getSql();
     const rows = await sql`
-      DELETE FROM public.tasks WHERE id = ${taskId} RETURNING id
+      DELETE FROM public.tasks
+      WHERE id = ${taskId} AND user_id = ${userId}
+      RETURNING id
     `;
     if (!rows[0]) {
       throw new NotFoundException('Task not found');

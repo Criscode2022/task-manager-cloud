@@ -1,6 +1,13 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Reflector } from '@nestjs/core';
+import helmet from 'helmet';
 import { ApiExceptionFilter } from './common/filters/api-exception.filter';
+import { requestIdMiddleware } from './common/request-id.middleware';
 import { isOriginAllowed } from './common/cors';
 
 /**
@@ -10,15 +17,19 @@ import { isOriginAllowed } from './common/cors';
 export function configureApp(app: INestApplication): INestApplication {
   const config = app.get(ConfigService);
 
+  app.use(requestIdMiddleware);
+  app.use(helmet());
+  app.enableShutdownHooks();
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
-      forbidNonWhitelisted: false,
+      forbidNonWhitelisted: true,
     }),
   );
   app.useGlobalFilters(new ApiExceptionFilter());
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   app.enableCors({
     origin: (
@@ -27,7 +38,7 @@ export function configureApp(app: INestApplication): INestApplication {
     ) => {
       callback(null, isOriginAllowed(origin, config));
     },
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-request-id'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   });
 

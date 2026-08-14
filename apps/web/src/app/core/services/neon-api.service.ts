@@ -154,7 +154,7 @@ export class NeonApiService {
   }
 
   async createTask(
-    task: Omit<Task, 'id' | 'created_at'>,
+    task: Pick<Task, 'title' | 'description' | 'done' | 'priority' | 'tags'>,
     token: string,
   ): Promise<Task> {
     return firstValueFrom(
@@ -194,7 +194,7 @@ export class NeonApiService {
   }
 
   async bulkUploadTasks(
-    tasks: Omit<Task, 'id' | 'created_at'>[],
+    tasks: Pick<Task, 'title' | 'description' | 'done' | 'priority' | 'tags'>[],
     token: string,
   ): Promise<Task[]> {
     return firstValueFrom(

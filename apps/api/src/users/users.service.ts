@@ -11,11 +11,18 @@ export class UsersService {
     private readonly tasks: TasksService,
   ) {}
 
-  getUser(userId: number) {
+  getOwnUser(actorId: number, userId: number) {
+    if (actorId !== userId) {
+      throw new NotFoundException('User not found');
+    }
     return this.auth.getUser(userId);
   }
 
-  async deleteUser(userId: number): Promise<void> {
+  async deleteOwnUser(actorId: number, userId: number): Promise<void> {
+    if (actorId !== userId) {
+      throw new NotFoundException('User not found');
+    }
+
     await this.auth.revokeAllSessions(userId);
     await this.tasks.deleteAllTasks(userId);
     const sql = this.db.getSql();

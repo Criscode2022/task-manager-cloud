@@ -52,3 +52,4 @@ From the **repo root** (pnpm workspaces + Turborepo):
 
 - Angular: `.claude/skills/angular/`
 - NestJS: `.claude/skills/nestjs/` — modules, DI, DTO/validation, guards, testing. Apply when changing `apps/api`.
+  Env is validated at boot (`src/config/env.validation.ts`). Auth is a global `APP_GUARD`; public routes use `@Public()`. Ownership checks live in services (`NotFoundException`, no IDOR 403).

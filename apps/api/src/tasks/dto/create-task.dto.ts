@@ -1,10 +1,13 @@
 import {
   IsArray,
   IsBoolean,
+  IsIn,
   IsOptional,
   IsString,
   MinLength,
 } from 'class-validator';
+
+export const TASK_PRIORITIES = ['low', 'medium', 'high'] as const;
 
 export class CreateTaskDto {
   @IsString()
@@ -20,8 +23,8 @@ export class CreateTaskDto {
   done?: boolean;
 
   @IsOptional()
-  @IsString()
-  priority?: string;
+  @IsIn(TASK_PRIORITIES)
+  priority?: (typeof TASK_PRIORITIES)[number];
 
   @IsOptional()
   @IsArray()
