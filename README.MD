@@ -80,14 +80,21 @@ pnpm start:full
 | `pnpm build:web` / `build:api` | Build one app |
 | `pnpm run config` | Generate web `environment.*.local.ts` |
 | `pnpm lint` / `lint:ci` | ESLint |
-| `pnpm test` / `test:ci` | Web unit tests |
-| `pnpm test:api` | API HTTP smoke test |
+| `pnpm test` / `test:ci` | Web unit tests (Karma) |
+| `pnpm test:api` | API unit tests (Vitest) |
+| `pnpm test:integration` | Nest HTTP integration (Supertest) |
+| `pnpm test:e2e` | Playwright (Chromium) |
+
+Docs: [`docs/12-testing.md`](./docs/12-testing.md).
 
 ## Testing and Linting
 
 ```bash
 pnpm lint
-CHROME_BIN=/usr/local/bin/google-chrome pnpm test:ci
+pnpm test:ci
+pnpm test:api
+pnpm test:integration
+pnpm test:e2e
 ```
 
 ## GitHub CI
@@ -97,6 +104,10 @@ CHROME_BIN=/usr/local/bin/google-chrome pnpm test:ci
 - `pnpm install --frozen-lockfile`
 - `pnpm lint:ci`
 - `pnpm test:ci`
+- `pnpm test:api`
+- `pnpm test:integration`
+- `pnpm build:api`
+- `pnpm test:e2e` (job aparte, Chromium)
 - `pnpm build:api`
 
 ## Neon Setup

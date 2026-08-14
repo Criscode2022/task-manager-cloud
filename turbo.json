@@ -45,6 +45,9 @@
     "test:ci": {
       "cache": false
     },
+    "test:integration": {
+      "cache": false
+    },
     "config": {
       "cache": false,
       "env": ["API_BASE_URL", "VERCEL", "CI", "NETLIFY"]

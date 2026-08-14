@@ -22,4 +22,10 @@ describe('validateEnv', () => {
       /DATABASE_URL/,
     );
   });
+
+  it('refuses to boot with a short PIN_PEPPER', () => {
+    expect(() => validateEnv({ ...valid, PIN_PEPPER: 'too-short' })).toThrow(
+      /PIN_PEPPER/,
+    );
+  });
 });

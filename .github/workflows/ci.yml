@@ -35,7 +35,38 @@ jobs:
         run: pnpm test:ci
 
       - name: Run API unit tests
-        run: pnpm --filter @task-cloud/api test
+        run: pnpm test:api
+
+      - name: Run API integration tests
+        run: pnpm test:integration
 
       - name: Build Nest API
         run: pnpm build:api
+
+  e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        run: pnpm test:e2e
+        env:
+          CI: true
+          API_BASE_URL: /api

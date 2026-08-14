@@ -3,6 +3,7 @@ import {
   withFetch,
   withInterceptors,
 } from '@angular/common/http';
+import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 import { NgModule, isDevMode, provideZoneChangeDetection } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -25,10 +26,6 @@ import { StorageModule } from './storage.module';
     StorageModule,
     TranslateModule.forRoot({
       defaultLanguage: 'en',
-      loader: provideTranslateHttpLoader({
-        prefix: '/assets/i18n/',
-        suffix: '.json',
-      }),
     }),
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: !isDevMode(),
@@ -36,10 +33,15 @@ import { StorageModule } from './storage.module';
     }),
   ],
   providers: [
+    { provide: LocationStrategy, useClass: PathLocationStrategy },
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideZoneChangeDetection(),
     provideAnimationsAsync(),
     provideHttpClient(withFetch(), withInterceptors([LoadingInterceptor])),
+    provideTranslateHttpLoader({
+      prefix: '/assets/i18n/',
+      suffix: '.json',
+    }),
   ],
   bootstrap: [AppComponent],
 })

@@ -55,13 +55,20 @@ export class AuthService {
   }
 
   async verifyAccessToken(token: string): Promise<AuthClaims> {
-    const { payload } = await jwtVerify(token, this.jwtSecretKey());
-    const userId = Number(payload.sub);
-    const sessionId = String(payload.sid || '');
-    if (!userId || !sessionId) {
-      throw new UnauthorizedException('Invalid token');
+    try {
+      const { payload } = await jwtVerify(token, this.jwtSecretKey());
+      const userId = Number(payload.sub);
+      const sessionId = String(payload.sid || '');
+      if (!userId || !sessionId) {
+        throw new UnauthorizedException('Invalid token');
+      }
+      return { userId, sessionId, exp: payload.exp };
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException('Invalid or expired token');
     }
-    return { userId, sessionId, exp: payload.exp };
   }
 
   extractBearerToken(authorization?: string): string {

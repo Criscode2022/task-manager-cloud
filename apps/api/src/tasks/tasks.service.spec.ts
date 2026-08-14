@@ -38,4 +38,20 @@ describe('TasksService', () => {
       NotFoundException,
     );
   });
+
+  it('updates a task that belongs to the caller', async () => {
+    const service = new TasksService(fakeDb([owned]));
+    const result = await service.updateTaskForUser(1, 7, { done: true });
+    expect(result.id).toBe(7);
+    expect(result.user_id).toBe(1);
+    expect(result.title).toBe('Buy milk');
+  });
+
+  it('lists tasks and serializes missing tags as an empty array', async () => {
+    const service = new TasksService(fakeDb([{ ...owned, tags: null }]));
+    const list = await service.getTasks(1);
+    expect(list).toHaveLength(1);
+    expect(list[0].tags).toEqual([]);
+    expect(list[0].priority).toBe('medium');
+  });
 });

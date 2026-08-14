@@ -38,6 +38,12 @@ npm-debug.log
 pnpm-debug.log*
 yarn-error.log
 
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 # Turbo
 .turbo
 

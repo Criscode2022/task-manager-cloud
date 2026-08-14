@@ -15,11 +15,14 @@
     "config": "pnpm --filter @task-cloud/web run config",
     "test": "turbo run test",
     "test:ci": "turbo run test:ci --filter=@task-cloud/web",
-    "test:api": "pnpm --filter @task-cloud/api test:api",
+    "test:api": "pnpm --filter @task-cloud/api test",
+    "test:integration": "pnpm --filter @task-cloud/api test:integration",
+    "test:e2e": "playwright test",
     "lint": "turbo run lint",
     "lint:ci": "turbo run lint:ci --filter=@task-cloud/web"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "turbo": "^2.5.4"
   },
   "engines": {

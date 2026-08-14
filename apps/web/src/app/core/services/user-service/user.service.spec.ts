@@ -31,6 +31,7 @@ describe('UserService', () => {
   };
   let neonApiMock: {
     logout: jasmine.Spy;
+    clearSession: jasmine.Spy;
   };
   let pinHashServiceMock: {
     generatePin: jasmine.Spy;
@@ -67,6 +68,7 @@ describe('UserService', () => {
 
     neonApiMock = {
       logout: jasmine.createSpy('logout').and.resolveTo(),
+      clearSession: jasmine.createSpy('clearSession'),
     };
 
     pinHashServiceMock = {
