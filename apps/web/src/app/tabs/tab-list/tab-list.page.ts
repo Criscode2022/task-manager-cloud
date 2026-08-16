@@ -422,14 +422,10 @@ export class TabListPage extends TaskForm {
 
     this.longPressTimer = setTimeout(() => {
       this.longPressTimer = null;
-      if (!this.isTaskTextClipped(root)) {
-        return;
-      }
-
       this.clearClickTimer();
       this.suppressTaskToggle = true;
 
-      if (this.isTabletOrDesktop()) {
+      if (this.isTabletOrDesktop() || !this.isTaskTextClipped(root)) {
         void this.copyTaskText(task);
         return;
       }
@@ -827,7 +823,18 @@ export class TabListPage extends TaskForm {
     const alert = await this.alertController.create({
       header: task.title,
       message: task.description || undefined,
-      buttons: [this.translate.instant('COMMON.OK')],
+      buttons: [
+        {
+          text: this.translate.instant('TASKS.COPY'),
+          handler: () => {
+            void this.copyTaskText(task);
+          },
+        },
+        {
+          text: this.translate.instant('COMMON.OK'),
+          role: 'cancel',
+        },
+      ],
     });
     await alert.present();
   }

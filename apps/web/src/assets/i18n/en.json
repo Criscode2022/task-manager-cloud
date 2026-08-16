@@ -86,6 +86,7 @@
     "HOW_TO_INSTALL": "How to install",
     "INSTALL_ALERT": "You can install this PWA on your device by adding it to your home screen from the browser settings",
     "DONT_SHOW_AGAIN": "Do not show again",
+    "COPY": "Copy",
     "COPIED_TO_CLIPBOARD": "Copied to clipboard"
   },
   "OPTIONS": {

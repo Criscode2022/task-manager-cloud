@@ -86,6 +86,7 @@
     "HOW_TO_INSTALL": "Como instalar",
     "INSTALL_ALERT": "Puedes instalar esta PWA en tu dispositivo agregandola a la pantalla de inicio desde la configuracion del navegador",
     "DONT_SHOW_AGAIN": "No mostrar de nuevo",
+    "COPY": "Copiar",
     "COPIED_TO_CLIPBOARD": "Copiado al portapapeles"
   },
   "OPTIONS": {
