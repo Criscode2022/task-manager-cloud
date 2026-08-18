@@ -1,7 +1,16 @@
 // Toolbar Styles
 .toolbar-gradient {
   --background: var(--ion-toolbar-background);
+  --min-height: 56px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  @media (min-width: 768px) {
+    --min-height: 72px;
+  }
+
+  @media (min-width: 1024px) {
+    --min-height: 76px;
+  }
 }
 
 .header-title {

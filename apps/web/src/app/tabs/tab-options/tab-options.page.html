@@ -1,19 +1,17 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar class="toolbar-gradient py-2 md:py-4">
-    <h1
-      class="ion-text-center text-xl lg:text-4xl ml-5 md:ml-7 xl:ml-11 font-extrabold tracking-tight"
-    >
+  <ion-toolbar class="toolbar-gradient md:py-4">
+    <h1 class="header-title ion-text-center text-xl lg:text-4xl font-extrabold tracking-tight">
       <span>{{ 'OPTIONS.PAGE_TITLE' | translate }}</span>
     </h1>
     <button
       mat-icon-button
-      class="ion-margin my-4 absolute right-0 md:right-8 lg:text-xl text-white"
+      class="toolbar-help md:absolute md:right-8 lg:text-xl text-white"
       slot="end"
       (click)="showInfoAlert()"
       [matTooltip]="'COMMON.HELP' | translate"
       matTooltipPosition="below"
     >
-      <mat-icon class="mr-1">help-circle-outline</mat-icon>
+      <mat-icon>help-circle-outline</mat-icon>
     </button>
   </ion-toolbar>
 </ion-header>

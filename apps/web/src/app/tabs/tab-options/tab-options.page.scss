@@ -1,7 +1,36 @@
-// Toolbar Styles
+// Toolbar Styles — same height as tab-list home header
 .toolbar-gradient {
   --background: var(--ion-toolbar-background);
+  --min-height: 56px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  @media (min-width: 768px) {
+    --min-height: 72px;
+  }
+
+  @media (min-width: 1024px) {
+    --min-height: 76px;
+  }
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0;
+  color: #fff;
+}
+
+.toolbar-help {
+  margin: 0;
+  width: 36px;
+  height: 36px;
+
+  @media (min-width: 768px) {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 .title-gradient {
