@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "newProjectRoot": "apps",
+  "projects": {
+    "app": {
+      "projectType": "application",
+      "root": "apps/web",
+      "sourceRoot": "apps/web/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "apps/web/www"
+          }
+        }
+      }
+    }
+  }
+}

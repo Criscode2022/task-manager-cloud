@@ -1,5 +1,8 @@
 # Optional legacy static host for apps/web.
-# Primary deploy target is Vercel (see VERCEL.md) with two Turborepo projects.
+# Primary deploy target is Vercel (see VERCEL.md).
+# Root angular.json is a shim for the auto-installed @netlify/angular-runtime
+# plugin, which only looks for angular.json at the repo root (or two path
+# segments above publish). The real workspace config stays in apps/web.
 
 [build]
   base = "."
