@@ -2,15 +2,32 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import uuid
+from datetime import datetime, timedelta, timezone
 from typing import Any, Literal
 
 from dotenv import load_dotenv
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 
-from auth import hash_pin, pin_lookup_key, verify_pin
+from auth import (
+    AuthError,
+    AuthIdentity,
+    collect_auth_attempts,
+    create_access_token,
+    hash_pin,
+    jwt_secret,
+    lookup_api_key_user_id,
+    pin_lookup_key,
+    run_auth_attempts,
+    session_ttl_seconds,
+    verify_access_token,
+    verify_pin,
+    session_is_active,
+)
 
 TaskPriority = Literal["low", "medium", "high"]
 
@@ -33,14 +50,49 @@ class TaskManagerDB:
             open=True,
         )
 
-    def resolve_user_id(self, pin: str | None = None) -> int:
-        """Resolve user id from an explicit PIN or TASK_MANAGER_PIN env var."""
-        effective_pin = pin or os.environ.get("TASK_MANAGER_PIN")
-        if not effective_pin:
-            raise ValueError(
-                "No PIN provided. Set TASK_MANAGER_PIN in the environment or pass pin to the tool."
-            )
-        lookup = pin_lookup_key(effective_pin)
+    def resolve_identity(
+        self,
+        pin: str | None = None,
+        token: str | None = None,
+        api_key: str | None = None,
+    ) -> AuthIdentity:
+        """Resolve the caller using JWT, API key, or PIN (first match wins)."""
+        return run_auth_attempts(
+            collect_auth_attempts(pin=pin, token=token, api_key=api_key),
+            verify_jwt=self._identity_from_jwt,
+            verify_api_key=self._identity_from_api_key,
+            verify_pin=self._identity_from_pin,
+        )
+
+    def resolve_user_id(
+        self,
+        pin: str | None = None,
+        token: str | None = None,
+        api_key: str | None = None,
+    ) -> int:
+        """Resolve user id from PIN, JWT, or API key (and matching env vars)."""
+        return self.resolve_identity(pin=pin, token=token, api_key=api_key).user_id
+
+    def _identity_from_pin(self, pin: str) -> AuthIdentity:
+        return AuthIdentity(user_id=self._lookup_user_id_by_pin(pin), method="pin")
+
+    def _identity_from_jwt(self, token: str) -> AuthIdentity:
+        claims = verify_access_token(token)
+        self.require_valid_session(claims.user_id, claims.session_id)
+        return AuthIdentity(
+            user_id=claims.user_id,
+            method="jwt",
+            session_id=claims.session_id,
+        )
+
+    def _identity_from_api_key(self, api_key: str) -> AuthIdentity:
+        user_id = lookup_api_key_user_id(api_key)
+        if not self.user_exists(user_id):
+            raise AuthError("Invalid API key")
+        return AuthIdentity(user_id=user_id, method="api_key")
+
+    def _lookup_user_id_by_pin(self, pin: str) -> int:
+        lookup = pin_lookup_key(pin)
         with self._pool.connection() as conn:
             row = conn.execute(
                 """
@@ -53,9 +105,7 @@ class TaskManagerDB:
             ).fetchone()
             if not row:
                 # Legacy SHA-256 accounts without pin_lookup
-                import hashlib
-
-                legacy = hashlib.sha256(effective_pin.encode("utf-8")).hexdigest()
+                legacy = hashlib.sha256(pin.encode("utf-8")).hexdigest()
                 row = conn.execute(
                     """
                     SELECT id, pin_hash
@@ -65,9 +115,79 @@ class TaskManagerDB:
                     """,
                     (legacy,),
                 ).fetchone()
-        if not row or not verify_pin(effective_pin, row["pin_hash"]):
-            raise ValueError("Invalid PIN — no matching user found.")
+        if not row or not verify_pin(pin, row["pin_hash"]):
+            raise AuthError("Invalid PIN — no matching user found.")
         return int(row["id"])
+
+    def user_exists(self, user_id: int) -> bool:
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                "SELECT id FROM public.users WHERE id = %s LIMIT 1",
+                (user_id,),
+            ).fetchone()
+        return bool(row)
+
+    def require_valid_session(self, user_id: int, session_id: str) -> dict[str, Any]:
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                """
+                SELECT id, user_id, expires_at, revoked_at
+                FROM public.sessions
+                WHERE id = %s AND user_id = %s
+                LIMIT 1
+                """,
+                (session_id, user_id),
+            ).fetchone()
+        if not session_is_active(row):
+            raise AuthError("Session expired or revoked")
+        return dict(row)
+
+    def issue_session(self, user_id: int) -> dict[str, Any]:
+        """Create a sessions row and sign a Nest-compatible JWT."""
+        jwt_secret()
+        ttl = session_ttl_seconds()
+        expires_at = datetime.now(timezone.utc) + timedelta(seconds=ttl)
+        session_id = str(uuid.uuid4())
+        with self._pool.connection() as conn:
+            row = conn.execute(
+                """
+                INSERT INTO public.sessions (id, user_id, expires_at)
+                VALUES (%s, %s, %s)
+                RETURNING id, user_id, expires_at
+                """,
+                (session_id, user_id, expires_at),
+            ).fetchone()
+            conn.commit()
+        if not row:
+            raise RuntimeError("Failed to create session.")
+        token = create_access_token(
+            user_id=user_id,
+            session_id=str(row["id"]),
+            expires_at=expires_at,
+        )
+        return {
+            "id": user_id,
+            "token": token,
+            "expires_at": expires_at.isoformat(),
+            "expires_in": ttl,
+            "session_id": str(row["id"]),
+        }
+
+    def revoke_session(self, user_id: int, session_id: str) -> None:
+        with self._pool.connection() as conn:
+            conn.execute(
+                """
+                UPDATE public.sessions
+                SET revoked_at = NOW()
+                WHERE id = %s AND user_id = %s AND revoked_at IS NULL
+                """,
+                (session_id, user_id),
+            )
+            conn.commit()
+
+    def login_with_pin(self, pin: str) -> dict[str, Any]:
+        user_id = self._lookup_user_id_by_pin(pin)
+        return self.issue_session(user_id)
 
     def verify_user_pin(self, user_id: int, pin: str) -> bool:
         with self._pool.connection() as conn:

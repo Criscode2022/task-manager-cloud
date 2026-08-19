@@ -28,7 +28,7 @@ Built with the [MCP Python SDK](https://github.com/modelcontextprotocol/python-s
 
 ## Overview
 
-Task Manager Cloud is an Ionic/Angular app that stores tasks in Neon Postgres via a Netlify Functions API. This MCP server connects to the same Neon database through three MCP primitives:
+Task Manager Cloud is an Ionic/Angular app that stores tasks in Neon Postgres via a NestJS API. This MCP server connects to the same Neon database through three MCP primitives:
 
 | Primitive | Purpose | Who invokes it |
 |-----------|---------|----------------|
@@ -44,7 +44,10 @@ Task Manager Cloud is an Ionic/Angular app that stores tasks in Neon Postgres vi
 | Tool | `create_task` | Create a new task |
 | Tool | `edit_task` | Partially update an existing task |
 | Tool | `delete_task` | Permanently delete a task by ID |
-| Tool | `create_user` | Register a new user (returns a one-time 4-digit PIN) |
+| Tool | `create_user` | Register a new user (returns a one-time 8-digit PIN + JWT) |
+| Tool | `login` | Exchange a PIN for a Nest-compatible JWT session |
+| Tool | `logout` | Revoke the current JWT session |
+| Tool | `whoami` | Show the authenticated user id and which method succeeded |
 | Resource | `tasks://list` | JSON list of all tasks for the authenticated user |
 | Prompt | `read` | `/read [nombre-tarea]` — look up a task by title |
 
@@ -60,11 +63,11 @@ Task Manager Cloud is an Ionic/Angular app that stores tasks in Neon Postgres vi
                                             │
                                    ┌────────┴─────────┐
                                    │  database.py     │  Neon SQL queries
-                                   │  auth.py         │  SHA-256 PIN hashing
+                                   │  auth.py         │  PIN + JWT + API keys
                                    └──────────────────┘
 ```
 
-The server runs as a **stdio** process. The host spawns it, communicates over stdin/stdout, and the server talks to Neon using `DATABASE_URL` and the same tables as the Angular app (`users`, `tasks`).
+The server runs as a **stdio** process. The host spawns it, communicates over stdin/stdout, and the server talks to Neon using `DATABASE_URL` and the same tables as the Angular app (`users`, `tasks`, `sessions`).
 
 Search is performed **client-side** after fetching the user's tasks — the same approach as the Angular `tab-list` component. This keeps filter behavior consistent between the app and the MCP server.
 
@@ -77,7 +80,7 @@ Search is performed **client-side** after fetching the user's tasks — the same
 | Python | 3.10+ (project uses 3.14 via uv) |
 | [uv](https://docs.astral.sh/uv/getting-started/installation/) | Package manager and virtualenv |
 | Neon project | Same `DATABASE_URL` configured for the Angular/Netlify API |
-| Task Manager PIN | 4-digit PIN from the app or `create_user` tool |
+| Task Manager credentials | 8-digit PIN, Nest JWT, or MCP API key |
 
 Install uv (if needed):
 
@@ -100,7 +103,7 @@ cd mcp-server
 uv sync
 ```
 
-This creates a `.venv` and installs `mcp[cli]`, `psycopg`, `psycopg-pool`, and `python-dotenv`.
+This creates a `.venv` and installs `mcp[cli]`, `psycopg`, `psycopg-pool`, `pyjwt`, `bcrypt`, and `python-dotenv`. Dev extras (`pytest`) are included with `uv sync --group dev`.
 
 ### 2. Configure environment
 
@@ -117,10 +120,12 @@ Fill in your Neon `DATABASE_URL`. You can copy it from the app root `.env` or fr
 
 ```env
 DATABASE_URL=postgresql://USER:PASSWORD@ep-xxxx.region.aws.neon.tech/neondb?sslmode=require
-TASK_MANAGER_PIN=1234
+PIN_PEPPER=replace-with-another-long-random-secret
+JWT_SECRET=replace-with-long-random-secret
+TASK_MANAGER_PIN=12345678
 ```
 
-> `TASK_MANAGER_PIN` is optional at first. You can obtain it by calling `create_user` or by logging into the PWA (Options tab → the PIN shown when you create an account).
+> Credentials are optional at first. Call `create_user` to obtain a PIN (and a JWT when `JWT_SECRET` is set), or reuse the PIN / token from the PWA.
 
 ### 3. Verify the server starts
 
@@ -140,8 +145,8 @@ Opens a browser UI where you can list tools, call `create_user`, and inspect res
 
 ### 5. Typical first-run flow
 
-1. Call **`create_user`** → receive `user_id` and a 4-digit PIN.
-2. Add `TASK_MANAGER_PIN=<pin>` to `.env` (or pass `pin` on each tool call).
+1. Call **`create_user`** → receive `user_id`, an 8-digit PIN, and (if `JWT_SECRET` is set) a JWT.
+2. Add `TASK_MANAGER_PIN=<pin>` and/or `TASK_MANAGER_TOKEN=<jwt>` to `.env` (or pass `pin` / `token` / `api_key` on each tool call).
 3. Call **`create_task`** to add a task.
 4. Use **`search_tasks`** or the **`tasks://list`** resource to verify.
 5. Use the **`read`** prompt with the task title.
@@ -153,7 +158,14 @@ Opens a browser UI where you can list tools, call `create_user`, and inspect res
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `DATABASE_URL` | **Yes** | — | Neon Postgres connection string |
-| `TASK_MANAGER_PIN` | For task ops | — | 4-digit PIN for the authenticated user |
+| `PIN_PEPPER` | For PIN auth | — | HMAC pepper shared with the Nest API |
+| `JWT_SECRET` | For JWT auth | — | HS256 secret shared with the Nest API |
+| `SESSION_TTL_SECONDS` | No | `86400` | JWT session lifetime |
+| `TASK_MANAGER_PIN` | One of PIN / JWT / API key | — | 8-digit PIN for the authenticated user |
+| `TASK_MANAGER_TOKEN` | One of PIN / JWT / API key | — | Nest-compatible JWT (`sub` + `sid`) |
+| `MCP_API_KEY` | One of PIN / JWT / API key | — | Static API key |
+| `MCP_API_KEY_USER_ID` | With `MCP_API_KEY` | — | User id bound to `MCP_API_KEY` |
+| `MCP_API_KEYS` | No | — | JSON object or `key:user_id,...` list |
 
 **Where to set them:**
 
@@ -167,31 +179,48 @@ Opens a browser UI where you can list tools, call `create_user`, and inspect res
 
 ## Authentication
 
-The Angular app does **not** use Neon Auth. Instead, each user gets a random 4-digit PIN that is hashed with SHA-256 and stored in the `users.pin_hash` column. The MCP server uses the same scheme (`auth.py`).
+The MCP server accepts **any one** of three methods. It tries them in order and uses the first credential that verifies (same idea as FastMCP `MultiAuth`):
+
+| Method | Tool argument | Environment | Notes |
+|--------|---------------|-------------|--------|
+| **JWT** | `token` | `TASK_MANAGER_TOKEN` | HS256, claims `sub` (user id) and `sid` (session id). Same tokens as `POST /api/auth/login`. Session must exist in `sessions` and not be expired/revoked. |
+| **API key** | `api_key` | `MCP_API_KEY` | Maps a static secret to a user id (`MCP_API_KEY_USER_ID` or `MCP_API_KEYS`). |
+| **PIN** | `pin` | `TASK_MANAGER_PIN` | 8-digit PIN. Looked up via HMAC(`PIN_PEPPER`) + bcrypt (legacy SHA-256 hashes still work). |
+
+Explicit tool arguments are tried before environment fallbacks. If a JWT is invalid but a PIN is also present, the PIN still succeeds.
 
 ```
-User PIN "4821"
-    │
-    ▼ SHA-256
-pin_hash "a3f2..."  ──►  users table
-    │
-    ▼ lookup
-user_id 42  ──►  tasks filtered by user_id
+token / api_key / pin  (tool args)
+        │
+        ▼  if missing or invalid, next source
+TASK_MANAGER_TOKEN / MCP_API_KEY / TASK_MANAGER_PIN
+        │
+        ▼ first match
+user_id  ──►  tasks filtered by user_id
 ```
 
-### Resolving identity
-
-Every task tool and the `tasks://list` resource need a user identity. The server resolves it in this order:
-
-1. `pin` argument passed to the tool (if provided)
-2. `TASK_MANAGER_PIN` environment variable
-3. Error if neither is set
-
-`create_user` is the only tool that does **not** require a PIN — it creates a new account.
+`create_user` and `login` do not require prior credentials. `create_user` returns a PIN and, when `JWT_SECRET` is set, a session token. `login` is the MCP equivalent of `POST /api/auth/login`.
 
 ### Using an existing app account
 
-If you already have a user in the PWA, enter the same 4-digit PIN as `TASK_MANAGER_PIN`. The MCP server will resolve the same `user_id` and operate on the same tasks visible in the app.
+Reuse the PWA PIN as `TASK_MANAGER_PIN`, or paste the app's JWT as `TASK_MANAGER_TOKEN`. Both resolve to the same `user_id` and the same tasks.
+
+### API keys
+
+For machine-to-machine access without embedding a PIN or JWT:
+
+```env
+MCP_API_KEY=replace-with-long-random-api-key
+MCP_API_KEY_USER_ID=42
+```
+
+Multiple keys:
+
+```env
+MCP_API_KEYS=alice-secret:1,bob-secret:2
+# or JSON:
+MCP_API_KEYS={"alice-secret": 1, "bob-secret": 2}
+```
 
 ---
 
@@ -207,7 +236,9 @@ Read-only search across the authenticated user's tasks. All filters are combined
 | `done` | `boolean` | No | `true` = completed, `false` = pending |
 | `priority` | `"low"` \| `"medium"` \| `"high"` | No | Filter by priority |
 | `tag` | `string` | No | Filter tasks containing this tag (case-insensitive) |
-| `pin` | `string` | No | 4-digit PIN; falls back to `TASK_MANAGER_PIN` |
+| `pin` | `string` | No | 8-digit PIN; falls back to `TASK_MANAGER_PIN` |
+| `token` | `string` | No | JWT; falls back to `TASK_MANAGER_TOKEN` |
+| `api_key` | `string` | No | Static key; falls back to `MCP_API_KEY` |
 
 **Returns:** JSON array of matching tasks, or a message if none match.
 
@@ -232,7 +263,7 @@ Create a new task for the authenticated user.
 | `done` | `boolean` | No | `false` | Completion status |
 | `priority` | `"low"` \| `"medium"` \| `"high"` | No | `"medium"` | Priority level |
 | `tags` | `string[]` | No | `[]` | List of tag strings |
-| `pin` | `string` | No | — | 4-digit PIN |
+| `pin` | `string` | No | — | 8-digit PIN / JWT `token` / `api_key` |
 
 **Returns:** The created task as JSON (includes auto-generated `id` and `created_at`).
 
@@ -261,7 +292,7 @@ Partially update an existing task. Only fields you pass are changed; omitted fie
 | `done` | `boolean` | No | New completion status |
 | `priority` | `"low"` \| `"medium"` \| `"high"` | No | New priority |
 | `tags` | `string[]` | No | **Replaces** the entire tag list |
-| `pin` | `string` | No | 4-digit PIN |
+| `pin` / `token` / `api_key` | `string` | No | Optional credentials; see [Authentication](#authentication) |
 
 **Returns:** The updated task as JSON.
 
@@ -282,7 +313,7 @@ Permanently delete a task. This cannot be undone.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `task_id` | `integer` | **Yes** | ID of the task to delete |
-| `pin` | `string` | No | 4-digit PIN |
+| `pin` / `token` / `api_key` | `string` | No | Optional credentials; see [Authentication](#authentication) |
 
 **Returns:** Confirmation message.
 
@@ -292,7 +323,7 @@ Permanently delete a task. This cannot be undone.
 
 ### `create_user`
 
-Create a new Task Manager Cloud account. No PIN required.
+Create a new Task Manager Cloud account. No prior credentials required.
 
 **Parameters:** none
 
@@ -301,14 +332,40 @@ Create a new Task Manager Cloud account. No PIN required.
 ```
 User created successfully.
   user_id: 42
-  pin: 7391
+  pin: 73918264
+  token: eyJhbGciOiJIUzI1NiJ9...
+  expires_at: 2026-08-20T00:00:00+00:00
 
-Save this PIN and set TASK_MANAGER_PIN=7391 in your MCP server config.
+Save the PIN (shown only once). Authenticate later with pin, token, or an API key mapped to this user_id.
 ```
+
+If `JWT_SECRET` is unset, the PIN is still returned and you can call `login` after configuring the secret.
 
 > The PIN is shown **only once**. Store it immediately — there is no recovery mechanism.
 
-After creation, set `TASK_MANAGER_PIN` in your `.env` or pass the PIN on subsequent tool calls.
+---
+
+### `login`
+
+Exchange a PIN for a JWT session token. Compatible with `POST /api/auth/login` (same `sessions` row and HS256 claims).
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `pin` | `string` | **Yes** | 8-digit user PIN |
+
+**Returns:** `user_id`, `token`, `expires_at`, `expires_in`.
+
+---
+
+### `logout`
+
+Revoke the current JWT session. PIN and API-key identities have no session to revoke.
+
+---
+
+### `whoami`
+
+Return `{ user_id, method, session_id }` for the credential that succeeded (`jwt`, `api_key`, or `pin`).
 
 ---
 
@@ -320,7 +377,7 @@ Resources provide read-only context that MCP hosts can load into the model's win
 
 Returns the complete task list for the authenticated user as a JSON array, ordered by `created_at` descending (newest first).
 
-**Requires:** `TASK_MANAGER_PIN` set in the environment (no `pin` parameter on resources).
+**Requires:** one of `TASK_MANAGER_PIN`, `TASK_MANAGER_TOKEN`, or `MCP_API_KEY` in the environment (resources cannot take tool arguments).
 
 **Example output:**
 
@@ -358,7 +415,7 @@ Look up a task by its **exact title** (case-insensitive match) and return a summ
 
 **Behavior:**
 
-1. Resolves the user via `TASK_MANAGER_PIN`.
+1. Resolves the user via env credentials (PIN, JWT, or API key).
 2. Finds the first task whose title matches `nombre_tarea` (case-insensitive).
 3. Returns task JSON plus an instruction to summarize and suggest next steps.
 
@@ -381,7 +438,8 @@ The MCP server reads and writes the same Neon tables as the Angular app.
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | `bigint` | Auto-increment primary key |
-| `pin_hash` | `text` | SHA-256 hex digest of the 4-digit PIN |
+| `pin_hash` | `text` | bcrypt (or legacy SHA-256) of the 8-digit PIN |
+| `pin_lookup` | `text` | HMAC-SHA256 lookup key (`PIN_PEPPER`) |
 | `created_at` | `timestamptz` | Account creation timestamp |
 
 ### `tasks`
@@ -398,7 +456,16 @@ The MCP server reads and writes the same Neon tables as the Angular app.
 | `created_at` | `timestamptz` | Creation timestamp |
 | `updated_at` | `timestamptz` | Last update timestamp (auto-set by trigger) |
 
-Schema source: [`neon-migration.sql`](../neon-migration.sql)
+Schema source: [`neon-migration.sql`](../neon-migration.sql), [`neon-auth-migration.sql`](../neon-auth-migration.sql)
+
+### `sessions`
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `uuid` | Session id (`sid` JWT claim) |
+| `user_id` | `bigint` | FK → `users.id` |
+| `expires_at` | `timestamptz` | Token expiry |
+| `revoked_at` | `timestamptz` | Set on logout |
 
 ---
 
@@ -427,9 +494,9 @@ The repo ships a ready-made config at [`.cursor/mcp.json`](../.cursor/mcp.json):
 **Steps:**
 
 1. Ensure `uv` is on your PATH.
-2. Configure `.env` with `DATABASE_URL` and `TASK_MANAGER_PIN`.
+2. Configure `.env` with `DATABASE_URL` plus at least one auth method (`TASK_MANAGER_PIN`, `TASK_MANAGER_TOKEN`, or `MCP_API_KEY`).
 3. Restart Cursor (or reload MCP servers from **Settings → MCP**).
-4. The `task-manager-cloud` server should appear with 5 tools, 1 resource, and 1 prompt.
+4. The `task-manager-cloud` server should appear with 8 tools, 1 resource, and 1 prompt.
 
 ### Claude Desktop
 
@@ -448,7 +515,9 @@ Add to `claude_desktop_config.json` (path varies by OS):
       ],
       "env": {
         "DATABASE_URL": "postgresql://USER:PASSWORD@ep-xxxx.region.aws.neon.tech/neondb?sslmode=require",
-        "TASK_MANAGER_PIN": "1234"
+        "PIN_PEPPER": "replace-with-another-long-random-secret",
+        "JWT_SECRET": "replace-with-long-random-secret",
+        "TASK_MANAGER_PIN": "12345678"
       }
     }
   }
@@ -484,10 +553,17 @@ Use this to:
 ### Verify auth hashing
 
 ```bash
-uv run python -c "from auth import hash_pin; print(hash_pin('1234'))"
+uv run python -c "from auth import hash_pin; print(hash_pin('12345678'))"
 ```
 
-The output must match what the Angular `PinHashService` produces for the same PIN.
+The bcrypt hash is compatible with the Nest API `pin.util` helper (same `PIN_PEPPER` lookup).
+
+### Run unit tests
+
+```bash
+uv sync --group dev
+uv run pytest
+```
 
 ### Sync dependencies after changes
 
@@ -508,8 +584,9 @@ uv add <package-name>
 ```
 mcp-server/
 ├── server.py          # FastMCP server — tools, resources, prompts
-├── database.py        # Supabase client, queries, search logic
-├── auth.py            # PIN generation and SHA-256 hashing
+├── database.py        # Neon queries, sessions, identity resolution
+├── auth.py            # PIN, JWT, API keys, multi-method resolver
+├── tests/             # pytest coverage for auth and tool wiring
 ├── pyproject.toml     # uv project manifest
 ├── uv.lock            # Locked dependency versions
 ├── .env.example       # Environment variable template
@@ -521,7 +598,7 @@ mcp-server/
 |------|----------------|
 | `server.py` | MCP protocol surface — decorators register tools/resources/prompts |
 | `database.py` | All Neon/Postgres I/O; loads `.env` from `mcp-server/` and project root |
-| `auth.py` | Cryptographic PIN handling, compatible with the Angular app |
+| `auth.py` | PIN / JWT / API-key helpers and first-match credential resolution |
 
 ---
 
@@ -530,8 +607,10 @@ mcp-server/
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
 | `DATABASE_URL must be set` | Missing env vars | Create `.env` with a valid Neon connection string |
-| `No PIN provided` | `TASK_MANAGER_PIN` not set | Call `create_user` or set the PIN in `.env` |
-| `Invalid PIN — no matching user found` | Wrong PIN | Verify the 4-digit PIN from account creation |
+| `No credentials provided` | No PIN, JWT, or API key | Call `create_user` / `login`, or set `TASK_MANAGER_PIN`, `TASK_MANAGER_TOKEN`, or `MCP_API_KEY` |
+| `Invalid PIN — no matching user found` | Wrong PIN | Verify the 8-digit PIN from account creation |
+| `Invalid or expired token` / `Session expired or revoked` | Bad JWT | Call `login` again; confirm `JWT_SECRET` matches the Nest API |
+| `Invalid API key` | Unknown key or missing user | Check `MCP_API_KEY` / `MCP_API_KEYS` and that the user id exists |
 | `Task N not found for this user` | Wrong `task_id` or different user | Use `search_tasks` or `tasks://list` to find the correct ID |
 | Server not appearing in Cursor | `uv` not on PATH or MCP not reloaded | Install uv, restart Cursor, check **Settings → MCP** logs |
 | `uv: command not found` | uv not installed | Follow the [uv install guide](https://docs.astral.sh/uv/getting-started/installation/) |
@@ -546,8 +625,10 @@ Open **Cursor Settings → MCP**, select `task-manager-cloud`, and inspect the s
 
 ## Security notes
 
-- **PIN is the only credential.** Treat `TASK_MANAGER_PIN` like a password. Do not commit it to git.
-- **Database URL secrecy.** Keep `DATABASE_URL` server-side only (Netlify env / MCP env). The browser never receives it; PIN verification happens in application code.
+- **Treat every credential as a secret.** PIN, JWT, and API keys are equivalent to passwords. Do not commit them to git.
+- **JWT sessions are revocable.** `logout` sets `sessions.revoked_at`. Stolen tokens stop working after expiry or revoke.
+- **API keys are env-configured.** They are not stored in the database; rotate by changing env vars.
+- **Database URL secrecy.** Keep `DATABASE_URL` server-side only (Vercel / MCP env). The browser never receives it.
 - **`.env` is gitignored.** Both `mcp-server/.env` and the project root `.env` are excluded from version control.
 - **`create_user` PIN is one-time.** The server returns the plaintext PIN once. If lost, create a new user or use the PWA to manage tasks under a new account.
 - **Delete is permanent.** `delete_task` removes the row from Neon with no soft-delete or undo.

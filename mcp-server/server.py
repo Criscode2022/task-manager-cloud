@@ -1,8 +1,8 @@
 """
 Task Manager Cloud MCP server.
 
-Exposes tools for task CRUD, user creation, a tasks list resource,
-and a /read [nombre-tarea] prompt template.
+Exposes tools for task CRUD, user creation, multi-method auth
+(PIN, JWT, API key), a tasks list resource, and a /read prompt.
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from typing import Literal
 
 from mcp.server.fastmcp import FastMCP
 
-from auth import generate_pin
+from auth import AuthError, AuthIdentity, generate_pin
 from database import format_tasks, get_db
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr)
@@ -26,16 +26,42 @@ mcp = FastMCP(
         "MCP server for Task Manager Cloud (Ionic/Angular + Neon Postgres). "
         "Use tools to search, create, edit, and delete tasks. "
         "Use create_user to register a new account (returns a one-time PIN). "
-        "Set TASK_MANAGER_PIN in the environment for authenticated task operations, "
-        "or pass pin on each tool call."
+        "Use login to exchange a PIN for a JWT session token. "
+        "Authenticate with any of: pin (or TASK_MANAGER_PIN), "
+        "token (or TASK_MANAGER_TOKEN), or api_key (or MCP_API_KEY). "
+        "JWT tokens are the same HS256 sessions issued by the Nest API."
     ),
 )
 
 TaskPriority = Literal["low", "medium", "high"]
 
 
-def _resolve_user(pin: str | None) -> int:
-    return get_db().resolve_user_id(pin)
+def _resolve_identity(
+    pin: str | None = None,
+    token: str | None = None,
+    api_key: str | None = None,
+) -> AuthIdentity:
+    return get_db().resolve_identity(pin=pin, token=token, api_key=api_key)
+
+
+def _resolve_user(
+    pin: str | None = None,
+    token: str | None = None,
+    api_key: str | None = None,
+) -> int:
+    return _resolve_identity(pin=pin, token=token, api_key=api_key).user_id
+
+
+def _format_session(session: dict) -> str:
+    return (
+        f"Authenticated successfully.\n"
+        f"  user_id: {session['id']}\n"
+        f"  token: {session['token']}\n"
+        f"  expires_at: {session['expires_at']}\n"
+        f"  expires_in: {session['expires_in']}\n\n"
+        f"Set TASK_MANAGER_TOKEN to this JWT, or pass token on later tool calls. "
+        f"The same token works as Authorization: Bearer on the Nest API."
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -57,6 +83,8 @@ def search_tasks(
     priority: TaskPriority | None = None,
     tag: str | None = None,
     pin: str | None = None,
+    token: str | None = None,
+    api_key: str | None = None,
 ) -> str:
     """Search tasks for the authenticated user.
 
@@ -68,9 +96,11 @@ def search_tasks(
         done: Filter by completion status (true = done, false = pending).
         priority: Filter by priority (low, medium, high).
         tag: Filter tasks that contain this tag (case-insensitive).
-        pin: 4-digit user PIN. Falls back to TASK_MANAGER_PIN env var.
+        pin: 8-digit user PIN. Falls back to TASK_MANAGER_PIN.
+        token: JWT access token. Falls back to TASK_MANAGER_TOKEN.
+        api_key: Static MCP API key. Falls back to MCP_API_KEY.
     """
-    user_id = _resolve_user(pin)
+    user_id = _resolve_user(pin=pin, token=token, api_key=api_key)
     tasks = get_db().search_tasks(
         user_id=user_id,
         query=query,
@@ -99,6 +129,8 @@ def create_task(
     priority: TaskPriority = "medium",
     tags: list[str] | None = None,
     pin: str | None = None,
+    token: str | None = None,
+    api_key: str | None = None,
 ) -> str:
     """Create a new task for the authenticated user.
 
@@ -108,9 +140,11 @@ def create_task(
         done: Whether the task is already completed.
         priority: Task priority — low, medium, or high.
         tags: Optional list of tag strings.
-        pin: 4-digit user PIN. Falls back to TASK_MANAGER_PIN env var.
+        pin: 8-digit user PIN. Falls back to TASK_MANAGER_PIN.
+        token: JWT access token. Falls back to TASK_MANAGER_TOKEN.
+        api_key: Static MCP API key. Falls back to MCP_API_KEY.
     """
-    user_id = _resolve_user(pin)
+    user_id = _resolve_user(pin=pin, token=token, api_key=api_key)
     task = get_db().create_task(
         user_id=user_id,
         title=title,
@@ -139,6 +173,8 @@ def edit_task(
     priority: TaskPriority | None = None,
     tags: list[str] | None = None,
     pin: str | None = None,
+    token: str | None = None,
+    api_key: str | None = None,
 ) -> str:
     """Update an existing task. Only provided fields are changed.
 
@@ -149,9 +185,11 @@ def edit_task(
         done: New completion status.
         priority: New priority (low, medium, high).
         tags: Replacement tag list.
-        pin: 4-digit user PIN. Falls back to TASK_MANAGER_PIN env var.
+        pin: 8-digit user PIN. Falls back to TASK_MANAGER_PIN.
+        token: JWT access token. Falls back to TASK_MANAGER_TOKEN.
+        api_key: Static MCP API key. Falls back to MCP_API_KEY.
     """
-    user_id = _resolve_user(pin)
+    user_id = _resolve_user(pin=pin, token=token, api_key=api_key)
     updates: dict = {}
     if title is not None:
         updates["title"] = title
@@ -177,14 +215,21 @@ def edit_task(
         "openWorldHint": True,
     },
 )
-def delete_task(task_id: int, pin: str | None = None) -> str:
+def delete_task(
+    task_id: int,
+    pin: str | None = None,
+    token: str | None = None,
+    api_key: str | None = None,
+) -> str:
     """Permanently delete a task by ID.
 
     Args:
         task_id: ID of the task to delete.
-        pin: 4-digit user PIN. Falls back to TASK_MANAGER_PIN env var.
+        pin: 8-digit user PIN. Falls back to TASK_MANAGER_PIN.
+        token: JWT access token. Falls back to TASK_MANAGER_TOKEN.
+        api_key: Static MCP API key. Falls back to MCP_API_KEY.
     """
-    user_id = _resolve_user(pin)
+    user_id = _resolve_user(pin=pin, token=token, api_key=api_key)
     get_db().delete_task(user_id, task_id)
     return f"Task {task_id} deleted successfully."
 
@@ -201,17 +246,111 @@ def delete_task(task_id: int, pin: str | None = None) -> str:
 def create_user() -> str:
     """Create a new Task Manager Cloud user with a random 8-digit PIN.
 
-    Returns the user ID and PIN. Save the PIN — it is shown only once and
-    is required for all subsequent task operations.
+    Returns the user ID, PIN, and a JWT session token. Save the PIN — it is
+    shown only once. The token is the same format as POST /api/auth/login.
     """
     pin = generate_pin()
-    user = get_db().create_user(pin)
+    db = get_db()
+    user = db.create_user(pin)
+    try:
+        session = db.issue_session(int(user["id"]))
+    except AuthError as exc:
+        logger.warning("Created user %s but could not issue JWT: %s", user["id"], exc)
+        return (
+            f"User created successfully.\n"
+            f"  user_id: {user['id']}\n"
+            f"  pin: {pin}\n\n"
+            f"Save this PIN. Set TASK_MANAGER_PIN={pin} or call login(pin) after "
+            f"configuring JWT_SECRET to obtain a session token."
+        )
     return (
         f"User created successfully.\n"
         f"  user_id: {user['id']}\n"
-        f"  pin: {pin}\n\n"
-        f"Save this PIN and set TASK_MANAGER_PIN={pin} in your MCP server config."
+        f"  pin: {pin}\n"
+        f"  token: {session['token']}\n"
+        f"  expires_at: {session['expires_at']}\n\n"
+        f"Save the PIN (shown only once). Authenticate later with pin, "
+        f"token, or an API key mapped to this user_id."
     )
+
+
+@mcp.tool(
+    name="login",
+    annotations={
+        "title": "Login with PIN",
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "openWorldHint": True,
+    },
+)
+def login(pin: str) -> str:
+    """Exchange a PIN for a JWT session token (same as POST /api/auth/login).
+
+    Args:
+        pin: 8-digit user PIN.
+    """
+    session = get_db().login_with_pin(pin)
+    return _format_session(session)
+
+
+@mcp.tool(
+    name="logout",
+    annotations={
+        "title": "Logout",
+        "readOnlyHint": False,
+        "destructiveHint": False,
+        "openWorldHint": True,
+    },
+)
+def logout(
+    pin: str | None = None,
+    token: str | None = None,
+    api_key: str | None = None,
+) -> str:
+    """Revoke the current JWT session. PIN and API-key identities have no session to revoke.
+
+    Args:
+        pin: 8-digit user PIN. Falls back to TASK_MANAGER_PIN.
+        token: JWT access token. Falls back to TASK_MANAGER_TOKEN.
+        api_key: Static MCP API key. Falls back to MCP_API_KEY.
+    """
+    identity = _resolve_identity(pin=pin, token=token, api_key=api_key)
+    if identity.method != "jwt" or not identity.session_id:
+        return (
+            f"Authenticated via {identity.method}; nothing to revoke. "
+            "Logout only revokes JWT sessions."
+        )
+    get_db().revoke_session(identity.user_id, identity.session_id)
+    return f"Session revoked for user {identity.user_id}."
+
+
+@mcp.tool(
+    name="whoami",
+    annotations={
+        "title": "Who am I",
+        "readOnlyHint": True,
+        "openWorldHint": True,
+    },
+)
+def whoami(
+    pin: str | None = None,
+    token: str | None = None,
+    api_key: str | None = None,
+) -> str:
+    """Return the authenticated user id and which credential method succeeded.
+
+    Args:
+        pin: 8-digit user PIN. Falls back to TASK_MANAGER_PIN.
+        token: JWT access token. Falls back to TASK_MANAGER_TOKEN.
+        api_key: Static MCP API key. Falls back to MCP_API_KEY.
+    """
+    identity = _resolve_identity(pin=pin, token=token, api_key=api_key)
+    payload = {
+        "user_id": identity.user_id,
+        "method": identity.method,
+        "session_id": identity.session_id,
+    }
+    return json.dumps(payload, indent=2)
 
 
 # ---------------------------------------------------------------------------
@@ -221,8 +360,8 @@ def create_user() -> str:
 
 @mcp.resource("tasks://list")
 def tasks_list_resource() -> str:
-    """Full task list for the authenticated user (requires TASK_MANAGER_PIN)."""
-    user_id = _resolve_user(None)
+    """Full task list for the authenticated user (env credentials)."""
+    user_id = _resolve_user()
     tasks = get_db().list_tasks(user_id)
     return format_tasks(tasks)
 
@@ -239,7 +378,7 @@ def read_task_prompt(nombre_tarea: str) -> str:
     Args:
         nombre_tarea: Exact task title to look up (case-insensitive).
     """
-    user_id = _resolve_user(None)
+    user_id = _resolve_user()
     task = get_db().get_task_by_title(user_id, nombre_tarea)
     if not task:
         return (
