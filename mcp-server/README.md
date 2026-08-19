@@ -204,17 +204,34 @@ user_id  ──►  tasks filtered by user_id
 
 `create_user` and `login` do not require prior credentials. `create_user` returns a PIN and, when `JWT_SECRET` is set, a session token. `login` is the MCP equivalent of `POST /api/auth/login`.
 
-### HTTP MCP clients (login → Bearer token)
+### HTTP MCP clients with no assistant (OAuth + PIN page)
 
-Remote clients (the Edit Server screen with **OAuth / No authentication / Bearer token**) cannot type a PIN. Use `login` to mint a JWT, then switch the client to Bearer:
+If the client only **connects** to MCP (no chat to call tools), pick **OAuth (recommended)** and sign in with your PIN in the browser/webview:
 
-1. Set **Method** to **No authentication** (not OAuth). Leave **Allow local HTTP** off for `https://` URLs.
-2. **Save & Connect**.
-3. Call **`login`** with your 8-digit PIN (for example: “Use the login tool with PIN 12345678”).
-4. Copy the `token` from the reply.
-5. Edit Server → **Method → Bearer token** → paste the token (no `Bearer ` prefix) → **Save & Connect**.
+1. Server URL: `https://your-host/mcp`
+2. Method: **OAuth (recommended)**
+3. Allow local HTTP: off
+4. **Save & Connect** — the client opens `/login`
+5. Enter your 8-digit PIN and tap **Sign in**
+6. The client stores the JWT and talks to `/mcp` with `Authorization: Bearer`
 
-The hosted server must run Streamable HTTP (`MCP_TRANSPORT=streamable-http`) at `/mcp`, with `DATABASE_URL`, `PIN_PEPPER`, and `JWT_SECRET` set. Do not enable protocol-level OAuth on the server — that would block `login` before you have a token.
+Hosted process:
+
+```env
+MCP_TRANSPORT=streamable-http
+MCP_PUBLIC_URL=https://your-host
+MCP_HOST=0.0.0.0
+MCP_PORT=8000
+DATABASE_URL=...
+PIN_PEPPER=...
+JWT_SECRET=...
+```
+
+`MCP_PUBLIC_URL` is the public origin (no `/mcp`). It must be `https://` except on localhost.
+
+### HTTP clients that have an assistant
+
+Connect with **No authentication**, call the `login` tool with your PIN, then paste the JWT as **Bearer token**.
 
 ### Using an existing app account
 

@@ -13,29 +13,52 @@ import os
 import sys
 from typing import Literal
 
+from mcp.server.auth.settings import AuthSettings, ClientRegistrationOptions, RevocationOptions
 from mcp.server.fastmcp import Context, FastMCP
+from pydantic import AnyHttpUrl
+from starlette.requests import Request
+from starlette.responses import JSONResponse, Response
 
 from auth import AuthError, AuthIdentity, generate_pin
 from database import format_tasks, get_db
+from oauth import MCP_SCOPE, PinOAuthProvider, oauth_enabled, os_public_url, os_transport
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr)
 logger = logging.getLogger("task-manager-mcp")
 
+_public_url = os_public_url()
+oauth_provider = PinOAuthProvider(_public_url) if oauth_enabled() and _public_url else None
+_auth_settings = None
+if oauth_provider is not None and _public_url is not None:
+    issuer = AnyHttpUrl(_public_url)
+    _auth_settings = AuthSettings(
+        issuer_url=issuer,
+        resource_server_url=AnyHttpUrl(f"{_public_url}/mcp"),
+        required_scopes=[MCP_SCOPE],
+        client_registration_options=ClientRegistrationOptions(
+            enabled=True,
+            valid_scopes=[MCP_SCOPE],
+            default_scopes=[MCP_SCOPE],
+        ),
+        revocation_options=RevocationOptions(enabled=True),
+    )
+
+_http_transport = os_transport() in {"http", "streamable-http", "streamable_http"}
 mcp = FastMCP(
     "task-manager-cloud",
     instructions=(
         "MCP server for Task Manager Cloud (Ionic/Angular + Neon Postgres). "
         "Use tools to search, create, edit, and delete tasks. "
-        "login does not require prior authentication: pass the user's 8-digit PIN "
-        "and return the JWT. Tell the user to paste that JWT as the MCP client's "
-        "Bearer token (Method → Bearer token, no 'Bearer ' prefix). "
-        "create_user registers a new account (one-time PIN + JWT). "
-        "After login, authenticate with the Bearer header, pin, token, or api_key."
+        "HTTP connect-only clients should use OAuth: the user enters their PIN "
+        "on /login and the client receives a JWT. "
+        "stdio clients can call login(pin) to obtain the same JWT."
     ),
-    host=os.environ.get("MCP_HOST", "127.0.0.1"),
+    host=os.environ.get("MCP_HOST", "0.0.0.0" if _http_transport else "127.0.0.1"),
     port=int(os.environ.get("MCP_PORT", "8000")),
     stateless_http=os.environ.get("MCP_STATELESS_HTTP", "true").lower()
     in {"1", "true", "yes"},
+    auth=_auth_settings,
+    auth_server_provider=oauth_provider,
 )
 
 TaskPriority = Literal["low", "medium", "high"]
@@ -435,9 +458,30 @@ def read_task_prompt(nombre_tarea: str, ctx: Context | None = None) -> str:
     )
 
 
+@mcp.custom_route("/health", methods=["GET"])
+async def health(_request: Request) -> Response:
+    return JSONResponse({"ok": True, "oauth": oauth_provider is not None})
+
+
+if oauth_provider is not None:
+
+    @mcp.custom_route("/login", methods=["GET", "POST"])
+    async def oauth_login(request: Request) -> Response:
+        assert oauth_provider is not None
+        if request.method == "GET":
+            state = request.query_params.get("state") or ""
+            return await oauth_provider.get_login_page(state)
+        return await oauth_provider.handle_login_callback(request)
+
+
 def main() -> None:
     transport = os.environ.get("MCP_TRANSPORT", "stdio").strip().lower()
     if transport in {"http", "streamable-http", "streamable_http"}:
+        if oauth_provider is None:
+            logger.warning(
+                "HTTP MCP is running without OAuth. Set MCP_PUBLIC_URL so "
+                "connect-only clients can sign in with a PIN."
+            )
         logger.info(
             "Starting Task Manager Cloud MCP server (streamable-http) on %s:%s/mcp",
             mcp.settings.host,
