@@ -55,10 +55,16 @@ class TaskManagerDB:
         pin: str | None = None,
         token: str | None = None,
         api_key: str | None = None,
+        authorization: str | None = None,
     ) -> AuthIdentity:
         """Resolve the caller using JWT, API key, or PIN (first match wins)."""
         return run_auth_attempts(
-            collect_auth_attempts(pin=pin, token=token, api_key=api_key),
+            collect_auth_attempts(
+                pin=pin,
+                token=token,
+                api_key=api_key,
+                authorization=authorization,
+            ),
             verify_jwt=self._identity_from_jwt,
             verify_api_key=self._identity_from_api_key,
             verify_pin=self._identity_from_pin,
@@ -69,9 +75,15 @@ class TaskManagerDB:
         pin: str | None = None,
         token: str | None = None,
         api_key: str | None = None,
+        authorization: str | None = None,
     ) -> int:
         """Resolve user id from PIN, JWT, or API key (and matching env vars)."""
-        return self.resolve_identity(pin=pin, token=token, api_key=api_key).user_id
+        return self.resolve_identity(
+            pin=pin,
+            token=token,
+            api_key=api_key,
+            authorization=authorization,
+        ).user_id
 
     def _identity_from_pin(self, pin: str) -> AuthIdentity:
         return AuthIdentity(user_id=self._lookup_user_id_by_pin(pin), method="pin")

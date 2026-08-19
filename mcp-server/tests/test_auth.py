@@ -193,6 +193,16 @@ def test_collect_auth_attempts_order(clear_auth_env: None, monkeypatch: pytest.M
     ]
 
 
+def test_collect_auth_attempts_from_authorization_header(
+    clear_auth_env: None,
+) -> None:
+    attempts = collect_auth_attempts(authorization="Bearer abc.def.ghi")
+    assert [(a.method, a.value, a.source) for a in attempts] == [
+        ("jwt", "abc.def.ghi", "header"),
+        ("api_key", "abc.def.ghi", "header"),
+    ]
+
+
 def test_collect_auth_attempts_skips_duplicates(
     clear_auth_env: None,
     monkeypatch: pytest.MonkeyPatch,

@@ -166,6 +166,9 @@ Opens a browser UI where you can list tools, call `create_user`, and inspect res
 | `MCP_API_KEY` | One of PIN / JWT / API key | — | Static API key |
 | `MCP_API_KEY_USER_ID` | With `MCP_API_KEY` | — | User id bound to `MCP_API_KEY` |
 | `MCP_API_KEYS` | No | — | JSON object or `key:user_id,...` list |
+| `MCP_TRANSPORT` | No | `stdio` | `stdio` or `streamable-http` (remote HTTP clients) |
+| `MCP_HOST` | No | `127.0.0.1` | Bind address for HTTP |
+| `MCP_PORT` | No | `8000` | Listen port for HTTP (`/mcp`) |
 
 **Where to set them:**
 
@@ -179,20 +182,19 @@ Opens a browser UI where you can list tools, call `create_user`, and inspect res
 
 ## Authentication
 
-The MCP server accepts **any one** of three methods. It tries them in order and uses the first credential that verifies (same idea as FastMCP `MultiAuth`):
+Every login method stays available. The server never turns one on by disabling another. It tries credentials in order and uses the first that verifies:
 
-| Method | Tool argument | Environment | Notes |
-|--------|---------------|-------------|--------|
-| **JWT** | `token` | `TASK_MANAGER_TOKEN` | HS256, claims `sub` (user id) and `sid` (session id). Same tokens as `POST /api/auth/login`. Session must exist in `sessions` and not be expired/revoked. |
-| **API key** | `api_key` | `MCP_API_KEY` | Maps a static secret to a user id (`MCP_API_KEY_USER_ID` or `MCP_API_KEYS`). |
-| **PIN** | `pin` | `TASK_MANAGER_PIN` | 8-digit PIN. Looked up via HMAC(`PIN_PEPPER`) + bcrypt (legacy SHA-256 hashes still work). |
-
-Explicit tool arguments are tried before environment fallbacks. If a JWT is invalid but a PIN is also present, the PIN still succeeds.
+| Method | How the client sends it | Who it is for |
+|--------|-------------------------|---------------|
+| **PIN** | Tool arg `pin` or `TASK_MANAGER_PIN` | Original stdio / Cursor setup; assistant clients |
+| **JWT** | Tool arg `token`, `TASK_MANAGER_TOKEN`, or `Authorization: Bearer` | Nest/PWA sessions; `login` tool result |
+| **API key** | Tool arg `api_key`, `MCP_API_KEY`, or Bearer | Machine / CI clients |
+| **OAuth + PIN page** | Client Method → OAuth; user types PIN at `/login` | Connect-only HTTP clients (no assistant) |
+| **No HTTP auth** | Client Method → No authentication | Clients that will call `login` or pass `pin` on tools |
 
 ```
-token / api_key / pin  (tool args)
-        │
-        ▼  if missing or invalid, next source
+token / api_key / pin          (tool args)
+Authorization: Bearer …        (JWT or API key)
 TASK_MANAGER_TOKEN / MCP_API_KEY / TASK_MANAGER_PIN
         │
         ▼ first match
@@ -200,6 +202,42 @@ user_id  ──►  tasks filtered by user_id
 ```
 
 `create_user` and `login` do not require prior credentials. `create_user` returns a PIN and, when `JWT_SECRET` is set, a session token. `login` is the MCP equivalent of `POST /api/auth/login`.
+
+`/mcp` is **not** locked behind OAuth. OAuth routes (`/authorize`, `/token`, `/login`, well-known metadata) are extra endpoints. Pick the method that matches the client.
+
+### HTTP client: OAuth (no assistant)
+
+1. Server URL: `https://your-host/mcp`
+2. Method: **OAuth (recommended)**
+3. Allow local HTTP: off
+4. **Save & Connect** — the client opens `/login`
+5. Enter your 8-digit PIN and tap **Sign in**
+
+### HTTP client: Bearer token
+
+1. Method: **Bearer token**
+2. Paste a JWT from `login`, the PWA, or `POST /api/auth/login` — or an API key
+3. Do not include the word `Bearer`
+
+### HTTP client: No authentication + `login` tool
+
+1. Method: **No authentication**
+2. Call `login` with the PIN (assistant or any tool runner)
+3. Optionally switch to Bearer and paste the JWT
+
+Hosted process (all of the above work together):
+
+```env
+MCP_TRANSPORT=streamable-http
+MCP_PUBLIC_URL=https://your-host
+MCP_HOST=0.0.0.0
+MCP_PORT=8000
+DATABASE_URL=...
+PIN_PEPPER=...
+JWT_SECRET=...
+```
+
+`MCP_PUBLIC_URL` is the public origin (no `/mcp`). It must be `https://` except on localhost. Omit it to skip OAuth endpoints; PIN, JWT, and API key still work.
 
 ### Using an existing app account
 
@@ -347,13 +385,13 @@ If `JWT_SECRET` is unset, the PIN is still returned and you can call `login` aft
 
 ### `login`
 
-Exchange a PIN for a JWT session token. Compatible with `POST /api/auth/login` (same `sessions` row and HS256 claims).
+Exchange a PIN for a JWT session token. **Does not require prior authentication.** Compatible with `POST /api/auth/login` (same `sessions` row and HS256 claims).
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `pin` | `string` | **Yes** | 8-digit user PIN |
 
-**Returns:** `user_id`, `token`, `expires_at`, `expires_in`.
+**Returns:** `user_id`, `token`, `expires_at`, `expires_in`, plus instructions to paste the token as the HTTP client's **Bearer token**.
 
 ---
 
