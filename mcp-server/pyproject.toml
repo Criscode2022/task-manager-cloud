@@ -9,5 +9,15 @@ dependencies = [
     "mcp[cli]>=1.28.1",
     "psycopg[binary]>=3.2.9",
     "psycopg-pool>=3.2.6",
+    "pyjwt>=2.10.1",
     "python-dotenv>=1.2.2",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
