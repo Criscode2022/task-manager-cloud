@@ -35,7 +35,7 @@ JWT_ALGORITHM = "HS256"
 DEFAULT_SESSION_TTL_SECONDS = 60 * 60 * 24
 
 AuthMethod = Literal["jwt", "api_key", "pin"]
-CredentialSource = Literal["argument", "environment"]
+CredentialSource = Literal["argument", "environment", "header"]
 
 
 class AuthError(ValueError):
@@ -288,12 +288,12 @@ def collect_auth_attempts(
     pin: str | None = None,
     token: str | None = None,
     api_key: str | None = None,
+    authorization: str | None = None,
 ) -> list[AuthAttempt]:
-    """Build ordered credential attempts: explicit args, then environment.
+    """Build ordered credential attempts: args, HTTP header, then environment.
 
-    Order matches FastMCP MultiAuth: more specific bearer-style credentials
-    first (JWT, API key), then PIN. Environment fallbacks are tried after
-    any values passed by the caller.
+    A Bearer header is tried as both a JWT and an API key so HTTP clients
+    that only support Method → Bearer token can use either credential.
     """
     attempts: list[AuthAttempt] = []
     seen: set[tuple[AuthMethod, str]] = set()
@@ -301,7 +301,7 @@ def collect_auth_attempts(
     def add(method: AuthMethod, value: str | None, source: CredentialSource) -> None:
         if not value:
             return
-        normalized = extract_bearer_token(value) if method == "jwt" else value
+        normalized = extract_bearer_token(value) if method in {"jwt", "api_key"} else value
         if not normalized:
             return
         key = (method, normalized)
@@ -313,6 +313,9 @@ def collect_auth_attempts(
     add("jwt", token, "argument")
     add("api_key", api_key, "argument")
     add("pin", pin, "argument")
+    header = extract_bearer_token(authorization)
+    add("jwt", header, "header")
+    add("api_key", header, "header")
     add("jwt", os.environ.get("TASK_MANAGER_TOKEN"), "environment")
     add("api_key", os.environ.get("MCP_API_KEY"), "environment")
     add("pin", os.environ.get("TASK_MANAGER_PIN"), "environment")

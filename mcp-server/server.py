@@ -9,10 +9,11 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import sys
 from typing import Literal
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp import Context, FastMCP
 
 from auth import AuthError, AuthIdentity, generate_pin
 from database import format_tasks, get_db
@@ -25,31 +26,62 @@ mcp = FastMCP(
     instructions=(
         "MCP server for Task Manager Cloud (Ionic/Angular + Neon Postgres). "
         "Use tools to search, create, edit, and delete tasks. "
-        "Use create_user to register a new account (returns a one-time PIN). "
-        "Use login to exchange a PIN for a JWT session token. "
-        "Authenticate with any of: pin (or TASK_MANAGER_PIN), "
-        "token (or TASK_MANAGER_TOKEN), or api_key (or MCP_API_KEY). "
-        "JWT tokens are the same HS256 sessions issued by the Nest API."
+        "login does not require prior authentication: pass the user's 8-digit PIN "
+        "and return the JWT. Tell the user to paste that JWT as the MCP client's "
+        "Bearer token (Method → Bearer token, no 'Bearer ' prefix). "
+        "create_user registers a new account (one-time PIN + JWT). "
+        "After login, authenticate with the Bearer header, pin, token, or api_key."
     ),
+    host=os.environ.get("MCP_HOST", "127.0.0.1"),
+    port=int(os.environ.get("MCP_PORT", "8000")),
+    stateless_http=os.environ.get("MCP_STATELESS_HTTP", "true").lower()
+    in {"1", "true", "yes"},
 )
 
 TaskPriority = Literal["low", "medium", "high"]
+
+
+def _authorization_from_context(ctx: Context | None) -> str | None:
+    if ctx is None:
+        return None
+    try:
+        request = ctx.request_context.request
+    except ValueError:
+        return None
+    if request is None:
+        return None
+    headers = getattr(request, "headers", None)
+    if headers is None:
+        return None
+    getter = getattr(headers, "get", None)
+    if callable(getter):
+        return getter("authorization") or getter("Authorization")
+    if isinstance(headers, dict):
+        return headers.get("authorization") or headers.get("Authorization")
+    return None
 
 
 def _resolve_identity(
     pin: str | None = None,
     token: str | None = None,
     api_key: str | None = None,
+    ctx: Context | None = None,
 ) -> AuthIdentity:
-    return get_db().resolve_identity(pin=pin, token=token, api_key=api_key)
+    return get_db().resolve_identity(
+        pin=pin,
+        token=token,
+        api_key=api_key,
+        authorization=_authorization_from_context(ctx),
+    )
 
 
 def _resolve_user(
     pin: str | None = None,
     token: str | None = None,
     api_key: str | None = None,
+    ctx: Context | None = None,
 ) -> int:
-    return _resolve_identity(pin=pin, token=token, api_key=api_key).user_id
+    return _resolve_identity(pin=pin, token=token, api_key=api_key, ctx=ctx).user_id
 
 
 def _format_session(session: dict) -> str:
@@ -59,8 +91,10 @@ def _format_session(session: dict) -> str:
         f"  token: {session['token']}\n"
         f"  expires_at: {session['expires_at']}\n"
         f"  expires_in: {session['expires_in']}\n\n"
-        f"Set TASK_MANAGER_TOKEN to this JWT, or pass token on later tool calls. "
-        f"The same token works as Authorization: Bearer on the Nest API."
+        f"Paste this JWT in your MCP client as Method → Bearer token "
+        f"(do not include the word Bearer). Then Save & Connect.\n"
+        f"The same token works as Authorization: Bearer on the Nest API, "
+        f"or as TASK_MANAGER_TOKEN / the token tool argument."
     )
 
 
@@ -85,6 +119,7 @@ def search_tasks(
     pin: str | None = None,
     token: str | None = None,
     api_key: str | None = None,
+    ctx: Context | None = None,
 ) -> str:
     """Search tasks for the authenticated user.
 
@@ -100,7 +135,7 @@ def search_tasks(
         token: JWT access token. Falls back to TASK_MANAGER_TOKEN.
         api_key: Static MCP API key. Falls back to MCP_API_KEY.
     """
-    user_id = _resolve_user(pin=pin, token=token, api_key=api_key)
+    user_id = _resolve_user(pin=pin, token=token, api_key=api_key, ctx=ctx)
     tasks = get_db().search_tasks(
         user_id=user_id,
         query=query,
@@ -131,6 +166,7 @@ def create_task(
     pin: str | None = None,
     token: str | None = None,
     api_key: str | None = None,
+    ctx: Context | None = None,
 ) -> str:
     """Create a new task for the authenticated user.
 
@@ -144,7 +180,7 @@ def create_task(
         token: JWT access token. Falls back to TASK_MANAGER_TOKEN.
         api_key: Static MCP API key. Falls back to MCP_API_KEY.
     """
-    user_id = _resolve_user(pin=pin, token=token, api_key=api_key)
+    user_id = _resolve_user(pin=pin, token=token, api_key=api_key, ctx=ctx)
     task = get_db().create_task(
         user_id=user_id,
         title=title,
@@ -175,6 +211,7 @@ def edit_task(
     pin: str | None = None,
     token: str | None = None,
     api_key: str | None = None,
+    ctx: Context | None = None,
 ) -> str:
     """Update an existing task. Only provided fields are changed.
 
@@ -189,7 +226,7 @@ def edit_task(
         token: JWT access token. Falls back to TASK_MANAGER_TOKEN.
         api_key: Static MCP API key. Falls back to MCP_API_KEY.
     """
-    user_id = _resolve_user(pin=pin, token=token, api_key=api_key)
+    user_id = _resolve_user(pin=pin, token=token, api_key=api_key, ctx=ctx)
     updates: dict = {}
     if title is not None:
         updates["title"] = title
@@ -220,6 +257,7 @@ def delete_task(
     pin: str | None = None,
     token: str | None = None,
     api_key: str | None = None,
+    ctx: Context | None = None,
 ) -> str:
     """Permanently delete a task by ID.
 
@@ -229,7 +267,7 @@ def delete_task(
         token: JWT access token. Falls back to TASK_MANAGER_TOKEN.
         api_key: Static MCP API key. Falls back to MCP_API_KEY.
     """
-    user_id = _resolve_user(pin=pin, token=token, api_key=api_key)
+    user_id = _resolve_user(pin=pin, token=token, api_key=api_key, ctx=ctx)
     get_db().delete_task(user_id, task_id)
     return f"Task {task_id} deleted successfully."
 
@@ -284,7 +322,10 @@ def create_user() -> str:
     },
 )
 def login(pin: str) -> str:
-    """Exchange a PIN for a JWT session token (same as POST /api/auth/login).
+    """Exchange a PIN for a JWT. Does not require prior authentication.
+
+    Use this first on HTTP MCP clients: connect with Method → No authentication,
+    call login, then paste the returned token as Method → Bearer token.
 
     Args:
         pin: 8-digit user PIN.
@@ -306,6 +347,7 @@ def logout(
     pin: str | None = None,
     token: str | None = None,
     api_key: str | None = None,
+    ctx: Context | None = None,
 ) -> str:
     """Revoke the current JWT session. PIN and API-key identities have no session to revoke.
 
@@ -314,7 +356,7 @@ def logout(
         token: JWT access token. Falls back to TASK_MANAGER_TOKEN.
         api_key: Static MCP API key. Falls back to MCP_API_KEY.
     """
-    identity = _resolve_identity(pin=pin, token=token, api_key=api_key)
+    identity = _resolve_identity(pin=pin, token=token, api_key=api_key, ctx=ctx)
     if identity.method != "jwt" or not identity.session_id:
         return (
             f"Authenticated via {identity.method}; nothing to revoke. "
@@ -336,6 +378,7 @@ def whoami(
     pin: str | None = None,
     token: str | None = None,
     api_key: str | None = None,
+    ctx: Context | None = None,
 ) -> str:
     """Return the authenticated user id and which credential method succeeded.
 
@@ -344,7 +387,7 @@ def whoami(
         token: JWT access token. Falls back to TASK_MANAGER_TOKEN.
         api_key: Static MCP API key. Falls back to MCP_API_KEY.
     """
-    identity = _resolve_identity(pin=pin, token=token, api_key=api_key)
+    identity = _resolve_identity(pin=pin, token=token, api_key=api_key, ctx=ctx)
     payload = {
         "user_id": identity.user_id,
         "method": identity.method,
@@ -359,9 +402,9 @@ def whoami(
 
 
 @mcp.resource("tasks://list")
-def tasks_list_resource() -> str:
-    """Full task list for the authenticated user (env credentials)."""
-    user_id = _resolve_user()
+def tasks_list_resource(ctx: Context | None = None) -> str:
+    """Full task list for the authenticated user (env or Bearer credentials)."""
+    user_id = _resolve_user(ctx=ctx)
     tasks = get_db().list_tasks(user_id)
     return format_tasks(tasks)
 
@@ -372,13 +415,13 @@ def tasks_list_resource() -> str:
 
 
 @mcp.prompt(name="read")
-def read_task_prompt(nombre_tarea: str) -> str:
+def read_task_prompt(nombre_tarea: str, ctx: Context | None = None) -> str:
     """Read a task by name — equivalent to /read [nombre-tarea].
 
     Args:
         nombre_tarea: Exact task title to look up (case-insensitive).
     """
-    user_id = _resolve_user()
+    user_id = _resolve_user(ctx=ctx)
     task = get_db().get_task_by_title(user_id, nombre_tarea)
     if not task:
         return (
@@ -393,6 +436,15 @@ def read_task_prompt(nombre_tarea: str) -> str:
 
 
 def main() -> None:
+    transport = os.environ.get("MCP_TRANSPORT", "stdio").strip().lower()
+    if transport in {"http", "streamable-http", "streamable_http"}:
+        logger.info(
+            "Starting Task Manager Cloud MCP server (streamable-http) on %s:%s/mcp",
+            mcp.settings.host,
+            mcp.settings.port,
+        )
+        mcp.run(transport="streamable-http")
+        return
     logger.info("Starting Task Manager Cloud MCP server (stdio)")
     mcp.run()
 

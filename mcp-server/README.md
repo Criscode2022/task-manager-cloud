@@ -166,6 +166,9 @@ Opens a browser UI where you can list tools, call `create_user`, and inspect res
 | `MCP_API_KEY` | One of PIN / JWT / API key | — | Static API key |
 | `MCP_API_KEY_USER_ID` | With `MCP_API_KEY` | — | User id bound to `MCP_API_KEY` |
 | `MCP_API_KEYS` | No | — | JSON object or `key:user_id,...` list |
+| `MCP_TRANSPORT` | No | `stdio` | `stdio` or `streamable-http` (remote HTTP clients) |
+| `MCP_HOST` | No | `127.0.0.1` | Bind address for HTTP |
+| `MCP_PORT` | No | `8000` | Listen port for HTTP (`/mcp`) |
 
 **Where to set them:**
 
@@ -200,6 +203,18 @@ user_id  ──►  tasks filtered by user_id
 ```
 
 `create_user` and `login` do not require prior credentials. `create_user` returns a PIN and, when `JWT_SECRET` is set, a session token. `login` is the MCP equivalent of `POST /api/auth/login`.
+
+### HTTP MCP clients (login → Bearer token)
+
+Remote clients (the Edit Server screen with **OAuth / No authentication / Bearer token**) cannot type a PIN. Use `login` to mint a JWT, then switch the client to Bearer:
+
+1. Set **Method** to **No authentication** (not OAuth). Leave **Allow local HTTP** off for `https://` URLs.
+2. **Save & Connect**.
+3. Call **`login`** with your 8-digit PIN (for example: “Use the login tool with PIN 12345678”).
+4. Copy the `token` from the reply.
+5. Edit Server → **Method → Bearer token** → paste the token (no `Bearer ` prefix) → **Save & Connect**.
+
+The hosted server must run Streamable HTTP (`MCP_TRANSPORT=streamable-http`) at `/mcp`, with `DATABASE_URL`, `PIN_PEPPER`, and `JWT_SECRET` set. Do not enable protocol-level OAuth on the server — that would block `login` before you have a token.
 
 ### Using an existing app account
 
@@ -347,13 +362,13 @@ If `JWT_SECRET` is unset, the PIN is still returned and you can call `login` aft
 
 ### `login`
 
-Exchange a PIN for a JWT session token. Compatible with `POST /api/auth/login` (same `sessions` row and HS256 claims).
+Exchange a PIN for a JWT session token. **Does not require prior authentication.** Compatible with `POST /api/auth/login` (same `sessions` row and HS256 claims).
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `pin` | `string` | **Yes** | 8-digit user PIN |
 
-**Returns:** `user_id`, `token`, `expires_at`, `expires_in`.
+**Returns:** `user_id`, `token`, `expires_at`, `expires_in`, plus instructions to paste the token as the HTTP client's **Bearer token**.
 
 ---
 
