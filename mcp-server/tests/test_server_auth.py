@@ -26,7 +26,12 @@ def test_whoami_reports_method(db: MagicMock) -> None:
     )
     payload = json.loads(server.whoami(token="hdr.pay.sig"))
     assert payload == {"user_id": 7, "method": "jwt", "session_id": "sid-7"}
-    db.resolve_identity.assert_called_once_with(pin=None, token="hdr.pay.sig", api_key=None)
+    db.resolve_identity.assert_called_once_with(
+        pin=None,
+        token="hdr.pay.sig",
+        api_key=None,
+        authorization=None,
+    )
 
 
 def test_login_returns_nest_shaped_session(db: MagicMock) -> None:
@@ -40,6 +45,7 @@ def test_login_returns_nest_shaped_session(db: MagicMock) -> None:
     text = server.login("12345678")
     assert "user_id: 3" in text
     assert "token: jwt-token" in text
+    assert "Bearer token" in text
     db.login_with_pin.assert_called_once_with("12345678")
 
 
@@ -81,6 +87,51 @@ def test_create_user_includes_token_when_jwt_configured(db: MagicMock) -> None:
     assert "user_id: 4" in text
     assert "token: new-jwt" in text
     assert "pin:" in text
+
+
+def test_authorization_header_is_forwarded(db: MagicMock) -> None:
+    class _Headers(dict):
+        def get(self, key, default=None):  # noqa: ANN001
+            for candidate, value in self.items():
+                if candidate.lower() == key.lower():
+                    return value
+            return default
+
+    class _Request:
+        headers = _Headers({"Authorization": "Bearer from-header"})
+
+    class _Ctx:
+        request_context = type("RC", (), {"request": _Request()})()
+
+    db.resolve_identity.return_value = AuthIdentity(user_id=8, method="jwt", session_id="s")
+    server.whoami(ctx=_Ctx())  # type: ignore[arg-type]
+    db.resolve_identity.assert_called_once_with(
+        pin=None,
+        token=None,
+        api_key=None,
+        authorization="Bearer from-header",
+    )
+
+
+def test_http_layer_does_not_require_a_single_auth_method() -> None:
+    """OAuth must not wrap /mcp; PIN, Bearer, and No-auth stay usable."""
+    assert server.mcp.settings.auth is None
+    assert getattr(server.mcp, "_auth_server_provider", None) is None
+    assert getattr(server.mcp, "_token_verifier", None) is None
+
+
+def test_optional_oauth_routes_are_additive() -> None:
+    from mcp.server.fastmcp import FastMCP
+    from oauth import PinOAuthProvider
+
+    app = FastMCP("oauth-route-test")
+    provider = PinOAuthProvider("https://mcp.example.com", db_factory=lambda: None)
+    server.attach_optional_oauth_routes(app, provider, "https://mcp.example.com")
+    paths = {route.path for route in app._custom_starlette_routes}
+    assert "/authorize" in paths
+    assert "/token" in paths
+    assert "/.well-known/oauth-authorization-server" in paths
+    assert any("oauth-protected-resource" in path for path in paths)
 
 
 def test_create_user_still_returns_pin_without_jwt_secret(db: MagicMock) -> None:
