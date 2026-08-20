@@ -40,8 +40,10 @@ mcp = FastMCP(
         "and OAuth PIN page. Never require one method if another is valid. "
         "create_user registers a new account. login(pin) issues a JWT."
     ),
-    host=os.environ.get("MCP_HOST", "0.0.0.0" if _http_transport else "127.0.0.1"),
-    port=int(os.environ.get("MCP_PORT", "8000")),
+    host=os.environ.get("MCP_HOST")
+    or os.environ.get("HOST")
+    or ("0.0.0.0" if _http_transport else "127.0.0.1"),
+    port=int(os.environ.get("PORT") or os.environ.get("MCP_PORT") or "8000"),
     stateless_http=os.environ.get("MCP_STATELESS_HTTP", "true").lower()
     in {"1", "true", "yes"},
 )

@@ -231,7 +231,7 @@ Hosted process (all of the above work together):
 MCP_TRANSPORT=streamable-http
 MCP_PUBLIC_URL=https://your-host
 MCP_HOST=0.0.0.0
-MCP_PORT=8000
+PORT=8000
 DATABASE_URL=...
 PIN_PEPPER=...
 JWT_SECRET=...
@@ -565,6 +565,20 @@ Add to `claude_desktop_config.json` (path varies by OS):
 Restart Claude Desktop after saving.
 
 ---
+
+
+
+## Railway deploy
+
+The HTTP MCP service is `mcp-server/` (`Dockerfile` + `railway.toml`).
+
+1. Create a Railway service from this GitHub repo.
+2. Set **Root Directory** to `mcp-server`.
+3. Variables: `DATABASE_URL`, `PIN_PEPPER`, `JWT_SECRET`.
+4. Railway sets `PORT` and `RAILWAY_PUBLIC_DOMAIN`. The server listens on `PORT` and uses that domain as `MCP_PUBLIC_URL` unless you override it.
+5. Health check: `GET /health`. MCP endpoint: `/mcp`.
+
+Optional: set `MCP_PUBLIC_URL` to a custom domain origin (no `/mcp` suffix).
 
 ## Development & debugging
 

@@ -343,5 +343,9 @@ def os_public_url() -> str | None:
     import os
 
     raw = os.environ.get("MCP_PUBLIC_URL") or os.environ.get("MCP_ISSUER_URL")
+    if not raw:
+        domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN")
+        if domain:
+            raw = "https://" + domain.strip()
     return normalize_public_url(raw) if raw else None
 
