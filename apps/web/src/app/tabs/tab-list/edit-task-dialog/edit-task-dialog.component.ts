@@ -1,11 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormField, form, maxLength, required, submit } from '@angular/forms/signals';
-import { MatOptionModule } from '@angular/material/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { DEFAULT_TASK_PRIORITY, Task, TaskPriority } from '../types/task';
 
@@ -32,9 +29,6 @@ type EditTaskFormModel = {
     FormField,
     MatFormFieldModule,
     MatInputModule,
-    MatOptionModule,
-    MatSelectModule,
-    IonicModule,
     TranslateModule,
   ],
 })

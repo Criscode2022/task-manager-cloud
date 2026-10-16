@@ -35,6 +35,8 @@ packages/*/node_modules
 npm-debug.log
 pnpm-debug.log*
 yarn-error.log
+# Local content-addressable store. pnpm can create this inside the repo on this volume.
+.pnpm-store/
 
 # Playwright
 /test-results/

@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-16T22:00:00.000Z",
+  "title": "Design System: Task Cloud",
+  "extensions": {
+    "colorMeta": {
+      "teal": {
+        "role": "primary",
+        "displayName": "Pocket Teal",
+        "tonalRamp": ["#042220", "#083633", "#0B5E5A", "#1A7A75", "#3A9A94", "#7DCEC8", "#C5EBE7", "#F0FAF8"]
+      },
+      "stone": {
+        "role": "neutral",
+        "displayName": "Daylight Stone",
+        "tonalRamp": ["#1A2421", "#3D524C", "#6A7D76", "#8FA099", "#C9D4CF", "#E4EBE8", "#F3F5F4", "#FBFCFB"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": ["#0C1210", "#1A2421", "#3D524C", "#6A7D76", "#8FA099", "#C5D5CE", "#E7F0EC", "#F7FBFA"]
+      },
+      "priority-high": {
+        "role": "priority",
+        "displayName": "High",
+        "tonalRamp": ["#3A1010", "#6B1C1C", "#9F2D2D", "#C44A42", "#E08A82", "#FFB4AB", "#FFDAD6", "#FFF5F4"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page name and the settings status sentence." },
+      "title": { "displayName": "Title", "purpose": "The task title, in the field and in the list." },
+      "body": { "displayName": "Body", "purpose": "Descriptions, notes, and empty states." },
+      "label": { "displayName": "Label", "purpose": "Switches, Add, and row actions." }
+    },
+    "shadows": [
+      {
+        "name": "dialog",
+        "value": "0 16px 36px rgba(16, 33, 31, 0.18)",
+        "purpose": "Search, edit, and PIN dialogs. Not used on list rows."
+      }
+    ],
+    "motion": [
+      {
+        "name": "fold",
+        "value": "grid-template-rows 240ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The capture details and the filter panel opening."
+      }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "0px" },
+      { "name": "desktop", "value": "768px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Add",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Submits the capture line when the title is valid.",
+      "html": "<button class=\"ds-btn-primary\">Add Task</button>",
+      "css": ".ds-btn-primary { height: 3.5rem; padding: 0 1rem; border: 0; border-radius: 0.85rem; background: #0B5E5A; color: #fff; font-family: Figtree, sans-serif; font-weight: 600; } .ds-btn-primary:hover { background: #09524e; } .ds-btn-primary:focus-visible { outline: 2px solid #1A2421; outline-offset: 2px; }"
+    },
+    {
+      "name": "Status selected",
+      "kind": "button",
+      "refersTo": "status-selected",
+      "description": "The current list view inside All, Pending, and Done.",
+      "html": "<button class=\"ds-status\">All</button>",
+      "css": ".ds-status { min-height: 2.5rem; padding: 0.35rem 0.9rem; border: 0; border-radius: 0.65rem; background: #0B5E5A; color: #fff; font-family: Figtree, sans-serif; font-weight: 600; } .ds-status:focus-visible { outline: 2px solid #1A2421; outline-offset: 2px; }"
+    },
+    {
+      "name": "Capture field",
+      "kind": "input",
+      "refersTo": "capture-input",
+      "description": "The always-visible title field.",
+      "html": "<input class=\"ds-capture\" placeholder=\"What do you need to do?\" />",
+      "css": ".ds-capture { width: 100%; min-height: 3.5rem; padding: 0.75rem 0.9rem; border: 1px solid #C9D4CF; border-radius: 0.75rem; background: #fff; color: #1A2421; font-family: Literata, Georgia, serif; font-size: 1.2rem; } .ds-capture:focus { outline: 2px solid #0B5E5A; outline-offset: 2px; }"
+    },
+    {
+      "name": "Task row",
+      "kind": "custom",
+      "refersTo": "task-row",
+      "description": "One task: completion circle, title, priority word.",
+      "html": "<div class=\"ds-row\"><span class=\"ds-mark\"></span><span class=\"ds-task\">Call dentist</span><span class=\"ds-pri\">High</span></div>",
+      "css": ".ds-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 0; border-bottom: 1px solid #DCE5E1; font-family: Figtree, sans-serif; } .ds-mark { width: 1.35rem; height: 1.35rem; border: 2px solid #3D524C; border-radius: 999px; } .ds-task { flex: 1; font-family: Literata, Georgia, serif; font-size: 1.2rem; font-weight: 600; color: #1A2421; } .ds-pri { color: #9F2D2D; font-weight: 700; font-size: 0.82rem; }"
+    },
+    {
+      "name": "Settings row",
+      "kind": "button",
+      "refersTo": "settings-row",
+      "description": "A labeled settings action, not an icon button.",
+      "html": "<button class=\"ds-setting\"><span>Upload Tasks</span><small>Sync your local tasks to the cloud</small></button>",
+      "css": ".ds-setting { display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; width: 100%; padding: 0.85rem 0; border: 0; border-bottom: 1px solid #DCE5E1; background: transparent; text-align: left; font-family: Figtree, sans-serif; } .ds-setting span { color: #1A2421; font-weight: 600; font-size: 1.05rem; } .ds-setting small { color: #3D524C; font-size: 0.95rem; } .ds-setting:hover { color: #0B5E5A; } .ds-setting:focus-visible { outline: 2px solid #0B5E5A; outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Pocket Column",
+    "overview": "Task Cloud is one column you write into, then read. The capture line is the first control on the list. Status is a visible three-way switch. Finished work steps below what is still open.",
+    "keyCharacteristics": [
+      "Capture stays on the page as a title field and an Add button.",
+      "All, Pending, and Done are always visible.",
+      "Priority and tags stay folded until you ask to narrow the list.",
+      "Open tasks sit above done tasks when both are on screen.",
+      "Settings are labeled rows.",
+      "Literata carries the words you read. Figtree carries the controls."
+    ],
+    "rules": [
+      {
+        "name": "The Separate Priority Rule",
+        "body": "Teal means an action or the current view. Red, amber, and green mean how urgent a task is, and the word is always present.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do keep adding a task to one field and one button.",
+      "Do write priority as High, Medium, or Low.",
+      "Do put destructive actions in settings as full sentences about what will be deleted.",
+      "Do keep English and Spanish on the existing translation keys."
+    ],
+    "donts": [
+      "Don't bring back a centered dialog for creating a task.",
+      "Don't cycle All, Pending, and Done through one unlabeled button.",
+      "Don't show priority by color alone.",
+      "Don't use the teal as a priority color."
+    ]
+  }
+}

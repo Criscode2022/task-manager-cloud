@@ -11,7 +11,7 @@ Task Cloud is a personal task list. People create, edit, complete, delete, and f
 - The app type is `ionic-pwa`. The web client stays an installable Ionic app in `apps/web`. Do not replace Ionic Storage, the service worker, or the tab shell.
 - This repository is a pnpm and Turborepo monorepo. `apps/web` is the Angular client. `apps/api` is the NestJS API. `mcp-server/` is a separate Python server and is not part of the pnpm workspaces.
 - Tasks work without the API. Cloud sync is the only feature that needs it.
-- The visual system uses the template's plum and ink colors through Ionic's `--ion-*` variables in `apps/web/src/theme/variables.scss`. Priority stays red, amber, and green so it is not the brand color.
+- The visual system is a single reading column. Literata is for the words you read, Figtree is for controls, the ground is cool stone, and actions are deep teal. Tokens live in `apps/web/src/theme/variables.scss`. Priority stays red, amber, and green, written as a word, so it is not the brand color.
 - Keep English and Spanish. User-facing copy goes through the existing translation keys.
 
 ## Rules

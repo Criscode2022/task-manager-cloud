@@ -2,7 +2,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -10,7 +9,7 @@ import { TranslateModule } from '@ngx-translate/core';
   selector: 'app-pin-dialog',
   templateUrl: './pin-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonicModule, MatTooltipModule, TranslateModule],
+  imports: [IonicModule, TranslateModule],
   styleUrls: ['./pin-dialog.component.scss'],
 })
 export class PinDialogComponent {

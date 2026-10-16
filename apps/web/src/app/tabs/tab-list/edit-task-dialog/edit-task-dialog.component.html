@@ -22,20 +22,27 @@
       />
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="dialog-field priority-field">
-      <mat-label>{{ 'TASKS.PRIORITY_LABEL' | translate }}</mat-label>
-      <mat-select
-        [value]="editModel().priority"
-        (selectionChange)="editModel.update((model) => ({ ...model, priority: $event.value }))"
-        panelClass="edit-task-priority-panel"
-      >
-        @for (option of priorityOptions; track option.value) {
-        <mat-option [value]="option.value">
+    <div
+      class="priority-choice"
+      role="radiogroup"
+      [attr.aria-label]="'TASKS.PRIORITY_LABEL' | translate"
+    >
+      @for (option of priorityOptions; track option.value) {
+        <button
+          type="button"
+          class="priority-option"
+          role="radio"
+          [class.is-selected]="editModel().priority === option.value"
+          [class.priority-option--high]="option.value === 'high'"
+          [class.priority-option--medium]="option.value === 'medium'"
+          [class.priority-option--low]="option.value === 'low'"
+          [attr.aria-checked]="editModel().priority === option.value"
+          (click)="editModel.update((model) => ({ ...model, priority: option.value }))"
+        >
           {{ option.labelKey | translate }}
-        </mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+        </button>
+      }
+    </div>
 
     <mat-form-field appearance="outline" class="dialog-field">
       <mat-label>{{ 'TASKS.TAGS_OPTIONAL' | translate }}</mat-label>
@@ -48,17 +55,12 @@
     </mat-form-field>
 
     <div class="dialog-actions">
-      <ion-button
-        type="button"
-        fill="outline"
-        color="medium"
-        (click)="cancel()"
-      >
+      <button type="button" class="dialog-button dialog-button--quiet" (click)="cancel()">
         {{ 'COMMON.CANCEL' | translate }}
-      </ion-button>
-      <ion-button type="submit" color="primary" [disabled]="form().invalid()">
+      </button>
+      <button type="submit" class="dialog-button" [disabled]="form().invalid()">
         {{ 'COMMON.CONFIRM' | translate }}
-      </ion-button>
+      </button>
     </div>
   </form>
 </div>

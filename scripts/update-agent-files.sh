@@ -95,7 +95,42 @@ if [ ! -f angular.json ]; then
   exit 2
 fi
 
+# The impeccable skill is replaced from upstream. Put this repository's layout rule
+# back so a refresh does not start asking the user to pick a layout again.
+restore_impeccable_layout_rule() {
+  skill=.agents/skills/impeccable/SKILL.md
+  if [ ! -f "$skill" ]; then
+    echo 'impeccable SKILL.md is missing; the layout rule was not restored.' >&2
+    return 0
+  fi
+  if grep -q '## Use it, and choose the layout' "$skill"; then
+    return 0
+  fi
+  tmp=$(mktemp)
+  if ! awk '
+    inserted == 0 && $0 == "Core principles:" {
+      print "## Use it, and choose the layout"
+      print ""
+      print "Projects that include this skill use it for UI work. Do not ask whether to use it."
+      print ""
+      print "Do not ask the user to choose a layout, a visual direction, a concept card, a comp, or a re-roll. Choose the strongest layout that fits the product, the existing design, and the request, then build it. That choice replaces the decision page, the concept-seed hand, and any other menu of layouts in the references below. When this section conflicts with a reference, this section wins."
+      print ""
+      print "Ask about a layout only when the user explicitly asks to see options, compare layouts, or pick one. Then follow the reference that presents those choices."
+      print ""
+      inserted = 1
+    }
+    { print }
+    END { if (inserted == 0) exit 2 }
+  ' "$skill" > "$tmp"; then
+    rm -f "$tmp"
+    echo 'Could not restore the impeccable layout rule: "Core principles:" was not found.' >&2
+    return 0
+  fi
+  mv "$tmp" "$skill"
+}
+
 update_skills
+restore_impeccable_layout_rule
 write_skills_lock
 update_angular_rules
 echo 'Updated. Review the changes with: git diff --stat'

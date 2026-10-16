@@ -1,10 +1,6 @@
 
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { RouterModule } from '@angular/router';
 import { AlertController, IonicModule } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LanguageService } from 'src/app/core/services/language.service';
@@ -21,14 +17,7 @@ import { User } from './types/user';
   templateUrl: 'tab-options.page.html',
   styleUrls: ['tab-options.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    IonicModule,
-    RouterModule,
-    MatIconModule,
-    MatTooltipModule,
-    MatButtonModule,
-    TranslateModule,
-  ],
+  imports: [IonicModule, TranslateModule],
 })
 export class TabOptionsPage {
   private readonly taskService = inject(TaskService);
@@ -136,12 +125,15 @@ export class TabOptionsPage {
   }
 
   protected getLanguageLabel(language: string): string {
-    const labels: Record<string, string> = {
-      en: '🇬🇧 English',
-      es: '🇪🇸 Espanol',
-    };
+    if (language === 'es') {
+      return this.translate.instant('LANGUAGE.ES');
+    }
 
-    return labels[language] ?? language;
+    if (language === 'en') {
+      return this.translate.instant('LANGUAGE.EN');
+    }
+
+    return language;
   }
 
   protected async download(pin: User['pin']): Promise<void> {

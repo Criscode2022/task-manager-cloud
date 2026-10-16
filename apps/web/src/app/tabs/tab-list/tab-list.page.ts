@@ -1,5 +1,5 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
-  afterNextRender,
   Component,
   computed,
   effect,
@@ -12,16 +12,12 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { FormField } from '@angular/forms/signals';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { AlertController, IonicModule } from '@ionic/angular';
+import { AlertController, IonContent, IonicModule } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { LoadingService } from 'src/app/core/services/loading.service';
@@ -50,15 +46,12 @@ import {
   },
   imports: [
     IonicModule,
+    NgTemplateOutlet,
     FormField,
     MatAutocompleteModule,
-    MatButtonModule,
-    MatCheckboxModule,
     MatOptionModule,
     MatFormFieldModule,
-    MatIconModule,
     MatInputModule,
-    MatTooltipModule,
     TranslateModule,
   ],
 })
@@ -70,22 +63,26 @@ export class TabListPage extends TaskForm {
   private readonly translate = inject(TranslateService);
   protected readonly taskService = inject(TaskService);
   private readonly userService = inject(UserService);
+  private readonly pageContent = viewChild(IonContent);
   private longPressTimer: ReturnType<typeof setTimeout> | null = null;
   private clickTimer: ReturnType<typeof setTimeout> | null = null;
   private suppressTaskToggle = false;
-  private initialFormDecided = false;
 
   protected canClick = signal(true);
   protected hasNewTask = signal(false);
   protected readonly loadingService = inject(LoadingService);
   protected isFormVisible = signal(false);
   protected animatingTaskIds = signal<Set<number>>(new Set());
-  protected initialLoadDone = signal(false);
   protected newlyAddedTaskIds = signal<Set<number>>(new Set());
   protected selectedPriorityFilter = signal<'all' | TaskPriority>('all');
   protected selectedTagFilter = signal<string>('all');
+  protected filtersOpen = signal(false);
   protected searchQuery = signal('');
   protected isSearchOpen = signal(false);
+  protected readonly priorityChoices: TaskPriority[] = ['high', 'medium', 'low'];
+  protected readonly statusAll = StatusEnum.All;
+  protected readonly statusDone = StatusEnum.Done;
+  protected readonly statusPending = StatusEnum.Undone;
   protected tagsAutocompleteInput = signal('');
   private readonly mobileSearchInput =
     viewChild<ElementRef<HTMLInputElement>>('mobileSearchInput');
@@ -131,6 +128,12 @@ export class TabListPage extends TaskForm {
       this.hasSearchQuery(),
   );
 
+  protected readonly hasNarrowFilters = computed(
+    () =>
+      this.selectedPriorityFilter() !== 'all' ||
+      this.selectedTagFilter() !== 'all',
+  );
+
   private normalizedSearchQuery = computed(() =>
     this.searchQuery().trim().toLowerCase(),
   );
@@ -169,6 +172,35 @@ export class TabListPage extends TaskForm {
       }),
     );
   });
+
+  protected readonly openTasks = computed(() => {
+    const tasks = this.filteredTasks();
+    if (this.filter() === StatusEnum.Done) {
+      return [];
+    }
+    if (this.filter() === StatusEnum.Undone) {
+      return tasks;
+    }
+    return tasks.filter((task) => !task.done);
+  });
+
+  protected readonly doneTasks = computed(() => {
+    const tasks = this.filteredTasks();
+    if (this.filter() === StatusEnum.Undone) {
+      return [];
+    }
+    if (this.filter() === StatusEnum.Done) {
+      return tasks;
+    }
+    return tasks.filter((task) => task.done);
+  });
+
+  protected readonly showDoneSplit = computed(
+    () =>
+      this.filter() === StatusEnum.All &&
+      this.openTasks().length > 0 &&
+      this.doneTasks().length > 0,
+  );
 
   protected alternativeFilterInfo = computed(() => {
     const currentFilter = this.filter();
@@ -241,32 +273,12 @@ export class TabListPage extends TaskForm {
   constructor() {
     super();
 
-    afterNextRender(() => {
-      // Mark initial load as done after the first render cycle completes
-      // This prevents the staggered scale-in animation from replaying on every list change
-      setTimeout(() => this.initialLoadDone.set(true), 600);
-    });
-
     effect(async () => {
       await this.taskService.saveTasks(this.tasks());
     });
 
     effect(() => {
       this.taskService.saveFilter(this.filter());
-    });
-
-    effect(() => {
-      if (!this.taskService.storageReady() || !this.taskService.tasksHydrated()) {
-        return;
-      }
-      if (this.initialFormDecided) {
-        return;
-      }
-
-      this.initialFormDecided = true;
-      if (this.tasks().length === 0 && this.isTabletOrDesktop()) {
-        this.isFormVisible.set(true);
-      }
     });
 
     effect(() => {
@@ -336,6 +348,30 @@ export class TabListPage extends TaskForm {
     this.clearTaskPress();
     this.suppressTaskToggle = true;
     void this.presentFullTaskText(task);
+  }
+
+  protected selectStatus(status: StatusEnum): void {
+    this.taskService.filter.set(status);
+  }
+
+  protected toggleFilters(): void {
+    this.filtersOpen.update((open) => !open);
+  }
+
+  protected toggleComposerDetails(): void {
+    if (this.isFormVisible()) {
+      void this.requestCloseCreateForm();
+      return;
+    }
+
+    this.openCreateForm();
+  }
+
+  protected scrollToNewest(): void {
+    const reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+    void this.pageContent()?.scrollToBottom(reduceMotion ? 0 : 280);
   }
 
   protected openCreateForm(): void {
@@ -622,12 +658,14 @@ export class TabListPage extends TaskForm {
     return window.matchMedia('(min-width: 768px)').matches;
   }
 
-  protected getPriorityTranslationKey(priority: TaskPriority): string {
+  protected getPriorityTranslationKey(priority: TaskPriority | 'all'): string {
     switch (priority) {
       case 'high':
         return 'TASKS.PRIORITY.HIGH';
       case 'low':
         return 'TASKS.PRIORITY.LOW';
+      case 'all':
+        return 'TASKS.ALL_PRIORITIES';
       default:
         return 'TASKS.PRIORITY.MEDIUM';
     }

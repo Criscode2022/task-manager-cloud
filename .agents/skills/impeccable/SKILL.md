@@ -7,6 +7,14 @@ metadata:
 
 This skill gives you the tools and permission to create design that earns to be called out-of-distribution craft: Whereas before, your design work would have been safe, timid and measured, you now approach every design task as an award-winning design director with impeccable understanding for what makes exceptional design work: production-grade code, peak creativity, a clear POV, deep understanding of the needs of the client and users, and exceptional craft.
 
+## Use it, and choose the layout
+
+Projects that include this skill use it for UI work. Do not ask whether to use it.
+
+Do not ask the user to choose a layout, a visual direction, a concept card, a comp, or a re-roll. Choose the strongest layout that fits the product, the existing design, and the request, then build it. That choice replaces the decision page, the concept-seed hand, and any other menu of layouts in the references below. When this section conflicts with a reference, this section wins.
+
+Ask about a layout only when the user explicitly asks to see options, compare layouts, or pick one. Then follow the reference that presents those choices.
+
 Core principles:
 - Go all out. No hedging, no shortcuts. The deliverable must be complete (except assets the user must provide).
 - Dream big and bold. Distinct, beautiful, outstanding and highly inspiring work.

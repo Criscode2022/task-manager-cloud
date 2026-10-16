@@ -1,230 +1,136 @@
-<ion-header class="ion-no-border">
-  <ion-toolbar class="toolbar-gradient md:py-4">
-    <h1 class="header-title">
-      <span>{{ 'OPTIONS.PAGE_TITLE' | translate }}</span>
-    </h1>
-    <button
-      mat-icon-button
-      class="toolbar-help"
-      slot="end"
-      (click)="showInfoAlert()"
-      [matTooltip]="'COMMON.HELP' | translate"
-      matTooltipPosition="below"
-    >
-      <mat-icon>help-circle-outline</mat-icon>
-    </button>
+<ion-header class="ion-no-border" [translucent]="false">
+  <ion-toolbar class="settings-toolbar">
+    <div class="header-bar">
+      <h1 class="header-title">{{ 'OPTIONS.PAGE_TITLE' | translate }}</h1>
+      <button
+        type="button"
+        class="icon-button"
+        (click)="showInfoAlert()"
+        [attr.aria-label]="'COMMON.HELP' | translate"
+      >
+        <ion-icon name="help-circle-outline" aria-hidden="true"></ion-icon>
+      </button>
+    </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="content-background">
-  <div class="settings-container">
-    <!-- Status Badge -->
-    <div class="status-badge">
-      @if (!userId() && !isLoading()) {
-      <ion-chip color="warning" class="status-chip">
-        <ion-icon name="cloud-offline-outline"></ion-icon>
-        <ion-label>{{ 'OPTIONS.OFFLINE_MODE' | translate }}</ion-label>
-      </ion-chip>
-      } @if (userId() && !isLoading()) {
-      <ion-chip color="success" class="status-chip">
-        <ion-icon name="cloud-done-outline"></ion-icon>
-        <ion-label>{{ 'OPTIONS.CONNECTED' | translate }}</ion-label>
-      </ion-chip>
-      }
-    </div>
-
-    <!-- Loading State -->
+  <div class="page-column">
     @if (isLoading()) {
-    <div class="loading-container">
-      <ion-spinner
-        aria-label="loading spinner"
-        name="crescent"
-        color="primary"
-      ></ion-spinner>
-      <p class="loading-text">{{ 'COMMON.LOADING' | translate }}</p>
-    </div>
-    } @if (!isLoading()) {
-    <!-- Cloud Sync Section -->
-    <div class="settings-section">
-      <div class="section-header">
-        <ion-icon name="cloud-outline" class="section-icon"></ion-icon>
-        <h2 class="section-title">{{ 'OPTIONS.CLOUD_SYNC' | translate }}</h2>
+      <div class="loading-state">
+        <ion-spinner aria-label="loading spinner" name="crescent" color="primary"></ion-spinner>
+        <p class="loading-text">{{ 'COMMON.LOADING' | translate }}</p>
       </div>
+    } @else {
+      <p class="status-line">
+        {{ (userId() ? 'OPTIONS.STATUS_SYNCED' : 'OPTIONS.STATUS_LOCAL') | translate }}
+      </p>
 
-      <ion-card class="settings-card">
+      <section class="settings-group">
+        <h2 class="group-title">{{ 'OPTIONS.CLOUD_SYNC' | translate }}</h2>
+
         @if (!userId()) {
-        <!-- Upload Tasks -->
-        <div class="card-item">
-          <div class="card-content">
-            <h3 class="card-title">{{ 'OPTIONS.UPLOAD_TASKS' | translate }}</h3>
-            <p class="card-description">
-              {{ 'OPTIONS.SYNC_LOCAL_TASKS' | translate }}
-            </p>
+          <button type="button" class="setting-row" (click)="uploadTasks()">
+            <span class="setting-copy">
+              <span class="setting-title">{{ 'OPTIONS.UPLOAD_TASKS' | translate }}</span>
+              <span class="setting-note">{{ 'OPTIONS.SYNC_LOCAL_TASKS' | translate }}</span>
+            </span>
+          </button>
+        } @else {
+          <div class="setting-row setting-row--static">
+            <span class="setting-copy">
+              <span class="setting-title">{{ 'OPTIONS.USER_ID' | translate }}</span>
+              <span class="setting-id">{{ userId() }}</span>
+            </span>
+            <button
+              type="button"
+              class="text-action"
+              (click)="showGoOfflineAlert()"
+            >
+              {{ 'OPTIONS.GO_OFFLINE' | translate }}
+            </button>
           </div>
-          <ion-button
-            aria-label="upload button"
-            color="primary"
-            (click)="uploadTasks()"
-            class="action-button"
-          >
-            <ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
-          </ion-button>
-        </div>
-        } @if (userId()) {
-        <!-- User Info Card -->
-        <div class="card-item user-info">
-          <div class="card-content">
-            <h3 class="card-title">{{ 'OPTIONS.USER_ID' | translate }}</h3>
-            <p class="card-id">{{userId()}}</p>
-          </div>
-          <ion-button
-            aria-label="offline button"
-            fill="clear"
-            class="action-button"
-            [matTooltip]="'OPTIONS.GO_OFFLINE' | translate"
-            (click)="showGoOfflineAlert()"
-          >
-            <ion-icon name="cloud-offline-outline"></ion-icon>
-          </ion-button>
-        </div>
         }
 
-        <!-- Login/Switch Account -->
-        <div class="card-item">
-          <div class="card-content">
-            <h3 class="card-title">
-              {{!userId() ? ('OPTIONS.LOGIN_WITH_PIN' | translate) :
-              ('OPTIONS.SWITCH_ACCOUNT' | translate)}}
-            </h3>
-            <p class="card-description">
-              {{!userId() ? ('OPTIONS.SIGN_IN_TO_SYNC' | translate) :
-              ('OPTIONS.LOGIN_WITH_DIFFERENT_PIN' | translate)}}
-            </p>
-          </div>
-          <ion-button
-            aria-label="login button"
-            color="primary"
-            class="action-button"
-            (click)="showLoginAlert()"
-          >
-            <ion-icon
-              slot="icon-only"
-              name="{{!userId() ? 'log-in-outline' : 'swap-horizontal-outline'}}"
-            ></ion-icon>
-          </ion-button>
-        </div>
-      </ion-card>
-    </div>
+        <button type="button" class="setting-row" (click)="showLoginAlert()">
+          <span class="setting-copy">
+            <span class="setting-title">
+              {{ (userId() ? 'OPTIONS.SWITCH_ACCOUNT' : 'OPTIONS.LOGIN_WITH_PIN') | translate }}
+            </span>
+            <span class="setting-note">
+              {{ (userId() ? 'OPTIONS.LOGIN_WITH_DIFFERENT_PIN' : 'OPTIONS.SIGN_IN_TO_SYNC') | translate }}
+            </span>
+          </span>
+        </button>
+      </section>
 
-    <!-- Appearance Section -->
-    <div class="settings-section">
-      <div class="section-header">
-        <ion-icon name="color-palette-outline" class="section-icon"></ion-icon>
-        <h2 class="section-title">{{ 'OPTIONS.APPEARANCE' | translate }}</h2>
-      </div>
-
-      <ion-card class="settings-card">
-        <div class="card-item">
-          <div class="card-content">
-            <h3 class="card-title">{{ 'OPTIONS.DARK_MODE' | translate }}</h3>
-            <p class="card-description">
-              {{ 'OPTIONS.DARK_MODE_DESCRIPTION' | translate }}
-            </p>
-          </div>
+      <section class="settings-group">
+        <h2 class="group-title">{{ 'OPTIONS.APPEARANCE' | translate }}</h2>
+        <label class="setting-row">
+          <span class="setting-copy">
+            <span class="setting-title">{{ 'OPTIONS.DARK_MODE' | translate }}</span>
+            <span class="setting-note">{{ 'OPTIONS.DARK_MODE_DESCRIPTION' | translate }}</span>
+          </span>
           <ion-toggle
             [checked]="isDark()"
             (ionChange)="themeService.switchTheme()"
-            class="modern-toggle"
+            [attr.aria-label]="'OPTIONS.DARK_MODE' | translate"
           ></ion-toggle>
-        </div>
-      </ion-card>
-    </div>
+        </label>
+      </section>
 
-    <!-- Language Section -->
-    <div class="settings-section">
-      <div class="section-header">
-        <ion-icon name="language-outline" class="section-icon"></ion-icon>
-        <h2 class="section-title">{{ 'OPTIONS.LANGUAGE' | translate }}</h2>
-      </div>
-
-      <ion-card class="settings-card">
-        <div class="card-item">
-          <div class="card-content">
-            <h3 class="card-title">{{ 'OPTIONS.LANGUAGE' | translate }}</h3>
-            <p class="card-description">
-              {{ 'OPTIONS.LANGUAGE_DESCRIPTION' | translate }}
-            </p>
-          </div>
-          <ion-select
-            interface="popover"
-            justify="center"
-            [value]="selectedLanguage()"
-            (ionChange)="changeLanguage($event.detail.value)"
-            [selectedText]="getLanguageLabel(selectedLanguage())"
-            class="language-select"
-          >
-            @for (language of supportedLanguages; track language) {
-            <ion-select-option [value]="language">
+      <section class="settings-group">
+        <h2 class="group-title">{{ 'OPTIONS.LANGUAGE' | translate }}</h2>
+        <p class="setting-note setting-note--alone">
+          {{ 'OPTIONS.LANGUAGE_DESCRIPTION' | translate }}
+        </p>
+        <div
+          class="language-switch"
+          role="radiogroup"
+          [attr.aria-label]="'OPTIONS.LANGUAGE' | translate"
+        >
+          @for (language of supportedLanguages; track language) {
+            <button
+              type="button"
+              class="language-option"
+              role="radio"
+              [class.is-selected]="selectedLanguage() === language"
+              [attr.aria-checked]="selectedLanguage() === language"
+              (click)="changeLanguage(language)"
+            >
               {{ getLanguageLabel(language) }}
-            </ion-select-option>
-            }
-          </ion-select>
+            </button>
+          }
         </div>
-      </ion-card>
-    </div>
+      </section>
 
-    <!-- Danger Zone Section -->
-    <div class="settings-section">
-      <div class="section-header">
-        <ion-icon name="warning-outline" class="section-icon"></ion-icon>
-        <h2 class="section-title">{{ 'OPTIONS.DANGER_ZONE' | translate }}</h2>
-      </div>
-
-      <ion-card class="settings-card danger-card">
-        <!-- Delete All Tasks -->
-        <div class="card-item">
-          <div class="card-content">
-            <h3 class="card-title text-danger">
-              {{ 'OPTIONS.DELETE_ALL_TASKS' | translate }}
-            </h3>
-            <p class="card-description">
-              {{ 'OPTIONS.DELETE_ALL_TASKS_DESCRIPTION' | translate }}
-            </p>
-          </div>
-          <ion-button
-            aria-label="delete all tasks button"
-            color="danger"
-            class="action-button"
-            [disabled]="!tasks().length"
-            (click)="showDeleteAllTasksAlert()"
-          >
-            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-          </ion-button>
-        </div>
+      <section class="settings-group settings-group--danger">
+        <h2 class="group-title">{{ 'OPTIONS.DANGER_ZONE' | translate }}</h2>
+        <button
+          type="button"
+          class="setting-row setting-row--danger"
+          [disabled]="!tasks().length"
+          (click)="showDeleteAllTasksAlert()"
+        >
+          <span class="setting-copy">
+            <span class="setting-title">{{ 'OPTIONS.DELETE_ALL_TASKS' | translate }}</span>
+            <span class="setting-note">{{ 'OPTIONS.DELETE_ALL_TASKS_DESCRIPTION' | translate }}</span>
+          </span>
+        </button>
 
         @if (userId()) {
-        <!-- Delete Account -->
-        <div class="card-item">
-          <div class="card-content">
-            <h3 class="card-title text-danger">
-              {{ 'OPTIONS.DELETE_ACCOUNT' | translate }}
-            </h3>
-            <p class="card-description">
-              {{ 'OPTIONS.DELETE_ACCOUNT_DESCRIPTION' | translate }}
-            </p>
-          </div>
-          <ion-button
-            aria-label="delete account button"
-            color="danger"
-            class="action-button"
+          <button
+            type="button"
+            class="setting-row setting-row--danger"
             (click)="showDeleteUserAlert()"
           >
-            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-          </ion-button>
-        </div>
+            <span class="setting-copy">
+              <span class="setting-title">{{ 'OPTIONS.DELETE_ACCOUNT' | translate }}</span>
+              <span class="setting-note">{{ 'OPTIONS.DELETE_ACCOUNT_DESCRIPTION' | translate }}</span>
+            </span>
+          </button>
         }
-      </ion-card>
-    </div>
+      </section>
     }
   </div>
 </ion-content>

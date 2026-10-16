@@ -1,95 +1,124 @@
-// Task Cloud colors. Brand accent is plum. Priority colors stay separate from it.
+// Task Cloud. Daylight stone and deep teal. Priority stays separate from the brand.
+
+$latin: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+$latin-ext: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+
+@mixin face($family, $file, $weight, $range) {
+  @font-face {
+    font-family: $family;
+    font-style: normal;
+    font-weight: $weight;
+    font-display: swap;
+    src: url('../assets/fonts/#{$file}.woff2') format('woff2');
+    unicode-range: $range;
+  }
+}
+
+@include face('Figtree', 'figtree-latin-400-normal', 400, $latin);
+@include face('Figtree', 'figtree-latin-ext-400-normal', 400, $latin-ext);
+@include face('Figtree', 'figtree-latin-500-normal', 500, $latin);
+@include face('Figtree', 'figtree-latin-ext-500-normal', 500, $latin-ext);
+@include face('Figtree', 'figtree-latin-600-normal', 600, $latin);
+@include face('Figtree', 'figtree-latin-ext-600-normal', 600, $latin-ext);
+@include face('Literata', 'literata-latin-500-normal', 500, $latin);
+@include face('Literata', 'literata-latin-ext-500-normal', 500, $latin-ext);
+@include face('Literata', 'literata-latin-600-normal', 600, $latin);
+@include face('Literata', 'literata-latin-ext-600-normal', 600, $latin-ext);
+@include face('Literata', 'literata-latin-700-normal', 700, $latin);
+@include face('Literata', 'literata-latin-ext-700-normal', 700, $latin-ext);
+
 :root {
-  --ion-color-primary: #a3165a;
-  --ion-color-primary-rgb: 163, 22, 90;
+  --font-display: 'Literata', 'Iowan Old Style', Palatino, Georgia, serif;
+  --font-body: 'Figtree', 'Segoe UI', sans-serif;
+
+  --ion-font-family: var(--font-body);
+  --ion-color-primary: #0b5e5a;
+  --ion-color-primary-rgb: 11, 94, 90;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #8c124e;
-  --ion-color-primary-tint: #b4457b;
+  --ion-color-primary-shade: #09524e;
+  --ion-color-primary-tint: #246e6b;
 
-  --ion-color-secondary: #57505f;
-  --ion-color-secondary-rgb: 87, 80, 95;
+  --ion-color-secondary: #3d524c;
+  --ion-color-secondary-rgb: 61, 82, 76;
   --ion-color-secondary-contrast: #ffffff;
-  --ion-color-secondary-shade: #4c4653;
-  --ion-color-secondary-tint: #686274;
+  --ion-color-secondary-shade: #364842;
+  --ion-color-secondary-tint: #50635d;
 
-  --ion-background-color: #f4f2f7;
-  --ion-background-color-rgb: 244, 242, 247;
+  --ion-background-color: #f3f5f4;
+  --ion-background-color-rgb: 243, 245, 244;
   --ion-surface-color: #ffffff;
   --ion-tab-bar-background: #ffffff;
-  --ion-toolbar-background: #ffffff;
-  --ion-toolbar-color: #1e1a24;
+  --ion-toolbar-background: #f3f5f4;
+  --ion-toolbar-color: #1a2421;
   --ion-card-background: #ffffff;
 
-  --ion-text-color: #1e1a24;
-  --ion-text-color-rgb: 30, 26, 36;
-  --ion-text-color-secondary: #57505f;
-  --ion-text-color-tertiary: #8a8292;
+  --ion-text-color: #1a2421;
+  --ion-text-color-rgb: 26, 36, 33;
+  --ion-text-color-secondary: #3d524c;
+  --ion-text-color-tertiary: #3d524c;
 
-  --ion-border-color: #d9d2e0;
-  --ion-border-color-light: #efeaf3;
+  --ion-border-color: #c9d4cf;
+  --ion-border-color-light: #dce5e1;
 
-  --ion-color-success: #1f7a4d;
-  --ion-color-warning: #8a5a00;
-  --ion-color-danger: #b3261e;
-  --ion-color-info: #3b4f73;
+  --ion-color-success: #1a6b3c;
+  --ion-color-warning: #8a5b00;
+  --ion-color-danger: #9f2d2d;
+  --ion-color-info: #0b5e5a;
 
-  --ion-font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --priority-high: #9f2d2d;
+  --priority-medium: #8a5b00;
+  --priority-low: #1a6b3c;
+  --priority-on: #ffffff;
 
-  --shadow-sm: 0 1px 2px rgba(30, 26, 36, 0.06);
-  --shadow-md: 0 8px 20px rgba(30, 26, 36, 0.08);
-  --shadow-lg: 0 16px 32px rgba(30, 26, 36, 0.1);
-  --shadow-xl: 0 24px 48px rgba(30, 26, 36, 0.14);
-
-  --border-radius-sm: 0.375rem;
-  --border-radius-md: 0.5rem;
-  --border-radius-lg: 0.75rem;
+  --shadow-lg: 0 16px 32px rgba(16, 33, 31, 0.14);
+  --border-radius-sm: 0.4rem;
+  --border-radius-md: 0.75rem;
   --border-radius-xl: 1rem;
 
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
+  color-scheme: light;
 }
 
 .dark-theme {
-  --ion-color-primary: #ff8fc7;
-  --ion-color-primary-rgb: 255, 143, 199;
-  --ion-color-primary-contrast: #2b0718;
-  --ion-color-primary-contrast-rgb: 43, 7, 24;
-  --ion-color-primary-shade: #e07aaf;
-  --ion-color-primary-tint: #ffa5d2;
+  --ion-color-primary: #8ed9d2;
+  --ion-color-primary-rgb: 142, 217, 210;
+  --ion-color-primary-contrast: #10211f;
+  --ion-color-primary-contrast-rgb: 16, 33, 31;
+  --ion-color-primary-shade: #7dc0ba;
+  --ion-color-primary-tint: #99ddd7;
 
-  --ion-color-secondary: #b8afc2;
-  --ion-color-secondary-rgb: 184, 175, 194;
-  --ion-color-secondary-contrast: #151218;
-  --ion-color-secondary-shade: #a299ab;
-  --ion-color-secondary-tint: #c6becf;
+  --ion-color-secondary: #c5d5ce;
+  --ion-color-secondary-rgb: 197, 213, 206;
+  --ion-color-secondary-contrast: #10211f;
+  --ion-color-secondary-shade: #adbbb5;
+  --ion-color-secondary-tint: #cbd9d3;
 
-  --ion-background-color: #151218;
-  --ion-background-color-rgb: 21, 18, 24;
-  --ion-surface-color: #1f1a24;
-  --ion-tab-bar-background: #1f1a24;
-  --ion-toolbar-background: #1f1a24;
-  --ion-toolbar-color: #f2eef6;
-  --ion-card-background: #1f1a24;
+  --ion-background-color: #101614;
+  --ion-background-color-rgb: 16, 22, 20;
+  --ion-surface-color: #1b2421;
+  --ion-tab-bar-background: #1b2421;
+  --ion-toolbar-background: #101614;
+  --ion-toolbar-color: #e7f0ec;
+  --ion-card-background: #1b2421;
 
-  --ion-text-color: #f2eef6;
-  --ion-text-color-rgb: 242, 238, 246;
-  --ion-text-color-secondary: #b8afc2;
-  --ion-text-color-tertiary: #7d7489;
+  --ion-text-color: #e7f0ec;
+  --ion-text-color-rgb: 231, 240, 236;
+  --ion-text-color-secondary: #c5d5ce;
+  --ion-text-color-tertiary: #c5d5ce;
 
-  --ion-border-color: #3b3343;
-  --ion-border-color-light: #2a2430;
+  --ion-border-color: #31403b;
+  --ion-border-color-light: #26312d;
 
-  --ion-color-success: #8fd9b3;
-  --ion-color-warning: #f0c36a;
-  --ion-color-danger: #ff9a8f;
-  --ion-color-info: #9eb6e0;
+  --ion-color-success: #9ee0b8;
+  --ion-color-warning: #f5d48a;
+  --ion-color-danger: #ffb4ab;
+  --ion-color-info: #8ed9d2;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.45);
-  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.5);
+  --priority-high: #ffb4ab;
+  --priority-medium: #f5d48a;
+  --priority-low: #9ee0b8;
+  --priority-on: #10211f;
+  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.4);
+
+  color-scheme: dark;
 }

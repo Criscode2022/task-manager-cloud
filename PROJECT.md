@@ -29,7 +29,7 @@ The skills live in `.agents/skills/`. Claude Code reaches the same folders throu
 
 - **Angular code:** `angular-developer`. Only when creating a new app: `angular-new-app`.
 - **The app type:** `angular-ssr`, `ionic-pwa`, or `angular-native`, as the section above says.
-- **UI:** `frontend-design` first, then `impeccable` to critique and polish. No generic AI styling: no decorative gradients, no identical card grids, no all-caps eyebrow labels, no motion nobody asked for.
+- **UI:** Load `frontend-design`, then `impeccable`, and follow both. Do not ask whether to use them. Impeccable chooses the layout and builds it. Do not ask the user to choose among layouts, directions, or comps unless the user explicitly asks to see options or to pick one. No generic AI styling: no decorative gradients, no identical card grids, no all-caps eyebrow labels, no motion nobody asked for.
 - **UI libraries:** Spartan UI and Tailwind CSS are already installed. Load `spartan` for components and `tailwind-angular` for utilities. Theme both from the tokens in `src/styles.scss`. The brand fill is `bg-primary`. Spartan's `bg-accent` is a hover surface, not the brand. Load `ai-elements` for conversation UI (messages, a prompt, reasoning, tool calls, sources). Load `angular-material` only when the user asks for Angular Material or `package.json` already has `@angular/material`. Ionic and Angular Native keep the component rules in their own skills.
 - **Every code change:** `clean-code`.
 - **Neon data and access rules:** `neon-data-api-rls` for tables, RLS policies, roles, and Data API calls from Angular. `neon-auth`, Neon's official skill, for the login flow.
@@ -89,7 +89,7 @@ The tutor is opt-in. Start it only when the user says "launch the Angular AI tut
 
 ## Files copied from official sources
 
-Do not edit these by hand: Angular's text in `AGENTS.md` (everything above its project section), the skills in `.agents/skills/` except the ones `SKILLS.lock.md` lists as written for this repository, and `third_party/`. `GEMINI.md` and the folders in `.claude/skills/` are links, not copies. Update everything with `sh scripts/update-agent-files.sh`, which also rewrites `SKILLS.lock.md`.
+Do not edit these by hand: Angular's text in `AGENTS.md` (everything above its project section), the skills in `.agents/skills/` except the ones `SKILLS.lock.md` lists as written for this repository, and `third_party/`. `GEMINI.md` and the folders in `.claude/skills/` are links, not copies. Update everything with `sh scripts/update-agent-files.sh`, which also rewrites `SKILLS.lock.md`. That script puts the "Use it, and choose the layout" section back into `.agents/skills/impeccable/SKILL.md` after the upstream skill is replaced.
 
 `/impeccable init` writes `PRODUCT.md`, and `/impeccable document` writes `DESIGN.md`. Those are Impeccable's files, separate from this one.
 
