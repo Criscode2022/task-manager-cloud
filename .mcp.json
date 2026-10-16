@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "angular-cli": {
+      "command": "npx",
+      "args": ["-y", "@angular/cli", "mcp"]
+    },
+    "Neon": {
+      "type": "http",
+      "url": "https://mcp.neon.tech/mcp"
+    },
+    "task-manager-cloud": {
+      "command": "uv",
+      "args": ["--directory", "${workspaceFolder}/mcp-server", "run", "server.py"]
+    }
+  }
+}

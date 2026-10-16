@@ -13,17 +13,17 @@ ion-tab-button {
 :host-context(.dark-theme) {
   .app-tab-bar,
   ion-tab-button {
-    --color: #e8edf5;
-    --color-selected: var(--ion-color-primary-tint);
+    --color: var(--ion-text-color-secondary);
+    --color-selected: var(--ion-color-primary);
   }
 
   ion-tab-button:not(.tab-selected) {
-    color: #e8edf5;
+    color: var(--ion-text-color-secondary);
     opacity: 1;
 
     ion-icon,
     ion-label {
-      color: #e8edf5;
+      color: var(--ion-text-color-secondary);
       opacity: 1;
     }
   }

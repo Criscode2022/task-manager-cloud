@@ -82,12 +82,11 @@ $app-theme: mat.define-theme((
 html, body {
   height: 100%;
   margin: 0;
-  font-family: 'Roboto', "Helvetica Neue", sans-serif;
+  font-family: var(--ion-font-family);
 }
 
 body {
-  @apply bg-gray-50;
-  transition: background-color 0.3s ease;
+  background: var(--ion-background-color);
 }
 
 // Material Form Field Enhancements
@@ -246,16 +245,6 @@ ion-button {
   font-weight: 600;
   text-transform: none;
   letter-spacing: 0.01em;
-  transition: all 0.2s ease;
-
-  &:hover:not([disabled]) {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-  }
-
-  &:active:not([disabled]) {
-    transform: translateY(0);
-  }
 }
 
 // Dialog sizing
@@ -337,17 +326,17 @@ mat-checkbox {
 
 // Toggle Enhancements (overriding component-specific styles)
 ion-toggle {
-  --handle-background: var(--ion-color-danger);
-  --handle-background-checked: var(--ion-color-primary);
-  --background: #e5e7eb;
-  --background-checked: rgba(16, 185, 129, 0.3);
+  --handle-background: var(--ion-surface-color);
+  --handle-background-checked: var(--ion-color-primary-contrast);
+  --background: var(--ion-border-color);
+  --background-checked: color-mix(in srgb, var(--ion-color-primary) 35%, var(--ion-surface-color));
 }
 
 // Toolbar Enhancements
 ion-toolbar {
   --background: var(--ion-toolbar-background);
   --color: var(--ion-toolbar-color);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 // Utility Classes

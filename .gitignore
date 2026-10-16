@@ -1,5 +1,4 @@
-# Specifies intentionally untracked files to ignore when using Git
-# http://git-scm.com/docs/gitignore
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
 *~
 *.sw[mnpcod]
@@ -14,7 +13,6 @@ log.txt
 
 /.sourcemaps
 /.versions
-/coverage
 
 # Ionic / Angular web app
 /.ionic
@@ -57,31 +55,29 @@ yarn-error.log
 *.sublime-project
 *.sublime-workspace
 
-# Windows junction contents for .agents/skills -> .claude/skills
-# The path itself is a git symlink (mode 120000); do not add files through the junction.
-.agents/skills/**
-
 # Visual Studio Code
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+!.vscode/mcp.json
 .history/*
 
 # Miscellaneous
 /.angular
 apps/web/.angular
 /.angular/cache
+# Cache written by the Spartan CLI, which runs through Nx.
+.nx/
 .sass-cache/
-/.nx
-/.nx/cache
 /connect.lock
 /coverage
 apps/*/coverage
 /libpeerconnection.log
 testem.log
 /typings
+__screenshots__/
 
 # System files
 .DS_Store
@@ -90,21 +86,24 @@ Thumbs.db
 # MCP server
 mcp-server/.venv/
 
-# Environment files with secrets
+# Secrets: environment files, local MCP overrides, and editor files that can hold credentials.
+# The shared MCP configs (.mcp.json, .vscode/mcp.json, and the links in .cursor/ and .antigravity/) stay committed.
 .env
-.env.local
-.env.*.local
+.env.*
+.mcp.json.local
+.claude/settings.local.json
+*.pem
+*.key
 apps/web/src/environments/environment.local.ts
 apps/web/src/environments/environment.prod.local.ts
 apps/web/src/environments/*.local.ts
 apps/web/src/ionicons-svg/
-src/environments/environment.local.ts
-src/environments/environment.prod.local.ts
-src/environments/*.local.ts
 
 # Netlify
 .netlify
 
 # Vercel
 .vercel
-.env*
+
+# macOS metadata written next to every file on exFAT and other non-Apple volumes
+._*

@@ -1,8 +1,11 @@
 // Toolbar Styles — same height as tab-list home header
 .toolbar-gradient {
   --background: var(--ion-toolbar-background);
+  --color: var(--ion-toolbar-color);
+  --border-width: 0 0 1px;
+  --border-color: var(--ion-border-color);
   --min-height: 56px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 
   @media (min-width: 768px) {
     --min-height: 72px;
@@ -19,50 +22,21 @@
   justify-content: center;
   gap: 0.75rem;
   margin: 0;
-  color: #fff;
+  color: var(--ion-toolbar-color);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 .toolbar-help {
   margin: 0;
   width: 36px;
   height: 36px;
+  color: var(--ion-toolbar-color);
 
   @media (min-width: 768px) {
     width: 40px;
     height: 40px;
-  }
-}
-
-.title-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.toolbar-button {
-  --border-radius: 12px;
-  transition: all 0.2s ease;
-
-  &:hover:not([disabled]) {
-    transform: scale(1.05);
-  }
-}
-
-// Background Decoration
-.background-decoration {
-  position: absolute;
-  bottom: 2rem;
-  right: 1rem;
-  opacity: 0.08;
-  z-index: 0;
-  pointer-events: none;
-  max-width: 300px;
-
-  @media (min-width: 768px) {
-    max-width: 400px;
-    bottom: 3rem;
-    right: 2rem;
   }
 }
 
@@ -75,36 +49,30 @@
 .settings-container {
   position: relative;
   z-index: 1;
-  max-width: 800px;
+  max-width: 720px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 1.25rem 1rem 2.5rem;
 
   @media (min-width: 768px) {
-    padding: 1.5rem;
+    padding: 1.5rem 1.5rem 3rem;
   }
 }
 
 // Status Badge
 .status-badge {
   display: flex;
-  justify-content: center;
-  margin-bottom: 2rem;
-
-  @media (min-width: 768px) {
-    margin-left: 1.75rem;
-  }
+  justify-content: flex-start;
+  margin-bottom: 1.25rem;
 }
 
 .status-chip {
-  --background: var(--ion-color-base);
   font-weight: 600;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  box-shadow: var(--shadow-md);
+  font-size: 0.9rem;
+  box-shadow: none;
 
   ion-icon {
-    font-size: 1.25rem;
-    margin-right: 0.5rem;
+    font-size: 1.1rem;
+    margin-right: 0.35rem;
   }
 }
 
@@ -126,7 +94,7 @@
 
 // Settings Section
 .settings-section {
-  margin-bottom: 2rem;
+  margin-bottom: 1.35rem;
 
   &:last-child {
     margin-bottom: 0;
@@ -136,45 +104,37 @@
 .section-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  padding: 0 0.5rem;
+  gap: 0.45rem;
+  margin-bottom: 0.45rem;
+  padding: 0 0.15rem;
 }
 
 .section-icon {
-  font-size: 1.75rem;
+  font-size: 1.1rem;
   color: var(--ion-color-primary);
 }
 
 .section-title {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--ion-text-color);
-  letter-spacing: -0.01em;
-
-  @media (min-width: 1024px) {
-    font-size: 1.75rem;
-  }
+  letter-spacing: -0.02em;
 }
 
 // Settings Card
 .settings-card {
   --background: var(--ion-card-background);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-md);
+  background: var(--ion-card-background);
+  border: 1px solid var(--ion-border-color);
+  border-radius: 16px;
+  box-shadow: none;
   margin: 0;
   padding: 0;
   overflow: hidden;
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: var(--shadow-lg);
-  }
 
   &.danger-card {
-    border: 2px solid var(--ion-color-danger);
-    border-opacity: 0.3;
+    border-color: color-mix(in srgb, var(--ion-color-danger) 55%, var(--ion-border-color));
   }
 }
 
@@ -183,69 +143,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem;
+  padding: 1rem 1.1rem;
   border-bottom: 1px solid var(--ion-border-color);
   gap: 1rem;
-  transition: background-color 0.2s ease;
 
   &:last-child {
     border-bottom: none;
   }
 
-  &:hover {
-    background-color: color-mix(
-      in srgb,
-      var(--ion-color-primary) 18%,
-      var(--ion-surface-color)
-    );
-
-    .card-title {
-      color: var(--ion-color-primary-shade);
-    }
-
-    .card-description {
-      color: var(--ion-text-color);
-    }
-
-    .card-title.text-danger {
-      color: var(--ion-color-danger-shade);
-    }
-
-    .action-button {
-      --background: var(--ion-color-primary-shade);
-      --background-hover: var(--ion-color-primary-shade);
-      --background-activated: var(--ion-color-primary-shade);
-      --color: #ffffff;
-      --color-hover: #ffffff;
-    }
-  }
-
   &.user-info {
-    background: linear-gradient(
-      135deg,
-      rgba(16, 185, 129, 0.1) 0%,
-      rgba(16, 185, 129, 0.05) 100%
-    );
-
-    &:hover {
-      background: linear-gradient(
-        135deg,
-        rgba(16, 185, 129, 0.1) 0%,
-        rgba(16, 185, 129, 0.05) 100%
-      );
-
-      .card-title {
-        color: var(--ion-text-color);
-      }
-
-      .card-description {
-        color: var(--ion-text-color-secondary);
-      }
-
-      .card-id {
-        color: var(--ion-color-primary);
-      }
-    }
+    background: color-mix(in srgb, var(--ion-color-primary) 8%, var(--ion-surface-color));
   }
 }
 
@@ -282,11 +189,11 @@
 }
 
 .card-id {
-  margin: 0.5rem 0 0;
-  font-size: 1rem;
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--ion-color-primary);
-  font-family: "Courier New", monospace;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   word-break: break-all;
 
   @media (min-width: 1024px) {
@@ -299,20 +206,19 @@
   --border-radius: var(--border-radius-md);
   --padding-start: 1rem;
   --padding-end: 1rem;
-  --color: #ffffff;
   min-width: 48px;
   height: 48px;
   flex-shrink: 0;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.2s ease;
+  box-shadow: none;
 
-  &:hover {
+  &:not([fill='clear']) {
+    --color: var(--ion-color-primary-contrast);
+  }
+
+  &:not([fill='clear']):hover {
     --background: var(--ion-color-primary-shade);
     --background-hover: var(--ion-color-primary-shade);
-    --color: #ffffff;
-    --color-hover: #ffffff;
-    transform: scale(1.08);
-    box-shadow: var(--shadow-md);
+    --color: var(--ion-color-primary-contrast);
   }
 
   ion-icon {
@@ -321,10 +227,10 @@
   }
 }
 
-.danger-card .action-button:hover {
-  --background: var(--ion-color-danger-shade);
-  --background-hover: var(--ion-color-danger-shade);
-  --color: #ffffff;
+.danger-card .action-button:not([fill='clear']):hover {
+  --background: color-mix(in srgb, var(--ion-color-danger) 88%, black);
+  --background-hover: color-mix(in srgb, var(--ion-color-danger) 88%, black);
+  --color: var(--ion-color-primary-contrast);
 }
 
 // Modern Toggle

@@ -36,13 +36,13 @@
       <ion-icon name="search-outline"></ion-icon>
     </button>
 
-    <h1 class="header-title ion-text-center text-xl lg:text-4xl font-extrabold tracking-tight">
+    <h1 class="header-title">
       <span>{{ 'TASKS.PAGE_TITLE' | translate }}</span>
       <ion-icon name="cloud-outline" class="header-cloud" aria-hidden="true"></ion-icon>
     </h1>
     <button
       slot="end"
-      class="filter-button md:absolute md:right-8 lg:text-xl ion-margin px-4 py-2 bg-white text-black rounded-full shadow-md flex justify-center items-center hover:bg-gray-200 focus:bg-gray-300"
+      class="filter-button"
       (click)="taskService.changeFilter()"
       >
       <mat-icon class="mr-1">filter_list</mat-icon>
@@ -157,7 +157,9 @@
               <ion-item
                 lines="none"
                 class="task-item"
-                [ngClass]="getPriorityClass(task.priority)"
+                [class.task-priority-high]="task.priority === 'high'"
+                [class.task-priority-medium]="task.priority === 'medium'"
+                [class.task-priority-low]="task.priority === 'low'"
                 [class.task-completed]="task.done"
                 [class.task-item--compact]="!task.description"
                 [attr.aria-description]="getPriorityTranslationKey(task.priority) | translate"

@@ -1,55 +1,134 @@
-# AGENTS.md
+# Persona
 
-## Cursor Cloud specific instructions
+You are a dedicated Angular developer who thrives on leveraging the absolute latest features of the framework to build cutting-edge applications. You are currently immersed in Angular v20+, passionately adopting signals for reactive state management, embracing standalone components for streamlined architecture, and utilizing the new control flow for more intuitive template logic. Performance is paramount to you, who constantly seeks to optimize change detection and improve user experience through these modern Angular paradigms. When prompted, assume You are familiar with all the newest APIs and best practices, valuing clean, efficient, and maintainable code.
 
-Task Cloud is a **Turborepo monorepo**:
+## Examples
 
-- `apps/web` — Angular 22 + Ionic 8 PWA for personal task management. Tasks work
-  fully offline via Ionic Storage (create / edit / complete / delete / filter).
-- `apps/api` — NestJS backend on Neon Postgres for optional cloud sync
-  (PIN-based user + JWT sessions + upload/download of tasks).
-- `mcp-server/` — optional auxiliary Python MCP server (FastMCP + `uv`) that talks
-  to the same Neon database. Not part of the frontend/API pnpm workspaces.
+These are modern examples of how to write an Angular 20 component with signals
 
-Core task features do not need the API; only cloud sync does.
+```ts
+import { Component, signal } from '@angular/core';
 
-### Environment config (important, non-obvious)
 
-- Root `.env` (from `.env.example`) holds `DATABASE_URL`, auth secrets, and
-  `API_BASE_URL`. Both the Nest API and the web `set-env` script read this file.
-- `pnpm start` / web `build` run `apps/web/scripts/set-env.js`, which generates the
-  gitignored `apps/web/src/environments/environment.local.ts` and
-  `environment.prod.local.ts`. Angular `fileReplacements` swaps `environment.ts`
-  for these generated files.
-- A root `.env` is **required** for local web config generation. If it is missing,
-  `set-env.js` copies `.env.example` to `.env` and then exits with code 1 — run
-  `pnpm run config` (or `pnpm start`) again once `.env` exists.
-- Locally, `API_BASE_URL=/api` and `apps/web/proxy.conf.json` proxies to Nest on
-  `API_PORT` (default `3001`). On Vercel the app deploys as a **single project**
-  (root `vercel.json`): static web + `/api/*` serverless function from
-  `api/index.js` wrapping the compiled `apps/api/dist`. Same origin, so
-  `API_BASE_URL` stays `/api`. See `VERCEL.md`.
+@Component({
+  selector: '{{tag-name}}-root',
+  templateUrl: '{{tag-name}}.html',
+})
+export class {{ClassName}} {
+  protected readonly isServerRunning = signal(true);
+  toggleServerStatus() {
+    this.isServerRunning.update(isServerRunning => !isServerRunning);
+  }
+}
+```
 
-### Running / testing / linting
+```css
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
 
-From the **repo root** (pnpm workspaces + Turborepo):
+  button {
+    margin-top: 10px;
+  }
+}
+```
 
-- Install: `pnpm install` (prefer over `pnpm install --frozen-lockfile` if the lockfile drifts).
-- Nest API: `pnpm api` (http://localhost:3001/api/health).
-- Web dev server: `pnpm start` (http://localhost:4200, proxies `/api`).
-- Both: `pnpm start:full` (turbo).
-- Unit tests (web): `CHROME_BIN=/usr/local/bin/google-chrome pnpm test:ci`
-  Headless Chrome works without a `--no-sandbox` flag in this environment.
-- Lint (web): `pnpm lint:ci`.
-- API smoke test (needs running API + real DB secrets): `pnpm test:api`.
+```html
+<section class="container">
+  @if (isServerRunning()) {
+  <span>Yes, the server is running</span>
+  } @else {
+  <span>No, the server is not running</span>
+  }
+  <button (click)="toggleServerStatus()">Toggle Server Status</button>
+</section>
+```
 
-### Dependencies
+When you update a component, be sure to put the logic in the ts file, the styles in the css file and the html template in the html file.
 
-- Use `pnpm install` at the repo root. Workspaces: `apps/web`, `apps/api`.
-- If `pnpm-lock.yaml` drifts, prefer `pnpm install` over `--frozen-lockfile`.
+## Resources
 
-### Agent skills
+Here are some links to the essentials for building Angular applications. Use these to get an understanding of how some of the core functionality works
+https://angular.dev/essentials/components
+https://angular.dev/essentials/signals
+https://angular.dev/essentials/templates
+https://angular.dev/essentials/dependency-injection
 
-- Angular: `.claude/skills/angular/`
-- NestJS: `.claude/skills/nestjs/` — modules, DI, DTO/validation, guards, testing. Apply when changing `apps/api`.
-  Env is validated at boot (`src/config/env.validation.ts`). Auth is a global `APP_GUARD`; public routes use `@Public()`. Ownership checks live in services (`NotFoundException`, no IDOR 403).
+## Best practices & Style guide
+
+Here are the best practices and the style guide information.
+
+### Coding Style guide
+
+Here is a link to the most recent Angular style guide https://angular.dev/style-guide
+
+### TypeScript Best Practices
+
+- Use strict type checking
+- Prefer type inference when the type is obvious
+- Avoid the `any` type; use `unknown` when type is uncertain
+
+### Angular Best Practices
+
+- Always use standalone components over `NgModules`
+- Do NOT set `standalone: true` inside the `@Component`, `@Directive` and `@Pipe` decorators
+- Do NOT set `changeDetection: ChangeDetectionStrategy.OnPush` explicitly. `OnPush` is the default in Angular v22+.
+- Use signals for state management
+- Implement lazy loading for feature routes
+- Do NOT use the `@HostBinding` and `@HostListener` decorators. Put host bindings inside the `host` object of the `@Component` or `@Directive` decorator instead
+- Use `NgOptimizedImage` for all static images.
+  - `NgOptimizedImage` does not work for inline base64 images.
+
+### Accessibility Requirements
+
+- It MUST pass all AXE checks.
+- It MUST follow all WCAG AA minimums, including focus management, color contrast, and ARIA attributes.
+
+### Components
+
+- Keep components small and focused on a single responsibility
+- Use `input()` signal instead of decorators, learn more here https://angular.dev/guide/components/inputs
+- Use `output()` function instead of decorators, learn more here https://angular.dev/guide/components/outputs
+- Use `model()` for two-way bound properties with `[(prop)]` syntax instead of pairing `input()` with `output()`
+- Use `computed()` for derived state learn more about signals here https://angular.dev/guide/signals.
+- Use `linkedSignal()` for state derived from multiple reactive sources that must stay synchronized
+- Prefer inline templates for small components
+- Prefer Signal Forms (`@angular/forms/signals`) for new forms. They are stable in Angular v22+ and provide signal-based state, type-safe field access, and schema-based validation
+- When not using Signal Forms, prefer Reactive forms instead of Template-driven ones
+- Do NOT use `ngClass`, use `class` bindings instead, for context: https://angular.dev/guide/templates/binding#css-class-and-style-property-bindings
+- Do NOT use `ngStyle`, use `style` bindings instead, for context: https://angular.dev/guide/templates/binding#css-class-and-style-property-bindings
+- Do NOT import `CommonModule`, import only the directives and pipes the template uses, such as `AsyncPipe` or `DatePipe`
+
+### State Management
+
+- Use signals for local component state
+- Use `computed()` for derived state
+- Keep state transformations pure and predictable
+- Do NOT use `mutate` on signals, use `update` or `set` instead
+
+### Templates
+
+- Keep templates simple and avoid complex logic
+- Use native control flow (`@if`, `@for`, `@switch`) instead of `*ngIf`, `*ngFor`, `*ngSwitch`
+- Do not assume globals like (`new Date()`) are available.
+- Use the async pipe to handle observables
+- Use built in pipes and import pipes when being used in a template, learn more https://angular.dev/guide/templates/pipes#
+- When using external templates/styles, use paths relative to the component TS file.
+
+### Services
+
+- Design services around a single responsibility
+- Use the `providedIn: 'root'` option for singleton services
+- Prefer the `@Service` decorator over `@Injectable({providedIn: 'root'})` for new singleton services (Angular v22+)
+- Use the `inject()` function instead of constructor injection
+
+<!-- Project section: maintained in this repository, not by Angular. Everything above is Angular's official AGENTS.md, unchanged. -->
+
+## Project rules
+
+Read [PROJECT.md](PROJECT.md) and [APP.md](APP.md) before any change. PROJECT.md adds the template's rules for skills, the app type, the Angular CLI and Neon MCP servers, secrets, and LLM features. APP.md has the rules for this app alone.
+
+Before you build the app, find its type: the one the user's prompt names, or else `appType` in `preferences.json`. If neither gives one, don't pick a type yourself. Ask the user which type of app they want, and say that this repository includes four: a classic Angular SPA, a modern SSR app, a PWA with Ionic, and a native app with Angular Native and Expo Go. PROJECT.md has the details.

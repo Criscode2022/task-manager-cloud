@@ -19,7 +19,9 @@
     "test:integration": "pnpm --filter @task-cloud/api test:integration",
     "test:e2e": "playwright test",
     "lint": "turbo run lint",
-    "lint:ci": "turbo run lint:ci --filter=@task-cloud/web"
+    "lint:ci": "turbo run lint:ci --filter=@task-cloud/web",
+    "test:scripts": "node --test scripts/*.test.mjs",
+    "update-from-template": "node scripts/update-from-template.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

@@ -1,8 +1,8 @@
 {
-  "name": "app",
-  "short_name": "app",
-  "theme_color": "#1976d2",
-  "background_color": "#fafafa",
+  "name": "Task Cloud",
+  "short_name": "Tasks",
+  "theme_color": "#a3165a",
+  "background_color": "#f4f2f7",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",

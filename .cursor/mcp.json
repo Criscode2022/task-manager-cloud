@@ -1,13 +1,1 @@
-{
-  "mcpServers": {
-    "task-manager-cloud": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "${workspaceFolder}/mcp-server",
-        "run",
-        "server.py"
-      ]
-    }
-  }
-}
+../.mcp.json

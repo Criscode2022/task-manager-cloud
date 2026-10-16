@@ -1,11 +1,11 @@
 <ion-header class="ion-no-border">
   <ion-toolbar class="toolbar-gradient md:py-4">
-    <h1 class="header-title ion-text-center text-xl lg:text-4xl font-extrabold tracking-tight">
+    <h1 class="header-title">
       <span>{{ 'OPTIONS.PAGE_TITLE' | translate }}</span>
     </h1>
     <button
       mat-icon-button
-      class="toolbar-help md:absolute md:right-8 lg:text-xl text-white"
+      class="toolbar-help"
       slot="end"
       (click)="showInfoAlert()"
       [matTooltip]="'COMMON.HELP' | translate"
@@ -17,15 +17,9 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="content-background">
-  <img
-    src="assets/background-image.svg"
-    class="background-decoration"
-    alt="soft background image of a girl and sunflowers"
-  />
-
   <div class="settings-container">
     <!-- Status Badge -->
-    <div class="status-badge fade-in-subtle">
+    <div class="status-badge">
       @if (!userId() && !isLoading()) {
       <ion-chip color="warning" class="status-chip">
         <ion-icon name="cloud-offline-outline"></ion-icon>
@@ -51,7 +45,7 @@
     </div>
     } @if (!isLoading()) {
     <!-- Cloud Sync Section -->
-    <div class="settings-section fade-in-subtle" style="animation-delay: 0.05s">
+    <div class="settings-section">
       <div class="section-header">
         <ion-icon name="cloud-outline" class="section-icon"></ion-icon>
         <h2 class="section-title">{{ 'OPTIONS.CLOUD_SYNC' | translate }}</h2>
@@ -123,7 +117,7 @@
     </div>
 
     <!-- Appearance Section -->
-    <div class="settings-section fade-in-subtle" style="animation-delay: 0.15s">
+    <div class="settings-section">
       <div class="section-header">
         <ion-icon name="color-palette-outline" class="section-icon"></ion-icon>
         <h2 class="section-title">{{ 'OPTIONS.APPEARANCE' | translate }}</h2>
@@ -147,7 +141,7 @@
     </div>
 
     <!-- Language Section -->
-    <div class="settings-section fade-in-subtle" style="animation-delay: 0.2s">
+    <div class="settings-section">
       <div class="section-header">
         <ion-icon name="language-outline" class="section-icon"></ion-icon>
         <h2 class="section-title">{{ 'OPTIONS.LANGUAGE' | translate }}</h2>
@@ -180,7 +174,7 @@
     </div>
 
     <!-- Danger Zone Section -->
-    <div class="settings-section fade-in-subtle" style="animation-delay: 0.25s">
+    <div class="settings-section">
       <div class="section-header">
         <ion-icon name="warning-outline" class="section-icon"></ion-icon>
         <h2 class="section-title">{{ 'OPTIONS.DANGER_ZONE' | translate }}</h2>

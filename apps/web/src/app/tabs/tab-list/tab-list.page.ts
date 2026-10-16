@@ -1,12 +1,9 @@
-import { CommonModule } from '@angular/common';
 import {
   afterNextRender,
-  ChangeDetectionStrategy,
   Component,
   computed,
   effect,
   ElementRef,
-  HostListener,
   inject,
   signal,
   viewChild,
@@ -48,10 +45,11 @@ import {
   selector: 'app-tab1',
   templateUrl: 'tab-list.page.html',
   styleUrls: ['tab-list.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '(document:keydown.escape)': 'onDocumentEscape()',
+  },
   imports: [
     IonicModule,
-    CommonModule,
     FormField,
     MatAutocompleteModule,
     MatButtonModule,
@@ -370,7 +368,6 @@ export class TabListPage extends TaskForm {
     await alert.present();
   }
 
-  @HostListener('document:keydown.escape')
   protected onDocumentEscape(): void {
     if (this.isFormVisible()) {
       void this.requestCloseCreateForm();
@@ -634,10 +631,6 @@ export class TabListPage extends TaskForm {
       default:
         return 'TASKS.PRIORITY.MEDIUM';
     }
-  }
-
-  protected getPriorityClass(priority: TaskPriority): string {
-    return `task-priority-${priority}`;
   }
 
   /** Explicit selected text so ion-select shows the value without an extra click. */
