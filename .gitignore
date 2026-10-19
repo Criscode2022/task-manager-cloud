@@ -109,3 +109,6 @@ apps/web/src/ionicons-svg/
 
 # macOS metadata written next to every file on exFAT and other non-Apple volumes
 ._*
+
+# Impeccable review captures (dev only)
+**/.impeccable/review/

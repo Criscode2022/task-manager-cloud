@@ -88,9 +88,8 @@ export class UserService {
         }
 
         this.dialog.open(PinDialogComponent, {
-          width: '90vw',
-          maxWidth: '500px',
-          maxHeight: '90vh',
+          maxWidth: 'calc(100vw - 2rem)',
+          panelClass: 'app-dialog-panel',
           data: { pin },
           disableClose: true,
           autoFocus: false,

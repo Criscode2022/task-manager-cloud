@@ -1,0 +1,58 @@
+<form
+  class="composer task-form"
+  [class.is-expanded]="isExpanded()"
+  novalidate
+  (submit)="submit($event)"
+>
+  <div class="composer-line">
+    <ion-icon class="composer-mark" name="add" aria-hidden="true"></ion-icon>
+    <input
+      #titleInput
+      class="composer-title"
+      type="text"
+      [formField]="form.title"
+      [attr.aria-label]="'TASKS.TASK_TITLE' | translate"
+      [placeholder]="'TASKS.TITLE_PLACEHOLDER' | translate"
+      aria-describedby="composer-count"
+      autocomplete="off"
+      enterkeyhint="done"
+    />
+    <button
+      type="submit"
+      class="composer-submit"
+      [disabled]="!canSubmit()"
+      [attr.aria-label]="'TASKS.ADD_TASK' | translate"
+    >
+      <ion-icon name="arrow-up" aria-hidden="true"></ion-icon>
+    </button>
+  </div>
+
+  <div class="composer-details" [attr.inert]="isExpanded() ? null : ''">
+    <div class="composer-details-inner">
+      <div class="composer-fields">
+        <input
+          class="composer-note"
+          type="text"
+          [formField]="form.description"
+          [attr.aria-label]="'TASKS.DESCRIPTION_OPTIONAL' | translate"
+          [placeholder]="'TASKS.NOTE_PLACEHOLDER' | translate"
+          autocomplete="off"
+        />
+        <app-segmented-control
+          class="composer-priority"
+          [formField]="form.priority"
+          [options]="priorityOptions"
+          [label]="'TASKS.PRIORITY_LABEL' | translate"
+        />
+        <app-tag-field [formField]="form.tagsInput" [knownTags]="knownTags()" />
+        <p
+          id="composer-count"
+          class="composer-count"
+          [class.is-over]="titleLength() > titleMaxLength"
+        >
+          {{ 'TASKS.TITLE_COUNT' | translate: { count: titleLength(), max: titleMaxLength } }}
+        </p>
+      </div>
+    </div>
+  </div>
+</form>

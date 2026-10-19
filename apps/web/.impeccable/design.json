@@ -1,126 +1,254 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-16T22:00:00.000Z",
+  "generatedAt": "2026-10-19T12:30:00.000Z",
   "title": "Design System: Task Cloud",
   "extensions": {
     "colorMeta": {
-      "teal": {
-        "role": "primary",
-        "displayName": "Pocket Teal",
-        "tonalRamp": ["#042220", "#083633", "#0B5E5A", "#1A7A75", "#3A9A94", "#7DCEC8", "#C5EBE7", "#F0FAF8"]
-      },
-      "stone": {
-        "role": "neutral",
-        "displayName": "Daylight Stone",
-        "tonalRamp": ["#1A2421", "#3D524C", "#6A7D76", "#8FA099", "#C9D4CF", "#E4EBE8", "#F3F5F4", "#FBFCFB"]
-      },
       "ink": {
+        "role": "primary",
+        "displayName": "Ballpoint Ink",
+        "tonalRamp": [
+          "#0B0E1D",
+          "#141B55",
+          "#1D2566",
+          "#2233B4",
+          "#2B3FD0",
+          "#6A7AE0",
+          "#A9B6FF",
+          "#E4E8FD"
+        ]
+      },
+      "ground": {
         "role": "neutral",
-        "displayName": "Ink",
-        "tonalRamp": ["#0C1210", "#1A2421", "#3D524C", "#6A7D76", "#8FA099", "#C5D5CE", "#E7F0EC", "#F7FBFA"]
+        "displayName": "Ink Ground",
+        "tonalRamp": [
+          "#11162F",
+          "#4B5378",
+          "#6A7192",
+          "#C3CAE2",
+          "#DDE2F0",
+          "#EEF1FA",
+          "#F4F6FC",
+          "#FFFFFF"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Blue-black"
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Slate"
       },
       "priority-high": {
         "role": "priority",
         "displayName": "High",
-        "tonalRamp": ["#3A1010", "#6B1C1C", "#9F2D2D", "#C44A42", "#E08A82", "#FFB4AB", "#FFDAD6", "#FFF5F4"]
+        "tonalRamp": [
+          "#3A1A24",
+          "#9E1F2A",
+          "#B42330",
+          "#FF9C96",
+          "#FBE9EA"
+        ]
+      },
+      "priority-medium": {
+        "role": "priority",
+        "displayName": "Medium",
+        "tonalRamp": [
+          "#33280F",
+          "#8F5300",
+          "#F0C46C",
+          "#FBF0DE"
+        ]
+      },
+      "priority-low": {
+        "role": "priority",
+        "displayName": "Low",
+        "tonalRamp": [
+          "#11301F",
+          "#167447",
+          "#7ED8A6",
+          "#E3F4EA"
+        ]
+      },
+      "night-header": {
+        "role": "primary",
+        "displayName": "Night Ink"
+      },
+      "night-ink": {
+        "role": "primary",
+        "displayName": "Periwinkle"
       }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Page name and the settings status sentence." },
-      "title": { "displayName": "Title", "purpose": "The task title, in the field and in the list." },
-      "body": { "displayName": "Body", "purpose": "Descriptions, notes, and empty states." },
-      "label": { "displayName": "Label", "purpose": "Switches, Add, and row actions." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page names in the ink header and the first-run empty state."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Sync panel, dialog and alert titles, empty states, the Done heading."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Task titles in the list, the capture field, and the editor."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Notes, setting notes, and dialog text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Segments, chips, and buttons."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Priority tags, tag chips, counts, and tab labels."
+      }
     },
     "shadows": [
       {
-        "name": "dialog",
-        "value": "0 16px 36px rgba(16, 33, 31, 0.18)",
-        "purpose": "Search, edit, and PIN dialogs. Not used on list rows."
+        "name": "raise",
+        "value": "0 1px 2px rgba(17,22,47,.05), 0 6px 16px -8px rgba(17,22,47,.16)",
+        "purpose": "Paper on the ground: task groups, the status switch, setting groups, the sync panel."
+      },
+      {
+        "name": "float",
+        "value": "0 18px 40px -12px rgba(17,22,47,.32)",
+        "purpose": "Alerts and the PIN dialog."
+      },
+      {
+        "name": "capture-lift",
+        "value": "0 12px 28px -16px rgba(6,10,40,.6)",
+        "purpose": "The capture field on the ink header."
       }
     ],
     "motion": [
       {
-        "name": "fold",
-        "value": "grid-template-rows 240ms cubic-bezier(0.16, 1, 0.3, 1)",
-        "purpose": "The capture details and the filter panel opening."
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Every transition."
+      },
+      {
+        "name": "cross-off",
+        "value": "background-size 320ms ease-out; settle 650ms",
+        "purpose": "The ink stroke through a completed title, then the row moves to Done."
+      },
+      {
+        "name": "segment-slide",
+        "value": "transform 260ms ease-out",
+        "purpose": "The selection moving between segments."
+      },
+      {
+        "name": "composer-fold",
+        "value": "grid-template-rows 280ms ease-out",
+        "purpose": "The capture details opening once a draft exists."
+      },
+      {
+        "name": "task-arrive",
+        "value": "background-color 1400ms ease-out",
+        "purpose": "A new task glowing ink, then settling."
       }
     ],
     "breakpoints": [
-      { "name": "phone", "value": "0px" },
-      { "name": "desktop", "value": "768px" }
+      {
+        "name": "phone",
+        "value": "0px"
+      },
+      {
+        "name": "wide",
+        "value": "768px"
+      }
     ]
   },
   "components": [
     {
-      "name": "Add",
+      "name": "Primary button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Submits the capture line when the title is valid.",
-      "html": "<button class=\"ds-btn-primary\">Add Task</button>",
-      "css": ".ds-btn-primary { height: 3.5rem; padding: 0 1rem; border: 0; border-radius: 0.85rem; background: #0B5E5A; color: #fff; font-family: Figtree, sans-serif; font-weight: 600; } .ds-btn-primary:hover { background: #09524e; } .ds-btn-primary:focus-visible { outline: 2px solid #1A2421; outline-offset: 2px; }"
+      "description": "The main action in a panel or editor: Save, Upload tasks.",
+      "html": "<button class=\"ds-btn\">Upload tasks and get a PIN</button>",
+      "css": ".ds-btn { min-height: 2.75rem; padding: 0 1.1rem; border: 0; border-radius: 999px; background: #2B3FD0; color: #fff; font: 650 0.9375rem/1.2 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; cursor: pointer; transition: background-color 160ms cubic-bezier(0.16,1,0.3,1); } .ds-btn:hover { background: #2233B4; } .ds-btn:focus-visible { outline: 2px solid #11162F; outline-offset: 2px; }"
     },
     {
-      "name": "Status selected",
+      "name": "Soft button",
       "kind": "button",
-      "refersTo": "status-selected",
-      "description": "The current list view inside All, Pending, and Done.",
-      "html": "<button class=\"ds-status\">All</button>",
-      "css": ".ds-status { min-height: 2.5rem; padding: 0.35rem 0.9rem; border: 0; border-radius: 0.65rem; background: #0B5E5A; color: #fff; font-family: Figtree, sans-serif; font-weight: 600; } .ds-status:focus-visible { outline: 2px solid #1A2421; outline-offset: 2px; }"
+      "refersTo": "button-soft",
+      "description": "Secondary actions: Log in with a PIN, Use another PIN.",
+      "html": "<button class=\"ds-btn-soft\">Log in with a PIN</button>",
+      "css": ".ds-btn-soft { min-height: 2.75rem; padding: 0 1.1rem; border: 0; border-radius: 999px; background: #E4E8FD; color: #2B3FD0; font: 650 0.9375rem/1.2 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; cursor: pointer; } .ds-btn-soft:focus-visible { outline: 2px solid #2B3FD0; outline-offset: 2px; }"
     },
     {
       "name": "Capture field",
       "kind": "input",
-      "refersTo": "capture-input",
-      "description": "The always-visible title field.",
-      "html": "<input class=\"ds-capture\" placeholder=\"What do you need to do?\" />",
-      "css": ".ds-capture { width: 100%; min-height: 3.5rem; padding: 0.75rem 0.9rem; border: 1px solid #C9D4CF; border-radius: 0.75rem; background: #fff; color: #1A2421; font-family: Literata, Georgia, serif; font-size: 1.2rem; } .ds-capture:focus { outline: 2px solid #0B5E5A; outline-offset: 2px; }"
+      "refersTo": "capture-field",
+      "description": "The title field and round Add in the ink header.",
+      "html": "<div class=\"ds-head\"><label class=\"ds-capture\"><span aria-hidden=\"true\">+</span><input placeholder=\"What do you need to do?\" aria-label=\"Task title\"><button aria-label=\"Add task\">&uarr;</button></label></div>",
+      "css": ".ds-head { padding: 1rem; background: #2B3FD0; border-radius: 0 0 24px 24px; } .ds-capture { display: flex; align-items: center; gap: .5rem; height: 3.25rem; padding: 0 .375rem 0 .875rem; border-radius: 18px; background: #fff; box-shadow: 0 12px 28px -16px rgba(6,10,40,.6); } .ds-capture span { color: #2B3FD0; font-size: 1.375rem; } .ds-capture input { flex: 1; border: 0; outline: 0; font: 500 1.125rem 'Bricolage Grotesque', system-ui, sans-serif; color: #11162F; } .ds-capture input::placeholder { color: #6A7192; } .ds-capture button { width: 2.5rem; height: 2.5rem; border: 0; border-radius: 999px; background: #2B3FD0; color: #fff; font-size: 1.25rem; }"
+    },
+    {
+      "name": "Status switch",
+      "kind": "custom",
+      "refersTo": "segment-selected",
+      "description": "All, Open, and Done with counts; the selection slides.",
+      "html": "<div class=\"ds-seg\" role=\"radiogroup\" aria-label=\"Show tasks\"><button role=\"radio\" aria-checked=\"true\">All 5</button><button role=\"radio\" aria-checked=\"false\">Open 4</button><button role=\"radio\" aria-checked=\"false\">Done 1</button></div>",
+      "css": ".ds-seg { display: grid; grid-template-columns: repeat(3, 1fr); padding: 4px; border-radius: 14px; background: #fff; box-shadow: 0 1px 2px rgba(17,22,47,.05), 0 6px 16px -8px rgba(17,22,47,.16); } .ds-seg button { min-height: 2.5rem; border: 0; border-radius: 10px; background: transparent; color: #4B5378; font: 600 .9375rem system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; } .ds-seg [aria-checked=true] { background: #2B3FD0; color: #fff; }"
+    },
+    {
+      "name": "Filter chip",
+      "kind": "chip",
+      "refersTo": "filter-chip",
+      "description": "Priority and tag filters; pressed priority chips take their hue, pressed tags fill with ink.",
+      "html": "<button class=\"ds-chip\" aria-pressed=\"false\">High</button> <button class=\"ds-chip ds-chip--tag\" aria-pressed=\"true\">#work</button>",
+      "css": ".ds-chip { min-height: 2.25rem; padding: 0 .875rem; border: 1px solid #C3CAE2; border-radius: 999px; background: transparent; color: #11162F; font: 600 .875rem system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; } .ds-chip--tag[aria-pressed=true] { border-color: #2B3FD0; background: #2B3FD0; color: #fff; }"
     },
     {
       "name": "Task row",
       "kind": "custom",
-      "refersTo": "task-row",
-      "description": "One task: completion circle, title, priority word.",
-      "html": "<div class=\"ds-row\"><span class=\"ds-mark\"></span><span class=\"ds-task\">Call dentist</span><span class=\"ds-pri\">High</span></div>",
-      "css": ".ds-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 0; border-bottom: 1px solid #DCE5E1; font-family: Figtree, sans-serif; } .ds-mark { width: 1.35rem; height: 1.35rem; border: 2px solid #3D524C; border-radius: 999px; } .ds-task { flex: 1; font-family: Literata, Georgia, serif; font-size: 1.2rem; font-weight: 600; color: #1A2421; } .ds-pri { color: #9F2D2D; font-weight: 700; font-size: 0.82rem; }"
-    },
-    {
-      "name": "Settings row",
-      "kind": "button",
-      "refersTo": "settings-row",
-      "description": "A labeled settings action, not an icon button.",
-      "html": "<button class=\"ds-setting\"><span>Upload Tasks</span><small>Sync your local tasks to the cloud</small></button>",
-      "css": ".ds-setting { display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; width: 100%; padding: 0.85rem 0; border: 0; border-bottom: 1px solid #DCE5E1; background: transparent; text-align: left; font-family: Figtree, sans-serif; } .ds-setting span { color: #1A2421; font-weight: 600; font-size: 1.05rem; } .ds-setting small { color: #3D524C; font-size: 0.95rem; } .ds-setting:hover { color: #0B5E5A; } .ds-setting:focus-visible { outline: 2px solid #0B5E5A; outline-offset: 2px; }"
+      "refersTo": "task-group",
+      "description": "Priority ring, Bricolage title, note, and the priority tag; done rows carry the ink stroke.",
+      "html": "<div class=\"ds-group\"><div class=\"ds-row\"><span class=\"ds-ring\"></span><div><div class=\"ds-title\">Send the invoice to Marta</div><div class=\"ds-note\">March hours</div><span class=\"ds-tag\">High</span></div></div><div class=\"ds-row ds-done\"><span class=\"ds-ring\"></span><div><div class=\"ds-title\"><span>Water the plants</span></div></div></div></div>",
+      "css": ".ds-group { border-radius: 18px; background: #fff; box-shadow: 0 1px 2px rgba(17,22,47,.05), 0 6px 16px -8px rgba(17,22,47,.16); overflow: hidden; } .ds-row { display: flex; gap: .875rem; padding: .875rem 1rem; } .ds-row + .ds-row { border-top: 1px solid #DDE2F0; } .ds-ring { flex: none; width: 1.5rem; height: 1.5rem; border: 2px solid #B42330; border-radius: 999px; background: #FBE9EA; } .ds-title { font: 550 1.0625rem/1.3 'Bricolage Grotesque', system-ui, sans-serif; color: #11162F; } .ds-note { font: .9375rem system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: #4B5378; } .ds-tag { display: inline-flex; margin-top: .3rem; height: 1.5rem; padding: 0 .5rem; align-items: center; border-radius: 999px; background: #FBE9EA; color: #B42330; font: 650 .8125rem system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; } .ds-done .ds-ring { border-color: #2B3FD0; background: #2B3FD0; } .ds-done .ds-title { color: #4B5378; } .ds-done .ds-title span { background: linear-gradient(#2B3FD0,#2B3FD0) 0 58%/100% 2px no-repeat; }"
     }
   ],
   "narrative": {
-    "northStar": "The Pocket Column",
-    "overview": "Task Cloud is one column you write into, then read. The capture line is the first control on the list. Status is a visible three-way switch. Finished work steps below what is still open.",
+    "northStar": "Ballpoint Ink",
+    "overview": "Task Cloud is a list you write in ballpoint ink. The ink header holds the capture field, so writing a task is the first thing every screen offers, and completing a task draws an ink stroke through it. The old teal-and-stone bookish column and the slim solid app bar are the anti-references.",
     "keyCharacteristics": [
-      "Capture stays on the page as a title field and an Add button.",
-      "All, Pending, and Done are always visible.",
-      "Priority and tags stay folded until you ask to narrow the list.",
-      "Open tasks sit above done tasks when both are on screen.",
-      "Settings are labeled rows.",
-      "Literata carries the words you read. Figtree carries the controls."
+      "The ink header owns the top of each tab and holds the capture field on the list.",
+      "Tasks sit in white inset groups on a pale ink ground.",
+      "Priority is a flag plus a word in red, amber, or green; the ring takes the hue.",
+      "The ink cross-off is the signature move.",
+      "Bricolage Grotesque for the words; the platform sans for controls."
     ],
     "rules": [
       {
         "name": "The Separate Priority Rule",
-        "body": "Teal means an action or the current view. Red, amber, and green mean how urgent a task is, and the word is always present.",
+        "body": "Ink means an action, the current view, or finished work. Red, amber, and green mean urgency, always with the word.",
         "section": "colors"
+      },
+      {
+        "name": "The One Field Rule",
+        "body": "Capturing a task is one field and one round Add; details open only once a draft exists.",
+        "section": "components"
+      },
+      {
+        "name": "The Paper Rule",
+        "body": "Paper on the ground takes the raise shadow and no border; fields inside paper take a sunken fill and an ink ring on focus.",
+        "section": "elevation"
       }
     ],
     "dos": [
-      "Do keep adding a task to one field and one button.",
-      "Do write priority as High, Medium, or Low.",
-      "Do put destructive actions in settings as full sentences about what will be deleted.",
-      "Do keep English and Spanish on the existing translation keys."
+      "Do keep capture to one field and one Add button at the top of the list.",
+      "Do write priority as High, Medium, or Low next to its hue.",
+      "Do put destructive actions in settings as sentences that say what is deleted and where.",
+      "Do keep English and Spanish on the translation keys."
     ],
     "donts": [
-      "Don't bring back a centered dialog for creating a task.",
-      "Don't cycle All, Pending, and Done through one unlabeled button.",
-      "Don't show priority by color alone.",
-      "Don't use the teal as a priority color."
+      "Don't bring back a centred dialog for creating or editing a task.",
+      "Don't show priority by colour alone, or use the ink as a priority colour.",
+      "Don't add eyebrow labels, decorative icon tiles, or gradients.",
+      "Don't confirm single-task deletes; offer Undo."
     ]
   }
 }

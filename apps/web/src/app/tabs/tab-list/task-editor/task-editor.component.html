@@ -1,0 +1,45 @@
+<form
+  class="editor"
+  novalidate
+  (submit)="confirm($event)"
+  [attr.aria-label]="'TASKS.EDIT_TASK' | translate"
+>
+  <input
+    #titleInput
+    class="editor-title"
+    type="text"
+    [formField]="form.title"
+    [attr.aria-label]="'TASKS.TASK_TITLE' | translate"
+    [placeholder]="'TASKS.TITLE_PLACEHOLDER' | translate"
+    autocomplete="off"
+    enterkeyhint="done"
+  />
+  <input
+    class="editor-note"
+    type="text"
+    [formField]="form.description"
+    [attr.aria-label]="'TASKS.DESCRIPTION_OPTIONAL' | translate"
+    [placeholder]="'TASKS.NOTE_PLACEHOLDER' | translate"
+    autocomplete="off"
+  />
+  <app-segmented-control
+    class="editor-priority"
+    [formField]="form.priority"
+    [options]="priorityOptions"
+    [label]="'TASKS.PRIORITY_LABEL' | translate"
+  />
+  <app-tag-field [formField]="form.tags" [knownTags]="knownTags()" />
+
+  <div class="editor-actions">
+    <button type="button" class="btn btn-danger-quiet editor-delete" (click)="remove.emit()">
+      <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
+      {{ 'COMMON.DELETE' | translate }}
+    </button>
+    <button type="button" class="btn btn-quiet" (click)="dismiss.emit()">
+      {{ 'COMMON.CANCEL' | translate }}
+    </button>
+    <button type="submit" class="btn btn-ink" [disabled]="form().invalid()">
+      {{ 'COMMON.SAVE' | translate }}
+    </button>
+  </div>
+</form>

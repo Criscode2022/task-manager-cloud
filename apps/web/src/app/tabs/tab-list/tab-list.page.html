@@ -1,31 +1,14 @@
-<ion-header class="ion-no-border" [translucent]="false">
-  <ion-toolbar class="list-toolbar">
-    <div class="header-bar">
-      <h1 class="header-title">{{ 'TASKS.PAGE_TITLE' | translate }}</h1>
-      <div class="header-actions">
-        <label class="toolbar-search toolbar-search--desktop">
-          <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
-          <input
-            type="search"
-            [value]="searchQuery()"
-            (input)="onSearchInput($any($event.target).value)"
-            [placeholder]="'TASKS.SEARCH_PLACEHOLDER' | translate"
-            [attr.aria-label]="'TASKS.SEARCH_TASKS' | translate"
-            autocomplete="off"
-            enterkeyhint="search"
-          />
-          @if (hasSearchQuery()) {
-            <button
-              type="button"
-              class="toolbar-search-clear"
-              (click)="clearSearch($event)"
-              [attr.aria-label]="'TASKS.SEARCH_CLEAR' | translate"
-            >
-              <ion-icon name="close-circle" aria-hidden="true"></ion-icon>
-            </button>
-          }
-        </label>
+<ion-header class="ion-no-border masthead-header">
+  <ion-toolbar class="masthead-toolbar">
+    <div class="masthead" [class.is-searching]="isSearchOpen()">
+      <div class="masthead-heading">
+        <h1 class="header-title">{{ 'TASKS.PAGE_TITLE' | translate }}</h1>
+        @if (summary(); as line) {
+          <p class="masthead-summary">{{ line.key | translate: line.params }}</p>
+        }
+      </div>
 
+      <div class="masthead-actions">
         @if (userId()) {
           <button
             type="button"
@@ -35,7 +18,7 @@
             (click)="refresh()"
             [attr.aria-label]="'TASKS.SYNC_WITH_CLOUD' | translate"
           >
-            <ion-icon name="sync" aria-hidden="true"></ion-icon>
+            <ion-icon name="sync-outline" aria-hidden="true"></ion-icon>
           </button>
         }
 
@@ -52,453 +35,285 @@
 
         <button
           type="button"
-          class="toolbar-search-icon icon-button"
-          [class.has-query]="hasSearchQuery()"
+          class="icon-button toolbar-search-icon"
           (click)="openSearch()"
+          aria-controls="task-search"
+          [attr.aria-expanded]="isSearchOpen()"
           [attr.aria-label]="'TASKS.SEARCH_TASKS' | translate"
         >
           <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
         </button>
       </div>
+
+      <div class="search-row" id="task-search" role="search">
+        <label class="search-field">
+          <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+          <input
+            #searchInput
+            type="search"
+            [value]="searchQuery()"
+            (input)="onSearchInput($any($event.target).value)"
+            (keydown.escape)="closeSearch()"
+            [placeholder]="'TASKS.SEARCH_PLACEHOLDER' | translate"
+            [attr.aria-label]="'TASKS.SEARCH_TASKS' | translate"
+            autocomplete="off"
+            enterkeyhint="search"
+          />
+          @if (hasSearchQuery()) {
+            <button
+              type="button"
+              class="search-clear"
+              (click)="clearSearch()"
+              [attr.aria-label]="'TASKS.SEARCH_CLEAR' | translate"
+            >
+              <ion-icon name="close-circle" aria-hidden="true"></ion-icon>
+            </button>
+          }
+        </label>
+        <button type="button" class="search-cancel" (click)="closeSearch()">
+          {{ 'COMMON.CANCEL' | translate }}
+        </button>
+      </div>
+
+      <app-task-composer
+        class="masthead-composer"
+        [knownTags]="availableTags()"
+        (create)="addTask($event)"
+      />
     </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [scrollY]="true" class="content-background">
-  <div class="page-column">
-    <div class="capture-dock">
-      <div class="list-tools">
-        <div
+<ion-content class="list-content">
+  <div class="column">
+    @if (tasks().length) {
+      <div class="list-controls">
+        <app-segmented-control
           class="status-switch"
-          role="radiogroup"
-          [attr.aria-label]="'TASKS.FILTER_TASKS' | translate"
-        >
-          <button
-            type="button"
-            class="filter-button status-option"
-            role="radio"
-            [class.is-selected]="filter() === statusAll"
-            [attr.aria-checked]="filter() === statusAll"
-            (click)="selectStatus(statusAll)"
-          >
-            {{ 'TASKS.FILTER.ALL' | translate }}
-          </button>
-          <button
-            type="button"
-            class="status-option"
-            role="radio"
-            [class.is-selected]="filter() === statusPending"
-            [attr.aria-checked]="filter() === statusPending"
-            (click)="selectStatus(statusPending)"
-          >
-            {{ 'TASKS.FILTER.PENDING' | translate }}
-          </button>
-          <button
-            type="button"
-            class="status-option"
-            role="radio"
-            [class.is-selected]="filter() === statusDone"
-            [attr.aria-checked]="filter() === statusDone"
-            (click)="selectStatus(statusDone)"
-          >
-            {{ 'TASKS.FILTER.DONE' | translate }}
-          </button>
-        </div>
-
-        @if (tasks().length) {
-          <button
-            type="button"
-            class="narrow-toggle"
-            [class.is-active]="filtersOpen() || hasNarrowFilters()"
-            [attr.aria-expanded]="filtersOpen()"
-            aria-controls="narrow-panel"
-            (click)="toggleFilters()"
-          >
-            {{ 'TASKS.FILTER_TASKS' | translate }}
-          </button>
-        }
-      </div>
-
-      @if (hasNarrowFilters()) {
-        <div class="active-narrow">
-          @if (selectedPriorityFilter() !== 'all') {
-            <button
-              type="button"
-              class="active-chip"
-              (click)="onPriorityFilterChange('all')"
-            >
-              {{ getPriorityTranslationKey(selectedPriorityFilter()) | translate }}
-              <ion-icon name="close" aria-hidden="true"></ion-icon>
-            </button>
-          }
-          @if (selectedTagFilter() !== 'all') {
-            <button
-              type="button"
-              class="active-chip"
-              (click)="onTagFilterChange('all')"
-            >
-              #{{ selectedTagFilter() }}
-              <ion-icon name="close" aria-hidden="true"></ion-icon>
-            </button>
-          }
-          <button type="button" class="clear-narrow" (click)="clearAdvancedFilters()">
-            {{ 'TASKS.CLEAR_EXTRA_FILTERS' | translate }}
-          </button>
-        </div>
-      }
-
-      <div
-        id="narrow-panel"
-        class="narrow-panel"
-        [class.is-open]="filtersOpen() && tasks().length"
-        [attr.inert]="filtersOpen() && tasks().length ? null : ''"
-      >
-        <div class="narrow-panel-inner">
-          <div
-            class="filter-chips"
-            role="group"
-            [attr.aria-label]="'TASKS.FILTER_BY_PRIORITY' | translate"
-          >
-            <button
-              type="button"
-              class="filter-chip"
-              [class.is-active]="selectedPriorityFilter() === 'all'"
-              (click)="onPriorityFilterChange('all')"
-            >
-              {{ 'TASKS.ALL_PRIORITIES' | translate }}
-            </button>
-            @for (priority of priorityChoices; track priority) {
-              <button
-                type="button"
-                class="filter-chip"
-                [class.is-active]="selectedPriorityFilter() === priority"
-                [class.filter-chip--high]="priority === 'high'"
-                [class.filter-chip--medium]="priority === 'medium'"
-                [class.filter-chip--low]="priority === 'low'"
-                (click)="onPriorityFilterChange(priority)"
-              >
-                {{ getPriorityTranslationKey(priority) | translate }}
-              </button>
-            }
-          </div>
-
-          @if (availableTags().length) {
-            <div
-              class="filter-chips"
-              role="group"
-              [attr.aria-label]="'TASKS.FILTER_BY_TAG' | translate"
-            >
-              <button
-                type="button"
-                class="filter-chip"
-                [class.is-active]="selectedTagFilter() === 'all'"
-                (click)="onTagFilterChange('all')"
-              >
-                {{ 'TASKS.ALL_TAGS' | translate }}
-              </button>
-              @for (tag of availableTags(); track tag) {
-                <button
-                  type="button"
-                  class="filter-chip filter-chip--tag"
-                  [class.is-active]="selectedTagFilter() === tag"
-                  (click)="onTagFilterChange(tag)"
-                >
-                  #{{ tag }}
-                </button>
-              }
-            </div>
-          }
-        </div>
-      </div>
-
-      <form class="task-form" novalidate (submit)="addTask($event)">
-        <div class="composer-line">
-          <mat-form-field
-            appearance="outline"
-            class="composer-field composer-title"
-            subscriptSizing="dynamic"
-          >
-            <input
-              matInput
-              type="text"
-              [attr.aria-label]="'TASKS.TASK_TITLE' | translate"
-              [placeholder]="'TASKS.TITLE_PLACEHOLDER' | translate"
-              [formField]="form.title"
-            />
-            <mat-hint align="end">{{ taskModel().title.length }}/40</mat-hint>
-            @if (taskModel().title.length) {
-              <button
-                matSuffix
-                type="button"
-                class="clear-button"
-                (click)="clear('title')"
-                [attr.aria-label]="'TASKS.CLEAR_TITLE' | translate"
-              >
-                <ion-icon name="close" aria-hidden="true"></ion-icon>
-              </button>
-            }
-          </mat-form-field>
-          <button
-            type="submit"
-            class="submit-button"
-            [disabled]="form().invalid()"
-          >
-            {{ 'TASKS.ADD_TASK' | translate }}
-          </button>
-        </div>
-
-        <button
-          type="button"
-          class="details-toggle"
-          [attr.aria-expanded]="isFormVisible()"
-          aria-controls="composer-details"
-          (click)="toggleComposerDetails()"
-        >
-          {{ (isFormVisible() ? 'TASKS.COLLAPSE_FORM' : 'TASKS.EXPAND_FORM') | translate }}
-        </button>
+          [options]="statusOptions()"
+          [(value)]="filter"
+          [label]="'TASKS.FILTER_TASKS' | translate"
+        />
 
         <div
-          id="composer-details"
-          class="composer-details"
-          [class.is-open]="isFormVisible()"
-          [attr.inert]="isFormVisible() ? null : ''"
+          class="filter-chips"
+          role="group"
+          [attr.aria-label]="'TASKS.NARROW_LIST' | translate"
         >
-          <div class="composer-details-inner">
-            <mat-form-field appearance="outline" class="composer-field" subscriptSizing="dynamic">
-              <mat-label>{{ 'TASKS.DESCRIPTION_OPTIONAL' | translate }}</mat-label>
-              <input
-                matInput
-                type="text"
-                [placeholder]="'TASKS.DESCRIPTION_PLACEHOLDER' | translate"
-                [formField]="form.description"
-              />
-              <mat-hint align="end">{{ taskModel().description.length }}/30</mat-hint>
-              @if (taskModel().description.length) {
-                <button
-                  type="button"
-                  matSuffix
-                  class="clear-button"
-                  (click)="clear('description')"
-                  [attr.aria-label]="'TASKS.CLEAR_DESCRIPTION' | translate"
-                >
-                  <ion-icon name="close" aria-hidden="true"></ion-icon>
-                </button>
-              }
-            </mat-form-field>
-
-            <div
-              class="priority-choice"
-              role="radiogroup"
-              [attr.aria-label]="'TASKS.PRIORITY_LABEL' | translate"
+          @if (hasNarrowFilters()) {
+            <button type="button" class="filter-chip filter-chip--clear" (click)="clearAdvancedFilters()">
+              <ion-icon name="close" aria-hidden="true"></ion-icon>
+              {{ 'TASKS.CLEAR_EXTRA_FILTERS' | translate }}
+            </button>
+          }
+          @for (priority of priorityChoices; track priority) {
+            <button
+              type="button"
+              class="filter-chip filter-chip--priority"
+              [attr.data-priority]="priority"
+              [attr.aria-pressed]="selectedPriorityFilter() === priority"
+              (click)="togglePriorityFilter(priority)"
             >
-              @for (priority of priorityChoices; track priority) {
-                <button
-                  type="button"
-                  class="priority-option"
-                  role="radio"
-                  [class.is-selected]="taskModel().priority === priority"
-                  [class.priority-option--high]="priority === 'high'"
-                  [class.priority-option--medium]="priority === 'medium'"
-                  [class.priority-option--low]="priority === 'low'"
-                  [attr.aria-checked]="taskModel().priority === priority"
-                  (click)="onCreatePriorityChange(priority)"
-                >
-                  {{ getPriorityTranslationKey(priority) | translate }}
-                </button>
-              }
-            </div>
-
-            <mat-form-field appearance="outline" class="composer-field" subscriptSizing="dynamic">
-              <mat-label>{{ 'TASKS.TAGS_OPTIONAL' | translate }}</mat-label>
-              <input
-                matInput
-                type="text"
-                [placeholder]="'TASKS.TAGS_PLACEHOLDER' | translate"
-                [formField]="form.tagsInput"
-                [matAutocomplete]="tagsAutocomplete"
-                (input)="onTagsInputChange($any($event.target).value)"
-              />
-              <mat-hint>{{ 'TASKS.TAGS_HELPER' | translate }}</mat-hint>
-              @if (taskModel().tagsInput.length) {
-                <button
-                  type="button"
-                  matSuffix
-                  class="clear-button"
-                  (click)="clearTagsInput()"
-                  [attr.aria-label]="'TASKS.CLEAR_TAGS' | translate"
-                >
-                  <ion-icon name="close" aria-hidden="true"></ion-icon>
-                </button>
-              }
-            </mat-form-field>
-
-            <mat-autocomplete
-              #tagsAutocomplete="matAutocomplete"
-              (optionSelected)="applyTagSuggestion($event.option.value)"
+              <ion-icon
+                [name]="selectedPriorityFilter() === priority ? 'flag' : 'flag-outline'"
+                aria-hidden="true"
+              ></ion-icon>
+              {{ priorityLabelKey(priority) | translate }}
+            </button>
+          }
+          @for (tag of availableTags(); track tag) {
+            <button
+              type="button"
+              class="filter-chip filter-chip--tag"
+              [attr.aria-pressed]="selectedTagFilter() === tag"
+              (click)="toggleTagFilter(tag)"
             >
-              @for (tag of tagSuggestions(); track tag) {
-                <mat-option [value]="tag">#{{ tag }}</mat-option>
-              }
-            </mat-autocomplete>
-          </div>
+              #{{ tag }}
+            </button>
+          }
         </div>
-      </form>
-    </div>
+      </div>
+    }
+
+    @if (hasSearchQuery()) {
+      <p class="search-status" role="status">
+        {{ 'TASKS.SEARCH_RESULTS' | translate: { count: filteredTasks().length } }}
+      </p>
+    }
 
     @if (!filteredTasks().length) {
       <div class="empty-state">
         @if (hasSearchQuery()) {
           <h2 class="empty-title">{{ 'TASKS.SEARCH_NO_RESULTS' | translate }}</h2>
           <p class="empty-text">{{ 'TASKS.SEARCH_NO_RESULTS_HINT' | translate }}</p>
-          <button type="button" class="empty-action" (click)="clearSearch()">
+          <button type="button" class="btn btn-soft empty-action" (click)="clearSearch()">
             {{ 'TASKS.SEARCH_CLEAR' | translate }}
           </button>
-        } @else if (alternativeFilterInfo()) {
+        } @else if (alternativeFilterInfo(); as info) {
           <h2 class="empty-title">{{ 'TASKS.NO_TASKS_HERE' | translate }}</h2>
           <p class="empty-text">
-            {{ 'TASKS.BUT_YOU_HAVE' | translate }}
-            {{ alternativeFilterInfo()!.count }}
-            {{ alternativeFilterInfo()!.labelKey | translate }}
+            {{ 'TASKS.BUT_YOU_HAVE' | translate }} {{ info.count }} {{ info.labelKey | translate }}
           </p>
-          <button type="button" class="empty-action" (click)="switchToAlternativeFilter()">
-            {{ 'TASKS.VIEW' | translate }}
-            {{ alternativeFilterInfo()!.labelKey | translate }}
+          <button type="button" class="btn btn-soft empty-action" (click)="switchToAlternativeFilter()">
+            {{ 'TASKS.VIEW' | translate }} {{ info.labelKey | translate }}
           </button>
         } @else if (hasNarrowFilters() && tasks().length) {
-          <h2 class="empty-title">{{ 'TASKS.NO_TASKS_HERE' | translate }}</h2>
-          <button type="button" class="empty-action" (click)="clearAdvancedFilters()">
+          <h2 class="empty-title">{{ 'TASKS.NO_MATCHING_FILTERS' | translate }}</h2>
+          <button type="button" class="btn btn-soft empty-action" (click)="clearAdvancedFilters()">
             {{ 'TASKS.CLEAR_EXTRA_FILTERS' | translate }}
           </button>
         } @else {
-          <h2 class="empty-title">{{ 'TASKS.NO_TASKS_YET' | translate }}</h2>
+          <h2 class="empty-title empty-title--first">{{ 'TASKS.NO_TASKS_YET' | translate }}</h2>
           <p class="empty-text">{{ 'TASKS.CREATE_FIRST_TASK' | translate }}</p>
         }
       </div>
     } @else {
-      <ion-list class="task-list">
-        @if (showDoneSplit()) {
-          <h2 class="group-heading">{{ 'TASKS.FILTER.PENDING' | translate }}</h2>
-        }
-        @for (task of openTasks(); track task.id) {
-          <ng-container
-            [ngTemplateOutlet]="taskRow"
-            [ngTemplateOutletContext]="{ $implicit: task }"
-          />
-        }
-        @if (showDoneSplit()) {
-          <h2 class="group-heading group-heading--done">{{ 'TASKS.FILTER.DONE' | translate }}</h2>
-        }
-        @for (task of doneTasks(); track task.id) {
-          <ng-container
-            [ngTemplateOutlet]="taskRow"
-            [ngTemplateOutletContext]="{ $implicit: task }"
-          />
-        }
-      </ion-list>
+      @if (openTasks().length) {
+        <section class="task-section" [attr.aria-label]="'TASKS.FILTER.PENDING' | translate">
+          <ion-list class="task-group" lines="none">
+            @for (task of openTasks(); track task.id) {
+              <ng-container [ngTemplateOutlet]="taskRow" [ngTemplateOutletContext]="{ $implicit: task }" />
+            }
+          </ion-list>
+        </section>
+      }
+
+      @if (doneTasks().length) {
+        <section
+          class="task-section task-section--done"
+          [attr.aria-labelledby]="showDoneHeading() ? 'done-heading' : null"
+          [attr.aria-label]="showDoneHeading() ? null : ('TASKS.FILTER.DONE' | translate)"
+        >
+          @if (showDoneHeading()) {
+            <h2 class="section-heading" id="done-heading">
+              <button
+                type="button"
+                class="section-toggle"
+                aria-controls="done-list"
+                [attr.aria-expanded]="isDoneExpanded()"
+                (click)="toggleDoneGroup()"
+              >
+                {{ 'TASKS.FILTER.DONE' | translate }}
+                <span class="section-count">{{ doneTasks().length }}</span>
+                <ion-icon class="section-chevron" name="chevron-down" aria-hidden="true"></ion-icon>
+              </button>
+            </h2>
+          }
+          @if (isDoneExpanded() || !showDoneHeading()) {
+            <ion-list id="done-list" class="task-group" lines="none">
+              @for (task of doneTasks(); track task.id) {
+                <ng-container [ngTemplateOutlet]="taskRow" [ngTemplateOutletContext]="{ $implicit: task }" />
+              }
+            </ion-list>
+          }
+        </section>
+      }
     }
   </div>
-
-  @if (hasNewTask()) {
-    <button
-      type="button"
-      class="scroll-newest"
-      (click)="scrollToNewest()"
-      [attr.aria-label]="'TASKS.SCROLL_TO_NEW' | translate"
-    >
-      <ion-icon name="chevron-down-outline" aria-hidden="true"></ion-icon>
-    </button>
-  }
 </ion-content>
 
 <ng-template #taskRow let-task>
   <ion-item-sliding
-    class="task-item-sliding"
-    [class.animate-new-task]="newlyAddedTaskIds().has(task.id)"
-    [disabled]="isTabletOrDesktop()"
+    #slide
+    class="task-slide"
+    [id]="'task-' + task.id"
+    [class.is-new]="newlyAddedTaskIds().has(task.id)"
+    [disabled]="isWide() || editingTaskId() === task.id"
   >
     <ion-item
-      lines="none"
       class="task-item"
-      [class.task-priority-high]="task.priority === 'high'"
-      [class.task-priority-medium]="task.priority === 'medium'"
-      [class.task-priority-low]="task.priority === 'low'"
-      [class.task-completed]="task.done"
-      [attr.aria-description]="getPriorityTranslationKey(task.priority) | translate"
+      lines="none"
+      [class.is-done]="task.done"
+      [class.is-editing]="editingTaskId() === task.id"
+      [attr.data-priority]="task.priority"
     >
-      <button
-        type="button"
-        slot="start"
-        class="complete-toggle"
-        [class.is-done]="task.done"
-        [disabled]="!canClick()"
-        [attr.aria-pressed]="task.done"
-        [attr.aria-label]="'TASKS.MARK_AS_COMPLETE' | translate"
-        (click)="$event.stopPropagation(); canClick() && toggleTaskState(task.id)"
-      >
-        <span class="complete-mark" aria-hidden="true"></span>
-      </button>
+      @if (editingTaskId() === task.id) {
+        <app-task-editor
+          class="task-editor"
+          [task]="task"
+          [knownTags]="availableTags()"
+          (save)="saveEdit(task.id, $event)"
+          (dismiss)="closeEditor(task.id)"
+          (remove)="deleteTask(task.id)"
+        />
+      } @else {
+        <div class="task-row">
+          <button
+            type="button"
+            class="check"
+            [attr.aria-pressed]="task.done"
+            [attr.aria-label]="'TASKS.MARK_AS_COMPLETE' | translate: { title: task.title }"
+            (click)="toggleTaskState(task.id)"
+          >
+            <span class="check-ring" aria-hidden="true">
+              <ion-icon name="checkmark-sharp"></ion-icon>
+            </span>
+          </button>
 
-      <div
-        class="task-content"
-        (click)="onTaskContentClick(task)"
-        (dblclick)="onTaskDoubleClick(task, $event)"
-        (pointerdown)="onTaskPressStart(task, $event)"
-        (pointerup)="onTaskPressEnd()"
-        (pointercancel)="onTaskPressEnd()"
-        (pointerleave)="onTaskPressEnd()"
-        (contextmenu)="onTaskContextMenu($event)"
-        [class.disabled]="!canClick()"
-      >
-        <div class="task-title">{{ task.title }}</div>
-        @if (task.description) {
-          <div class="task-description">{{ task.description }}</div>
-        }
-        @if (task.tags.length) {
-          <div class="task-tags">
-            @for (tag of task.tags; track tag) {
-              <span class="tag-chip">#{{ tag }}</span>
+          <button
+            type="button"
+            class="task-body"
+            [id]="'task-body-' + task.id"
+            [attr.aria-description]="'TASKS.OPEN_TO_EDIT' | translate"
+            (click)="openEditor(task)"
+            (pointerdown)="onTaskPressStart(task)"
+            (pointerup)="onTaskPressEnd()"
+            (pointercancel)="onTaskPressEnd()"
+            (pointerleave)="onTaskPressEnd()"
+            (contextmenu)="$event.preventDefault()"
+          >
+            <span class="task-title"><span class="task-title-ink">{{ task.title }}</span></span>
+            @if (task.description) {
+              <span class="task-note">{{ task.description }}</span>
             }
-          </div>
-        }
-      </div>
+            <span class="task-meta">
+              <span class="priority-tag">
+                <ion-icon name="flag" aria-hidden="true"></ion-icon>
+                {{ priorityLabelKey(task.priority) | translate }}
+              </span>
+              @for (tag of task.tags; track tag) {
+                <span class="tag-chip">#{{ tag }}</span>
+              }
+            </span>
+          </button>
 
-      <div class="task-end" slot="end">
-        <span class="task-priority-name">
-          {{ getPriorityTranslationKey(task.priority) | translate }}
-        </span>
-        <div class="task-actions desktop-only">
-          <button
-            type="button"
-            class="row-action"
-            (click)="presentEditAlert(task)"
-            [attr.aria-label]="'TASKS.EDIT_TASK' | translate"
-          >
-            {{ 'COMMON.EDIT' | translate }}
-          </button>
-          <button
-            type="button"
-            class="row-action row-action--danger"
-            (dblclick)="deleteTask(task.id)"
-            [attr.aria-label]="'TASKS.DOUBLE_CLICK_DELETE' | translate"
-          >
-            {{ 'COMMON.DELETE' | translate }}
-          </button>
+          <div class="row-actions">
+            <button
+              type="button"
+              class="row-action"
+              (click)="openEditor(task)"
+              [attr.aria-label]="'TASKS.EDIT_TASK' | translate"
+            >
+              <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+            </button>
+            <button
+              type="button"
+              class="row-action row-action--danger"
+              (click)="deleteTask(task.id)"
+              [attr.aria-label]="'TASKS.DELETE_TASK' | translate"
+            >
+              <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
+            </button>
+          </div>
         </div>
-      </div>
+      }
     </ion-item>
 
-    <ion-item-options side="start" class="phone-only">
-      <ion-item-option color="primary" (click)="presentEditAlert(task)">
-        <span class="item-option-label">
+    <ion-item-options side="start">
+      <ion-item-option
+        class="swipe-option swipe-option--edit"
+        (click)="slide.close(); openEditor(task)"
+      >
+        <span class="swipe-label">
           <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
           {{ 'COMMON.EDIT' | translate }}
         </span>
       </ion-item-option>
     </ion-item-options>
 
-    <ion-item-options side="end" class="phone-only">
-      <ion-item-option color="danger" (click)="deleteTask(task.id)">
-        <span class="item-option-label">
+    <ion-item-options side="end">
+      <ion-item-option class="swipe-option swipe-option--delete" (click)="deleteTask(task.id)">
+        <span class="swipe-label">
           <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
           {{ 'COMMON.DELETE' | translate }}
         </span>
@@ -506,59 +321,6 @@
     </ion-item-options>
   </ion-item-sliding>
 </ng-template>
-
-@if (isSearchOpen()) {
-  <div class="search-backdrop" (click)="closeSearch()" aria-hidden="true"></div>
-  <div
-    class="search-dialog"
-    role="dialog"
-    aria-modal="true"
-    [attr.aria-label]="'TASKS.SEARCH_TASKS' | translate"
-  >
-    <div class="search-dialog-card">
-      <div class="search-dialog-header">
-        <h2 class="search-dialog-title">{{ 'TASKS.SEARCH_TASKS' | translate }}</h2>
-        <button
-          type="button"
-          class="icon-button"
-          (click)="closeSearch()"
-          [attr.aria-label]="'COMMON.CLOSE' | translate"
-        >
-          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
-        </button>
-      </div>
-      <label class="search-dialog-field">
-        <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
-        <input
-          #mobileSearchInput
-          type="search"
-          [value]="searchQuery()"
-          (input)="onSearchInput($any($event.target).value)"
-          [placeholder]="'TASKS.SEARCH_PLACEHOLDER' | translate"
-          [attr.aria-label]="'TASKS.SEARCH_TASKS' | translate"
-          autocomplete="off"
-          enterkeyhint="search"
-        />
-        @if (hasSearchQuery()) {
-          <button
-            type="button"
-            class="toolbar-search-clear"
-            (click)="clearSearch($event)"
-            [attr.aria-label]="'TASKS.SEARCH_CLEAR' | translate"
-          >
-            <ion-icon name="close-circle" aria-hidden="true"></ion-icon>
-          </button>
-        }
-      </label>
-      <p class="search-dialog-hint">{{ 'TASKS.SEARCH_HINT' | translate }}</p>
-      @if (hasSearchQuery()) {
-        <p class="search-dialog-count">
-          {{ 'TASKS.SEARCH_RESULTS' | translate:{ count: filteredTasks().length } }}
-        </p>
-      }
-    </div>
-  </div>
-}
 
 <ion-alert
   trigger="install-alert"

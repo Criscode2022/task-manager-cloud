@@ -1,12 +1,14 @@
 <ion-tabs>
   <ion-tab-bar class="app-tab-bar" slot="bottom">
     <ion-tab-button tab="list" href="/tabs/list">
-      <ion-icon aria-hidden="true" name="list"></ion-icon>
+      <ion-icon class="tab-icon tab-icon--on" aria-hidden="true" name="checkmark-circle"></ion-icon>
+      <ion-icon class="tab-icon tab-icon--off" aria-hidden="true" name="checkmark-circle-outline"></ion-icon>
       <ion-label>{{ 'TABS.LIST' | translate }}</ion-label>
     </ion-tab-button>
 
     <ion-tab-button tab="options" href="/tabs/options">
-      <ion-icon aria-hidden="true" name="options"></ion-icon>
+      <ion-icon class="tab-icon tab-icon--on" aria-hidden="true" name="settings"></ion-icon>
+      <ion-icon class="tab-icon tab-icon--off" aria-hidden="true" name="settings-outline"></ion-icon>
       <ion-label>{{ 'TABS.OPTIONS' | translate }}</ion-label>
     </ion-tab-button>
   </ion-tab-bar>

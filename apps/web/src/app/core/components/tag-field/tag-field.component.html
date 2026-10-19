@@ -1,0 +1,40 @@
+<div class="tag-input">
+  <ion-icon name="pricetag-outline" aria-hidden="true"></ion-icon>
+  <input
+    #field
+    type="text"
+    [value]="value()"
+    (input)="write($any($event.target).value)"
+    (blur)="touch.emit()"
+    [attr.maxlength]="maxLength()"
+    [attr.aria-label]="'TASKS.TAGS_OPTIONAL' | translate"
+    [placeholder]="'TASKS.TAGS_PLACEHOLDER' | translate"
+    autocomplete="off"
+    autocapitalize="none"
+    spellcheck="false"
+  />
+  @if (value()) {
+    <button
+      type="button"
+      class="tag-clear"
+      (click)="clear()"
+      [attr.aria-label]="'TASKS.CLEAR_TAGS' | translate"
+    >
+      <ion-icon name="close-circle" aria-hidden="true"></ion-icon>
+    </button>
+  }
+</div>
+
+@if (suggestions().length) {
+  <div
+    class="tag-suggestions"
+    role="group"
+    [attr.aria-label]="'TASKS.TAG_SUGGESTIONS' | translate"
+  >
+    @for (tag of suggestions(); track tag) {
+      <button type="button" class="tag-suggestion" (click)="addSuggestion(tag)">
+        <ion-icon name="add" aria-hidden="true"></ion-icon>#{{ tag }}
+      </button>
+    }
+  </div>
+}

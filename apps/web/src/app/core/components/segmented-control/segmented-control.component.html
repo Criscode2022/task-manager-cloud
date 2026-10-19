@@ -1,0 +1,26 @@
+<span class="segment-indicator" aria-hidden="true"></span>
+@for (option of options(); track option.labelKey; let index = $index) {
+  <button
+    #segment
+    type="button"
+    role="radio"
+    class="segment"
+    [class.is-selected]="index === selectedIndex()"
+    [attr.aria-checked]="index === selectedIndex()"
+    [tabIndex]="index === selectedIndex() ? 0 : -1"
+    (click)="select(option)"
+    (keydown)="onKeydown($event)"
+  >
+    @if (option.icon) {
+      <ion-icon
+        class="segment-icon"
+        [name]="index === selectedIndex() ? option.icon : option.icon + '-outline'"
+        aria-hidden="true"
+      ></ion-icon>
+    }
+    <span class="segment-label">{{ option.labelKey | translate }}</span>
+    @if (option.count !== undefined) {
+      <span class="segment-count">{{ option.count }}</span>
+    }
+  </button>
+}

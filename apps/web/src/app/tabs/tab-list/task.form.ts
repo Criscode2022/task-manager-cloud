@@ -1,6 +1,12 @@
 import { signal } from '@angular/core';
 import { form, maxLength, required } from '@angular/forms/signals';
-import { DEFAULT_TASK_PRIORITY, TaskPriority } from './types/task';
+import {
+  DEFAULT_TASK_PRIORITY,
+  DESCRIPTION_MAX_LENGTH,
+  TAGS_INPUT_MAX_LENGTH,
+  TaskPriority,
+  TITLE_MAX_LENGTH,
+} from './types/task';
 
 export type TaskFormModel = {
   title: string;
@@ -21,18 +27,11 @@ export class TaskForm {
 
   protected readonly form = form(this.taskModel, (fields) => {
     required(fields.title, { message: 'Required' });
-    maxLength(fields.title, 40);
-    maxLength(fields.description, 30);
+    maxLength(fields.title, TITLE_MAX_LENGTH);
+    maxLength(fields.description, DESCRIPTION_MAX_LENGTH);
     required(fields.priority);
-    maxLength(fields.tagsInput, 80);
+    maxLength(fields.tagsInput, TAGS_INPUT_MAX_LENGTH);
   });
-
-  protected clear(field: keyof TaskFormModel): void {
-    this.taskModel.update((model) => ({
-      ...model,
-      [field]: field === 'priority' ? DEFAULT_TASK_PRIORITY : '',
-    }));
-  }
 
   protected resetTaskForm(): void {
     this.taskModel.set(emptyTaskForm());

@@ -1,51 +1,9 @@
-
-// Custom Theming for Angular Material
-// For more information: https://material.angular.io/guide/theming
-@use '@angular/material' as mat;
-// Plus imports for other components in your app.
-
-// Include the common styles for Angular Material. We include this here so that you only
-// have to load a single css file for Angular Material in your app.
-// Be sure that you only ever include this mixin once!
-@include mat.elevation-classes();
-@include mat.app-background();
-
-
-
-// Define the theme object.
-$app-theme: mat.define-theme((
-  color: (
-    theme-type: light,
-    primary: mat.$azure-palette,
-    tertiary: mat.$blue-palette,
-  ),
-  density: (
-    scale: 0,
-  )
-));
-
-// Include theme styles for core and each component used in your app.
-// Alternatively, you can import and @include the theme mixins for each component
-// that you are using.
-:root {
-  @include mat.all-component-themes($app-theme);
-}
-
-// Comment out the line below if you want to use the pre-defined typography utility classes.
-// For more information: https://material.angular.io/guide/typography#using-typography-styles-in-your-application.
-// @include mat.typography-hierarchy($app-theme);
-
-// Comment out the line below if you want to use the deprecated `color` inputs.
-// @include mat.color-variants-backwards-compatibility($app-theme);
 /*
  * App Global CSS
  * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
+ * Ionic's base CSS, Tailwind, and the styles every page shares: browser
+ * surfaces, the tab bar, alerts, the snackbar, and the dialog panel.
+ * Tokens live in theme/variables.scss.
  */
 
 /* Core CSS required for Ionic components to work properly */
@@ -64,345 +22,419 @@ $app-theme: mat.define-theme((
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
+/*
+ * Dark mode follows the app's own switch (ThemeService), not the OS, so Ionic's
+ * dark palette is applied by class.
  */
-
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import "@ionic/angular/css/palettes/dark.system.css";
+@import "@ionic/angular/css/palettes/dark.class.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
-  font-family: var(--ion-font-family);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--ion-background-color);
-}
-
-// Material Form Field Enhancements
-.mat-mdc-text-field-wrapper {
-  background: var(--ion-surface-color, white) !important;
-  transition: all 0.2s ease;
-}
-
-.mat-mdc-form-field {
-  width: 100%;
-  --mat-form-field-outlined-outline-color: var(--ion-border-color);
-  --mat-form-field-outlined-hover-outline-color: var(--ion-border-color);
-  --mat-form-field-outlined-focus-outline-color: var(--ion-color-primary);
-  --mat-form-field-outlined-disabled-outline-color: var(--ion-border-color-light);
-  --mat-form-field-outlined-error-outline-color: var(--ion-color-danger);
-
-  .mdc-notched-outline__leading,
-  .mdc-notched-outline__notch,
-  .mdc-notched-outline__trailing {
-    border-color: var(--ion-border-color) !important;
-  }
-
-  &:hover:not(.mat-focused):not(.mat-form-field-invalid) {
-    .mdc-notched-outline__leading,
-    .mdc-notched-outline__notch,
-    .mdc-notched-outline__trailing {
-      border-color: var(--ion-border-color) !important;
-    }
-  }
-
-  &.mat-focused {
-    .mat-mdc-text-field-wrapper {
-      box-shadow: none;
-    }
-
-    .mdc-notched-outline__leading,
-    .mdc-notched-outline__notch,
-    .mdc-notched-outline__trailing {
-      border-color: var(--ion-color-primary) !important;
-    }
-  }
-}
-
-.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field .mdc-notched-outline__notch {
-  border-right-style: hidden;
-}
-
-.mat-mdc-input-element {
-  box-shadow: none !important;
-  font-size: 1rem;
-  padding: 0.5rem 0;
-  color: var(--ion-text-color);
-  caret-color: var(--ion-color-primary);
-}
-
-.mat-mdc-select-value,
-.mat-mdc-select-min-line {
-  color: var(--ion-text-color);
-}
-
-ion-tab-bar {
-  --background: var(--ion-tab-bar-background);
-  --color: var(--ion-text-color-secondary);
-  --color-selected: var(--ion-color-primary);
-  --border: 1px solid var(--ion-border-color);
-}
-
-ion-tab-button {
-  --color: var(--ion-text-color-secondary);
-  --color-selected: var(--ion-color-primary);
-}
-
-body.dark-theme {
-  --mat-form-field-outlined-input-text-color: #ffffff;
-  --mat-form-field-outlined-label-text-color: rgba(255, 255, 255, 0.78);
-  --mat-form-field-outlined-hover-label-text-color: rgba(255, 255, 255, 0.88);
-  --mat-form-field-outlined-focus-label-text-color: var(--ion-color-primary);
-  --mat-form-field-outlined-input-text-placeholder-color: rgba(255, 255, 255, 0.55);
-  --mat-form-field-outlined-caret-color: #ffffff;
-  --mat-form-field-outlined-input-text-disabled-color: rgba(255, 255, 255, 0.45);
-  --mat-select-enabled-trigger-text-color: #ffffff;
-  --mat-select-placeholder-text-color: rgba(255, 255, 255, 0.55);
-  --mat-select-enabled-arrow-color: rgba(255, 255, 255, 0.75);
-  --mat-option-label-text-color: #f9fafb;
-
-  .mat-mdc-input-element,
-  .mat-mdc-select-value,
-  .mat-mdc-select-value-text,
-  .mat-mdc-select-min-line,
-  input.mat-mdc-input-element,
-  textarea.mat-mdc-input-element {
-    color: #ffffff !important;
-    caret-color: #ffffff;
-    -webkit-text-fill-color: #ffffff;
-  }
-
-  .mat-mdc-input-element::placeholder,
-  .mat-mdc-select-placeholder {
-    color: rgba(255, 255, 255, 0.55) !important;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.55);
-  }
-
-  .mat-mdc-form-field-label,
-  .mdc-floating-label,
-  .mat-mdc-form-field .mdc-floating-label {
-    color: rgba(255, 255, 255, 0.78);
-  }
-
-  .mat-mdc-form-field-hint,
-  .mat-mdc-form-field-hint-wrapper {
-    color: rgba(255, 255, 255, 0.62);
-  }
-
-  ion-select {
-    --color: #ffffff;
-    color: #ffffff;
-  }
-
-  ion-tab-bar,
-  ion-tab-button {
-    --color: #e8edf5;
-    --color-selected: var(--ion-color-primary-tint);
-  }
-
-  ion-tab-button {
-    color: #e8edf5;
-
-    ion-label,
-    ion-icon {
-      color: inherit;
-    }
-
-    &.tab-selected {
-      --color: var(--ion-color-primary-tint);
-      color: var(--ion-color-primary-tint);
-    }
-  }
-}
-
-mat-error {
-  @apply font-bold;
-  font-size: 0.70rem;
-  color: var(--ion-color-danger);
+  background: var(--color-ground);
+  color: var(--color-text);
+  -webkit-tap-highlight-color: transparent;
 }
 
 ::selection {
-  background: var(--ion-color-primary);
-  color: var(--ion-color-primary-contrast);
+  background: color-mix(in srgb, var(--color-ink) 28%, transparent);
+  color: inherit;
+}
+
+input,
+textarea {
+  caret-color: var(--color-ink);
 }
 
 * {
-  scrollbar-color: var(--ion-border-color) transparent;
+  scrollbar-color: var(--color-line-strong) transparent;
+  scrollbar-width: thin;
 }
 
-ion-title {
-  font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+*:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
 }
 
-// Button Enhancements
-ion-button {
-  --border-radius: var(--border-radius-md);
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0.01em;
+// Tab bar
+ion-tab-bar {
+  --background: var(--ion-tab-bar-background);
+  --border: 1px solid var(--color-line);
+  --color: var(--color-text-muted);
+  --color-selected: var(--color-ink);
 }
 
-// Dialog sizing
-@media (min-width: 1024px) {
-  ion-alert {
-    --max-width: 640px;
-    --width: 90%;
-  }
-
-  ion-alert::part(content) {
-    padding: 1.75rem 2rem;
-  }
-
-  ion-alert::part(header) {
-    font-size: 1.5rem;
-  }
-
-  ion-alert::part(message) {
-    font-size: 1.05rem;
-  }
-
-  ion-alert::part(button) {
-    font-size: 1rem;
-  }
+ion-tab-button {
+  --color: var(--color-text-muted);
+  --color-selected: var(--color-ink);
+  --ripple-color: transparent;
 }
 
-// Card Enhancements
-ion-card {
-  --background: var(--ion-card-background);
-  border-radius: 0.85rem;
-  box-shadow: none;
-}
-
-// List & Item Enhancements
-ion-list {
-  background: transparent;
-  padding: 0;
-}
-
-ion-item {
-  --background: transparent;
-  --border-color: var(--ion-border-color);
-  --padding-start: 0;
-  --inner-padding-end: 0;
-  margin: 0;
-  border-radius: 0;
-}
-
-// Checkbox Enhancements
-mat-checkbox {
-  .mdc-checkbox {
-    --mat-checkbox-state-layer-size: 40px;
-  }
-
-  .mdc-checkbox__background {
-    border-radius: var(--border-radius-sm) !important;
-  }
-
-  &.mat-mdc-checkbox-checked {
-    .mdc-checkbox__background {
-      background-color: var(--ion-color-primary) !important;
-      border-color: var(--ion-color-primary) !important;
-    }
-  }
-}
-
-// Toggle Enhancements (overriding component-specific styles)
-ion-toggle {
-  --handle-background: var(--ion-surface-color);
-  --handle-background-checked: var(--ion-color-primary-contrast);
-  --background: var(--ion-border-color);
-  --background-checked: color-mix(in srgb, var(--ion-color-primary) 35%, var(--ion-surface-color));
-}
-
-// Toolbar Enhancements
+// Toolbars carry no shadow of their own; the header draws its field.
 ion-toolbar {
   --background: var(--ion-toolbar-background);
   --color: var(--ion-toolbar-color);
+  --border-width: 0;
   box-shadow: none;
 }
 
-// Utility Classes
-.card-elevated {
-  box-shadow: var(--shadow-lg);
+ion-toggle {
+  --track-background: var(--color-line-strong);
+  --track-background-checked: var(--color-ink);
+  --handle-background: #ffffff;
+  --handle-background-checked: #ffffff;
 }
 
-// Animation Utilities
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+// Alerts: login, confirmations, and destructive choices.
+ion-alert {
+  --background: var(--color-surface);
+  --max-width: 22.5rem;
+  --backdrop-opacity: 0.45;
+}
+
+ion-alert .alert-wrapper {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-float);
+}
+
+ion-alert .alert-head {
+  padding-inline: 1.4rem;
+  padding-top: 1.4rem;
+  text-align: start;
+}
+
+ion-alert .alert-title {
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+ion-alert .alert-message {
+  padding-inline: 1.4rem;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  text-align: start;
+}
+
+ion-alert .alert-input-group {
+  padding-inline: 1.4rem;
+}
+
+ion-alert .alert-input.sc-ion-alert-md,
+ion-alert .alert-input.sc-ion-alert-ios {
+  min-height: 3.25rem;
+  margin: 0;
+  padding: 0 1rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.18em;
+}
+
+ion-alert .alert-input:focus {
+  border-color: var(--color-ink);
+  outline: 2px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
+  outline-offset: 0;
+}
+
+ion-alert .alert-input::placeholder {
+  color: var(--color-placeholder);
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+ion-alert .alert-button-group.sc-ion-alert-md {
+  gap: 0.25rem;
+  padding: 0.75rem 1rem 1rem;
+}
+
+ion-alert .alert-button.sc-ion-alert-md {
+  min-height: 2.75rem;
+  margin: 0;
+  padding-inline: 1rem;
+  border-radius: 999px;
+  color: var(--color-ink);
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+ion-alert .alert-button.sc-ion-alert-ios {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+ion-alert .alert-button.alert-button-role-destructive {
+  color: var(--color-danger);
+}
+
+ion-alert .alert-button.alert-button-role-confirm.sc-ion-alert-md {
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  ion-alert .alert-button.sc-ion-alert-md:hover {
+    background: var(--color-ink-tint);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  ion-alert .alert-button.alert-button-role-confirm.sc-ion-alert-md:hover {
+    background: var(--color-ink-strong);
   }
 }
 
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+// Snackbar: sits above the tab bar.
+.mat-mdc-snack-bar-container {
+  margin-bottom: calc(4.25rem + env(safe-area-inset-bottom)) !important;
 }
 
-.animate-slide-in-up {
-  animation: slideInUp 0.3s ease-out;
+.mat-mdc-snack-bar-container .mat-mdc-button {
+  font-family: var(--font-ui);
+  font-weight: 650;
+  letter-spacing: 0;
 }
 
-.animate-scale-in {
-  animation: scaleIn 0.2s ease-out;
+// Dialog panel: the component draws its own surface.
+.app-dialog-panel {
+  --mat-dialog-container-color: transparent;
+  --mat-dialog-container-elevation-shadow: none;
+  --mat-dialog-container-shape: 0;
 }
 
-// Edit task dialog panel (MatDialog)
-.edit-task-dialog-panel {
-  .mat-mdc-dialog-container {
-    --mat-dialog-container-shape: var(--border-radius-xl);
-    padding: 0;
-  }
-
-  .mdc-dialog__surface {
-    background: transparent !important;
-    box-shadow: none !important;
-    overflow: visible;
-  }
+.app-dialog-panel .mat-mdc-dialog-surface {
+  overflow: visible;
 }
 
-// Keep priority options above the edit dialog overlay
-.edit-task-priority-panel.mat-mdc-select-panel {
-  z-index: 1000;
-}
-
-// Smooth Scrolling
-* {
-  scroll-behavior: smooth;
+.cdk-overlay-dark-backdrop {
+  background: rgba(11, 14, 29, 0.48);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
-    scroll-behavior: auto;
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
   }
 }
 
-// Focus Visible Styles
-*:focus-visible {
-  outline: 2px solid var(--ion-color-primary);
-  outline-offset: 2px;
-  border-radius: var(--border-radius-sm);
+// Buttons shared by the editor, settings, and dialogs.
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  padding: 0 1.1rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease-out),
+    color 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
+}
+
+.btn:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.btn ion-icon {
+  flex: 0 0 auto;
+  font-size: 1.125rem;
+}
+
+.btn-block {
+  width: 100%;
+  min-height: 3.25rem;
+  font-size: 1rem;
+}
+
+.btn-ink {
+  background: var(--color-ink);
+  color: var(--color-on-ink);
+}
+
+.btn-ink:focus-visible {
+  outline-color: var(--color-text);
+}
+
+.btn-soft {
+  background: var(--color-ink-tint);
+  color: var(--color-ink);
+}
+
+.btn-quiet {
+  color: var(--color-text-muted);
+}
+
+.btn-danger-quiet {
+  color: var(--color-danger);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-ink:not(:disabled):hover {
+    background: var(--color-ink-strong);
+  }
+
+  .btn-soft:not(:disabled):hover,
+  .btn-quiet:not(:disabled):hover {
+    background: var(--color-ink-tint);
+    color: var(--color-ink);
+  }
+
+  .btn-danger-quiet:not(:disabled):hover {
+    background: var(--color-danger-tint);
+  }
+}
+
+// Page shell: the ink masthead and the reading column, shared by both tabs.
+ion-content {
+  --background: var(--color-ground);
+}
+
+.masthead-header {
+  overflow: hidden;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  background: var(--color-header);
+}
+
+.masthead-toolbar {
+  --background: var(--color-header);
+  --color: var(--color-on-header);
+  --min-height: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+.masthead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'heading actions';
+  align-items: center;
+  column-gap: 0.5rem;
+  width: min(100%, var(--column));
+  margin-inline: auto;
+  padding: 0.875rem var(--gutter) 1.125rem;
+  color: var(--color-on-header);
+}
+
+.masthead-heading {
+  grid-area: heading;
+  min-width: 0;
+}
+
+.masthead-actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  margin-inline-end: -0.5rem;
+}
+
+.header-title {
+  margin: 0;
+  color: var(--color-on-header);
+  font-family: var(--font-display);
+  font-size: 1.875rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.masthead-summary {
+  margin: 0.3rem 0 0;
+  color: var(--color-on-header-muted);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-on-header);
+  font-size: 1.375rem;
+  cursor: pointer;
+  transition: background-color 160ms var(--ease-out);
+}
+
+.icon-button:focus-visible {
+  outline-color: var(--color-on-header);
+}
+
+.icon-button[disabled] {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.column {
+  width: min(100%, var(--column));
+  margin-inline: auto;
+  padding: 1.25rem var(--gutter) 3rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .icon-button:not([disabled]):hover {
+    background: rgba(255, 255, 255, 0.14);
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 1.5rem;
+  }
+
+  .masthead {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .header-title {
+    font-size: 2.375rem;
+  }
+
+  .column {
+    padding-top: 1.75rem;
+  }
 }

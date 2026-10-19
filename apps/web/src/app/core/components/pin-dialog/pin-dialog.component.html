@@ -1,46 +1,51 @@
-<div class="pin-dialog-container">
-  <h2 class="dialog-title">{{ "PIN_DIALOG.TITLE" | translate }}</h2>
-  <p class="warning-text">{{ "PIN_DIALOG.SECURITY_WARNING" | translate }}</p>
+<div class="pin-dialog">
+  <h2 class="dialog-title" mat-dialog-title>{{ 'PIN_DIALOG.TITLE' | translate }}</h2>
+  <p class="dialog-text">{{ 'PIN_DIALOG.SECURITY_WARNING' | translate }}</p>
 
-  <p class="pin-label">{{ "PIN_DIALOG.YOUR_LOGIN_PIN" | translate }}</p>
-  <div class="pin-display-wrapper">
-    <p class="pin-display">{{ pin }}</p>
-    <button
-      type="button"
-      class="copy-button"
-      (click)="copyPin()"
-      [attr.aria-label]="'PIN_DIALOG.COPY_TOOLTIP' | translate"
-    >
-      <ion-icon
-        [name]="copied() ? 'checkmark-circle' : 'copy-outline'"
-        aria-hidden="true"
-      ></ion-icon>
-    </button>
+  <div class="pin-box">
+    <p class="pin-label" id="pin-label">{{ 'PIN_DIALOG.YOUR_LOGIN_PIN' | translate }}</p>
+    <div class="pin-line">
+      <p class="pin-value" aria-labelledby="pin-label">
+        <span>{{ pinGroups()[0] }}</span><span>{{ pinGroups()[1] }}</span>
+      </p>
+      <button
+        type="button"
+        class="btn btn-soft pin-copy"
+        (click)="copyPin()"
+        [attr.aria-label]="'PIN_DIALOG.COPY_TOOLTIP' | translate"
+      >
+        <ion-icon [name]="copied() ? 'checkmark' : 'copy-outline'" aria-hidden="true"></ion-icon>
+      </button>
+    </div>
+    <p class="pin-copied" role="status">
+      @if (copied()) {
+        {{ 'PIN_DIALOG.COPY_SUCCESS' | translate }}
+      }
+    </p>
   </div>
-  @if (copied()) {
-    <p class="copy-success">{{ "PIN_DIALOG.COPY_SUCCESS" | translate }}</p>
-  }
 
-  <p class="info-text">{{ "PIN_DIALOG.INFO_TEXT" | translate }}</p>
+  <p class="dialog-text">{{ 'PIN_DIALOG.INFO_TEXT' | translate }}</p>
 
   <ion-checkbox
+    class="confirm-check"
+    labelPlacement="end"
+    justify="start"
     [checked]="confirmed()"
     (ionChange)="confirmed.set($event.detail.checked)"
-    labelPlacement="end"
-    class="confirm-check"
   >
-    {{ "PIN_DIALOG.CONFIRM_CHECKBOX" | translate }}
+    {{ 'PIN_DIALOG.CONFIRM_CHECKBOX' | translate }}
   </ion-checkbox>
 
   <button
     type="button"
-    class="continue-button"
+    class="btn btn-ink btn-block"
     (click)="close()"
     [disabled]="!confirmed()"
+    aria-describedby="pin-confirm-hint"
   >
-    {{ "COMMON.CONTINUE" | translate }}
+    {{ 'COMMON.CONTINUE' | translate }}
   </button>
-  @if (!confirmed()) {
-    <p class="action-hint">{{ "PIN_DIALOG.CONFIRM_HINT" | translate }}</p>
-  }
+  <p class="action-hint" id="pin-confirm-hint" [class.is-hidden]="confirmed()">
+    {{ 'PIN_DIALOG.CONFIRM_HINT' | translate }}
+  </p>
 </div>

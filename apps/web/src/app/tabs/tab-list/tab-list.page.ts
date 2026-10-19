@@ -2,256 +2,213 @@ import { NgTemplateOutlet } from '@angular/common';
 import {
   Component,
   computed,
+  DestroyRef,
   effect,
   ElementRef,
   inject,
   signal,
   viewChild,
 } from '@angular/core';
-
-import { firstValueFrom } from 'rxjs';
-import { FormField } from '@angular/forms/signals';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatOptionModule } from '@angular/material/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AlertController, IonContent, IonicModule } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
+import {
+  SegmentedControlComponent,
+  SegmentOption,
+} from '../../core/components/segmented-control/segmented-control.component';
 import { TaskNeonService } from '../../core/services/task-neon.service';
 import { TaskService } from '../../core/services/task.service';
-import {
-  EditTaskDialogComponent,
-  EditTaskDialogResult,
-} from './edit-task-dialog/edit-task-dialog.component';
-import { TaskForm } from './task.form';
+import { TaskComposerComponent } from './task-composer/task-composer.component';
+import { TaskEditorComponent } from './task-editor/task-editor.component';
 import { StatusEnum } from './types/statusEnum';
 import {
-  DEFAULT_TASK_PRIORITY,
+  compareByPriority,
+  PRIORITY_LABEL_KEYS,
   Task,
+  TASK_PRIORITIES,
+  TaskDraft,
   TaskDTO,
   TaskPriority,
 } from './types/task';
+
+/** How long a crossed-off task stays in place before it moves to its new group. */
+const SETTLE_DELAY_MS = 650;
+const NEW_TASK_HIGHLIGHT_MS = 1400;
+const LONG_PRESS_MS = 450;
+const UNDO_WINDOW_MS = 5000;
+const WIDE_LAYOUT_QUERY = '(min-width: 768px)';
+
+const withId = (ids: ReadonlySet<number>, id: number): ReadonlySet<number> =>
+  new Set(ids).add(id);
+
+const withoutId = (ids: ReadonlySet<number>, id: number): ReadonlySet<number> => {
+  const next = new Set(ids);
+  next.delete(id);
+  return next;
+};
+
+type CloudSession = { userId: number; token: string };
 
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab-list.page.html',
   styleUrls: ['tab-list.page.scss'],
-  host: {
-    '(document:keydown.escape)': 'onDocumentEscape()',
-  },
   imports: [
     IonicModule,
     NgTemplateOutlet,
-    FormField,
-    MatAutocompleteModule,
-    MatOptionModule,
-    MatFormFieldModule,
-    MatInputModule,
     TranslateModule,
+    SegmentedControlComponent,
+    TaskComposerComponent,
+    TaskEditorComponent,
   ],
 })
-export class TabListPage extends TaskForm {
+export class TabListPage {
   private readonly taskNeonService = inject(TaskNeonService);
-  private readonly dialog = inject(MatDialog);
   private readonly snackbar = inject(MatSnackBar);
-  private readonly alertController = inject(AlertController);
   private readonly translate = inject(TranslateService);
-  protected readonly taskService = inject(TaskService);
+  private readonly taskService = inject(TaskService);
   private readonly userService = inject(UserService);
-  private readonly pageContent = viewChild(IonContent);
+  private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
+  private readonly wideLayout = window.matchMedia(WIDE_LAYOUT_QUERY);
   private longPressTimer: ReturnType<typeof setTimeout> | null = null;
-  private clickTimer: ReturnType<typeof setTimeout> | null = null;
-  private suppressTaskToggle = false;
+  private suppressNextOpen = false;
 
-  protected canClick = signal(true);
-  protected hasNewTask = signal(false);
   protected readonly loadingService = inject(LoadingService);
-  protected isFormVisible = signal(false);
-  protected animatingTaskIds = signal<Set<number>>(new Set());
-  protected newlyAddedTaskIds = signal<Set<number>>(new Set());
-  protected selectedPriorityFilter = signal<'all' | TaskPriority>('all');
-  protected selectedTagFilter = signal<string>('all');
-  protected filtersOpen = signal(false);
-  protected searchQuery = signal('');
-  protected isSearchOpen = signal(false);
-  protected readonly priorityChoices: TaskPriority[] = ['high', 'medium', 'low'];
-  protected readonly statusAll = StatusEnum.All;
-  protected readonly statusDone = StatusEnum.Done;
-  protected readonly statusPending = StatusEnum.Undone;
-  protected tagsAutocompleteInput = signal('');
-  private readonly mobileSearchInput =
-    viewChild<ElementRef<HTMLInputElement>>('mobileSearchInput');
+  protected readonly filter = this.taskService.filter;
+  protected readonly shouldShowInstall = this.taskService.shouldShowInstall;
+  protected readonly tasks = this.taskService.tasks;
+  protected readonly userId = this.taskService.userId;
 
-  protected filter = this.taskService.filter;
-  protected shouldShowInstall = this.taskService.shouldShowInstall;
-  protected tasks = this.taskService.tasks;
-  protected userId = this.taskService.userId;
+  protected readonly priorityChoices = TASK_PRIORITIES;
+  protected readonly isWide = signal(this.wideLayout.matches);
 
-  protected availableTags = computed(() => {
-    const uniqueTags = new Set<string>();
+  /** Tasks whose done state just changed; they stay where they were while the stroke draws. */
+  protected readonly settlingTaskIds = signal<ReadonlySet<number>>(new Set());
+  protected readonly newlyAddedTaskIds = signal<ReadonlySet<number>>(new Set());
+  protected readonly editingTaskId = signal<number | null>(null);
+  protected readonly selectedPriorityFilter = signal<'all' | TaskPriority>('all');
+  protected readonly selectedTagFilter = signal<string>('all');
+  protected readonly searchQuery = signal('');
+  protected readonly isSearchOpen = signal(false);
+  protected readonly isDoneExpanded = signal(true);
 
-    this.tasks().forEach((task) => {
-      task.tags.forEach((tag) => {
-        const normalized = tag.trim().toLowerCase();
-        if (normalized) {
-          uniqueTags.add(normalized);
-        }
-      });
-    });
-
+  protected readonly availableTags = computed(() => {
+    const uniqueTags = new Set(
+      this.tasks().flatMap((task) =>
+        task.tags.map((tag) => tag.trim().toLowerCase()).filter(Boolean),
+      ),
+    );
     return [...uniqueTags].sort((a, b) => a.localeCompare(b));
   });
 
-  protected tagSuggestions = computed(() => {
-    const input = this.tagsAutocompleteInput();
-    const { currentToken, selectedTags } = this.getTagInputState(input);
-
-    return this.availableTags()
-      .filter((tag) => !selectedTags.includes(tag))
-      .filter((tag) => !currentToken || tag.includes(currentToken))
-      .slice(0, 8);
-  });
-
-  protected hasSearchQuery = computed(
-    () => this.normalizedSearchQuery().length > 0,
-  );
-
-  protected hasAdvancedFilters = computed(
-    () =>
-      this.selectedPriorityFilter() !== 'all' ||
-      this.selectedTagFilter() !== 'all' ||
-      this.hasSearchQuery(),
-  );
-
-  protected readonly hasNarrowFilters = computed(
-    () =>
-      this.selectedPriorityFilter() !== 'all' ||
-      this.selectedTagFilter() !== 'all',
-  );
-
-  private normalizedSearchQuery = computed(() =>
+  private readonly normalizedSearchQuery = computed(() =>
     this.searchQuery().trim().toLowerCase(),
   );
 
-  protected filterLabelKey = computed(() => {
-    switch (this.filter()) {
-      case StatusEnum.All:
-        return 'TASKS.FILTER.ALL';
-      case StatusEnum.Done:
-        return 'TASKS.FILTER.DONE';
-      case StatusEnum.Undone:
-        return 'TASKS.FILTER.PENDING';
-    }
-  });
+  protected readonly hasSearchQuery = computed(() => this.normalizedSearchQuery().length > 0);
 
-  protected readonly filteredTasks = computed(() => {
-    const selectedPriority = this.selectedPriorityFilter();
-    const selectedTag = this.selectedTagFilter();
+  protected readonly hasNarrowFilters = computed(
+    () => this.selectedPriorityFilter() !== 'all' || this.selectedTagFilter() !== 'all',
+  );
+
+  protected readonly hasAdvancedFilters = computed(
+    () => this.hasNarrowFilters() || this.hasSearchQuery(),
+  );
+
+  /** Tasks that match the priority, tag, and search, before the status view applies. */
+  private readonly narrowedTasks = computed(() => {
+    const priority = this.selectedPriorityFilter();
+    const tag = this.selectedTagFilter();
     const query = this.normalizedSearchQuery();
 
-    return this.sortTasksByPriority(
-      this.filterTasksByStatus().filter((task) => {
-        if (selectedPriority !== 'all' && task.priority !== selectedPriority) {
-          return false;
-        }
-
-        if (selectedTag !== 'all' && !task.tags.includes(selectedTag)) {
-          return false;
-        }
-
-        if (!query) {
-          return true;
-        }
-
-        return this.taskMatchesSearch(task, query);
-      }),
+    return this.tasks().filter(
+      (task) =>
+        (priority === 'all' || task.priority === priority) &&
+        (tag === 'all' || task.tags.includes(tag)) &&
+        (!query || this.taskMatchesSearch(task, query)),
     );
   });
 
-  protected readonly openTasks = computed(() => {
-    const tasks = this.filteredTasks();
-    if (this.filter() === StatusEnum.Done) {
-      return [];
-    }
-    if (this.filter() === StatusEnum.Undone) {
-      return tasks;
-    }
-    return tasks.filter((task) => !task.done);
+  protected readonly statusCounts = computed(() => {
+    const tasks = this.narrowedTasks();
+    const done = tasks.filter((task) => task.done).length;
+    return { all: tasks.length, pending: tasks.length - done, done };
   });
 
-  protected readonly doneTasks = computed(() => {
-    const tasks = this.filteredTasks();
-    if (this.filter() === StatusEnum.Undone) {
-      return [];
-    }
-    if (this.filter() === StatusEnum.Done) {
-      return tasks;
-    }
-    return tasks.filter((task) => task.done);
+  protected readonly statusOptions = computed<SegmentOption<StatusEnum>[]>(() => {
+    const counts = this.statusCounts();
+    return [
+      { value: StatusEnum.All, labelKey: 'TASKS.FILTER.ALL', count: counts.all },
+      { value: StatusEnum.Undone, labelKey: 'TASKS.FILTER.PENDING', count: counts.pending },
+      { value: StatusEnum.Done, labelKey: 'TASKS.FILTER.DONE', count: counts.done },
+    ];
   });
 
-  protected readonly showDoneSplit = computed(
+  /** The line under the page name: what is left across the whole list. */
+  protected readonly summary = computed(() => {
+    const tasks = this.tasks();
+    if (!tasks.length) {
+      return null;
+    }
+
+    const done = tasks.filter((task) => task.done).length;
+    const open = tasks.length - done;
+    return open
+      ? { key: 'TASKS.SUMMARY', params: { open, done } }
+      : { key: 'TASKS.SUMMARY_ALL_DONE', params: { done } };
+  });
+
+  protected readonly filteredTasks = computed(() => {
+    const status = this.filter();
+    return this.narrowedTasks()
+      .filter(
+        (task) => status === StatusEnum.All || (status === StatusEnum.Done) === this.isShownAsDone(task),
+      )
+      .sort(compareByPriority);
+  });
+
+  protected readonly openTasks = computed(() =>
+    this.filteredTasks().filter((task) => !this.isShownAsDone(task)),
+  );
+
+  protected readonly doneTasks = computed(() =>
+    this.filteredTasks().filter((task) => this.isShownAsDone(task)),
+  );
+
+  protected readonly showDoneHeading = computed(
     () =>
       this.filter() === StatusEnum.All &&
       this.openTasks().length > 0 &&
       this.doneTasks().length > 0,
   );
 
-  protected alternativeFilterInfo = computed(() => {
-    const currentFilter = this.filter();
-    const allTasks = this.tasks();
-    const hasFilteredTasks = this.filteredTasks().length > 0;
-    const hasTasks = allTasks.length > 0;
-
-    // Do not show done/pending suggestion when extra filters are active.
-    if (hasFilteredTasks || !hasTasks || this.hasAdvancedFilters()) {
+  protected readonly alternativeFilterInfo = computed(() => {
+    if (this.filteredTasks().length || !this.tasks().length || this.hasAdvancedFilters()) {
       return null;
     }
 
-    // Calculate tasks in other filters
-    const doneTasks = allTasks.filter((task) => task.done).length;
-    const undoneTasks = allTasks.filter((task) => !task.done).length;
-
-    // Determine which filter has tasks and suggest it
-    if (currentFilter === StatusEnum.Done && undoneTasks > 0) {
+    const { pending, done } = this.statusCounts();
+    if (this.filter() === StatusEnum.Done && pending > 0) {
       return {
-        count: undoneTasks,
+        count: pending,
         filter: StatusEnum.Undone,
-        labelKey:
-          undoneTasks === 1
-            ? 'TASKS.PENDING_TASK_SINGULAR'
-            : 'TASKS.PENDING_TASK_PLURAL',
+        labelKey: pending === 1 ? 'TASKS.PENDING_TASK_SINGULAR' : 'TASKS.PENDING_TASK_PLURAL',
       };
-    } else if (currentFilter === StatusEnum.Undone && doneTasks > 0) {
+    }
+
+    if (this.filter() === StatusEnum.Undone && done > 0) {
       return {
-        count: doneTasks,
+        count: done,
         filter: StatusEnum.Done,
-        labelKey:
-          doneTasks === 1
-            ? 'TASKS.COMPLETED_TASK_SINGULAR'
-            : 'TASKS.COMPLETED_TASK_PLURAL',
+        labelKey: done === 1 ? 'TASKS.COMPLETED_TASK_SINGULAR' : 'TASKS.COMPLETED_TASK_PLURAL',
       };
-    } else if (currentFilter === StatusEnum.All) {
-      // This shouldn't happen since All shows all tasks
-      return null;
     }
 
     return null;
   });
-
-  protected switchToAlternativeFilter(): void {
-    const info = this.alternativeFilterInfo();
-    if (!info) {
-      return;
-    }
-
-    this.taskService.filter.set(info.filter);
-  }
 
   protected get installButtons() {
     return [
@@ -271,8 +228,6 @@ export class TabListPage extends TaskForm {
   }
 
   constructor() {
-    super();
-
     effect(async () => {
       await this.taskService.saveTasks(this.tasks());
     });
@@ -283,137 +238,38 @@ export class TabListPage extends TaskForm {
 
     effect(() => {
       const selectedTag = this.selectedTagFilter();
-      if (
-        selectedTag !== 'all' &&
-        !this.availableTags().includes(selectedTag)
-      ) {
+      if (selectedTag !== 'all' && !this.availableTags().includes(selectedTag)) {
         this.selectedTagFilter.set('all');
       }
     });
+
+    const onLayoutChange = (event: MediaQueryListEvent) => this.isWide.set(event.matches);
+    this.wideLayout.addEventListener('change', onLayoutChange);
+    inject(DestroyRef).onDestroy(() =>
+      this.wideLayout.removeEventListener('change', onLayoutChange),
+    );
   }
 
-  protected async presentEditAlert(task: Task): Promise<void> {
-    const dialogRef = this.dialog.open<
-      EditTaskDialogComponent,
-      Task,
-      EditTaskDialogResult | undefined
-    >(EditTaskDialogComponent, {
-      data: task,
-      autoFocus: 'input',
-      panelClass: 'edit-task-dialog-panel',
-    });
-
-    const result = await firstValueFrom(dialogRef.afterClosed());
-    if (!result) {
-      return;
-    }
-
-    this.editTask(
-      task.id,
-      result.title || task.title,
-      result.description || '',
-      this.normalizePriority(result.priority),
-      this.parseTags(result.tags),
-    );
+  protected priorityLabelKey(priority: TaskPriority): string {
+    return PRIORITY_LABEL_KEYS[priority];
   }
 
   protected refresh(): void {
     this.userService.getUser();
   }
 
-  protected onTaskContentClick(task: Task): void {
-    if (this.suppressTaskToggle) {
-      this.suppressTaskToggle = false;
-      return;
-    }
-
-    if (!this.canClick()) {
-      return;
-    }
-
-    this.clearClickTimer();
-    this.clickTimer = setTimeout(() => {
-      this.clickTimer = null;
-      this.toggleTaskState(task.id);
-    }, 280);
-  }
-
-  protected onTaskDoubleClick(task: Task, event: Event): void {
-    event.preventDefault();
-    if (this.isTabletOrDesktop()) {
-      return;
-    }
-
-    this.clearClickTimer();
-    this.clearTaskPress();
-    this.suppressTaskToggle = true;
-    void this.presentFullTaskText(task);
-  }
-
-  protected selectStatus(status: StatusEnum): void {
-    this.taskService.filter.set(status);
-  }
-
-  protected toggleFilters(): void {
-    this.filtersOpen.update((open) => !open);
-  }
-
-  protected toggleComposerDetails(): void {
-    if (this.isFormVisible()) {
-      void this.requestCloseCreateForm();
-      return;
-    }
-
-    this.openCreateForm();
-  }
-
-  protected scrollToNewest(): void {
-    const reduceMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
-    ).matches;
-    void this.pageContent()?.scrollToBottom(reduceMotion ? 0 : 280);
-  }
-
-  protected openCreateForm(): void {
-    this.isFormVisible.set(true);
-  }
-
-  protected async requestCloseCreateForm(): Promise<void> {
-    if (!this.hasUnsavedCreateChanges()) {
-      this.closeCreateForm();
-      return;
-    }
-
-    const alert = await this.alertController.create({
-      header: this.translate.instant('TASKS.UNSAVED_CHANGES_TITLE'),
-      message: this.translate.instant('TASKS.UNSAVED_CHANGES_MESSAGE'),
-      buttons: [
-        {
-          text: this.translate.instant('TASKS.KEEP_EDITING'),
-          role: 'cancel',
-        },
-        {
-          text: this.translate.instant('TASKS.DISCARD_CHANGES'),
-          role: 'confirm',
-          handler: () => {
-            this.closeCreateForm();
-          },
-        },
-      ],
-    });
-    await alert.present();
-  }
-
-  protected onDocumentEscape(): void {
-    if (this.isFormVisible()) {
-      void this.requestCloseCreateForm();
-      return;
-    }
-
-    if (this.isSearchOpen()) {
-      this.closeSearch();
+  protected switchToAlternativeFilter(): void {
+    const info = this.alternativeFilterInfo();
+    if (info) {
+      this.filter.set(info.filter);
     }
   }
+
+  protected toggleDoneGroup(): void {
+    this.isDoneExpanded.update((expanded) => !expanded);
+  }
+
+  // Search
 
   protected onSearchInput(value: string): void {
     this.searchQuery.set(value ?? '');
@@ -421,281 +277,27 @@ export class TabListPage extends TaskForm {
 
   protected openSearch(): void {
     this.isSearchOpen.set(true);
-    setTimeout(() => this.mobileSearchInput()?.nativeElement.focus());
+    setTimeout(() => this.searchInput()?.nativeElement.focus());
   }
 
   protected closeSearch(): void {
     this.isSearchOpen.set(false);
-  }
-
-  protected clearSearch(event?: Event): void {
-    event?.preventDefault();
-    event?.stopPropagation();
     this.searchQuery.set('');
   }
 
-  private taskMatchesSearch(task: Task, query: string): boolean {
-    if (task.title.toLowerCase().includes(query)) {
-      return true;
-    }
-
-    if (task.description.toLowerCase().includes(query)) {
-      return true;
-    }
-
-    return task.tags.some((tag) => tag.toLowerCase().includes(query));
+  protected clearSearch(): void {
+    this.searchQuery.set('');
+    this.searchInput()?.nativeElement.focus();
   }
 
-  protected onTaskPressStart(task: Task, event: PointerEvent): void {
-    this.clearTaskPress();
-    const root = event.currentTarget;
-    if (!(root instanceof HTMLElement)) {
-      return;
-    }
+  // Narrowing
 
-    this.longPressTimer = setTimeout(() => {
-      this.longPressTimer = null;
-      this.clearClickTimer();
-      this.suppressTaskToggle = true;
-
-      if (this.isTabletOrDesktop() || !this.isTaskTextClipped(root)) {
-        void this.copyTaskText(task);
-        return;
-      }
-
-      void this.presentFullTaskText(task);
-    }, 450);
+  protected togglePriorityFilter(priority: TaskPriority): void {
+    this.selectedPriorityFilter.update((current) => (current === priority ? 'all' : priority));
   }
 
-  protected onTaskPressEnd(): void {
-    this.clearTaskPress();
-  }
-
-  protected onTaskContextMenu(event: Event): void {
-    event.preventDefault();
-  }
-
-  protected async addTask(event?: Event): Promise<void> {
-    event?.preventDefault();
-
-    const model = this.taskModel();
-    if (this.form().invalid() || !model.title.trim()) {
-      console.error('Invalid form, please check the inputs');
-      return;
-    }
-
-    const id = Date.now();
-
-    const task: TaskDTO = {
-      id,
-      title: model.title.trim(),
-      description: model.description.trim(),
-      done: false,
-      priority: this.normalizePriority(model.priority),
-      tags: this.parseTags(model.tagsInput),
-    };
-
-    // Track the new task ID for a gentler entrance animation
-    this.newlyAddedTaskIds.update((ids) => {
-      const newSet = new Set(ids);
-      newSet.add(id);
-      return newSet;
-    });
-
-    this.tasks.update((tasks) => [...tasks, task as Task]);
-
-    this.resetTaskForm();
-    this.tagsAutocompleteInput.set('');
-    this.closeCreateForm();
-
-    // Remove from newly added set after animation completes
-    setTimeout(() => {
-      this.newlyAddedTaskIds.update((ids) => {
-        const newSet = new Set(ids);
-        newSet.delete(id);
-        return newSet;
-      });
-    }, 500);
-
-    const userId = this.taskService.userId();
-
-    if (!userId) {
-      this.hasNewTask.set(true);
-      setTimeout(() => {
-        this.hasNewTask.set(false);
-      }, 1000);
-      return;
-    }
-
-    task.user_id = userId;
-
-    const token = this.userService.accessToken();
-    if (!token) {
-      console.error('No access token found');
-      return;
-    }
-
-    console.log('task,', task);
-
-    this.taskNeonService.upload(task, userId, token);
-
-    this.hasNewTask.set(true);
-    setTimeout(() => {
-      this.hasNewTask.set(false);
-    }, 1000);
-  }
-
-  protected toggleTaskState(taskId: number): void {
-    if (!this.canClick()) {
-      return;
-    }
-
-    console.log('Toggling task state for taskId:', taskId);
-
-    // Disable clicks during animation
-    this.canClick.set(false);
-
-    // Add task to animating set to keep it visible during animation
-    this.animatingTaskIds.update((ids) => {
-      const newSet = new Set(ids);
-      newSet.add(taskId);
-      return newSet;
-    });
-
-    // First, apply visual feedback immediately (for animation)
-    this.tasks.update((tasks) =>
-      tasks.map((task) =>
-        task.id === taskId ? { ...task, done: !task.done } : task,
-      ),
-    );
-
-    // After half a second, persist changes and remove from animating
-    setTimeout(() => {
-      this.canClick.set(true);
-
-      // Remove from animating set
-      this.animatingTaskIds.update((ids) => {
-        const newSet = new Set(ids);
-        newSet.delete(taskId);
-        return newSet;
-      });
-
-      const userId = this.taskService.userId();
-      if (userId) {
-        const task = this.tasks().find((t) => t.id === taskId);
-        if (!task) return;
-
-        const token = this.userService.accessToken();
-        if (!token) {
-          console.error('No access token found');
-          return;
-        }
-
-        // Update task in Neon
-        this.taskNeonService.editTask(
-          {
-            id: taskId,
-            title: task.title,
-            description: task.description,
-            done: task.done,
-            priority: task.priority,
-            tags: task.tags,
-          },
-          userId,
-          token,
-        );
-      }
-    }, 500);
-  }
-
-  protected editTask(
-    id: number,
-    title: string,
-    description: string,
-    priority: TaskPriority,
-    tags: string[],
-  ): void {
-    this.tasks.update((tasks) =>
-      tasks.map((task) =>
-        task.id === id ? { ...task, title, description, priority, tags } : task,
-      ),
-    );
-
-    if (this.userId()) {
-      const task: TaskDTO = {
-        id,
-        title,
-        description,
-        priority,
-        tags,
-      };
-
-      const token = this.userService.accessToken();
-      if (!token) {
-        console.error('No access token found');
-        return;
-      }
-
-      this.taskNeonService.editTask(task, this.userId(), token);
-    }
-  }
-
-  protected deleteTask(taskId: number): void {
-    this.tasks.update((tasks) => tasks.filter((task) => task.id !== taskId));
-
-    if (this.userId()) {
-      const token = this.userService.accessToken();
-      if (!token) {
-        console.error('No access token found');
-        return;
-      }
-
-      this.taskNeonService.deleteTask(taskId, this.userId(), token);
-    }
-  }
-
-  protected isTabletOrDesktop(): boolean {
-    return window.matchMedia('(min-width: 768px)').matches;
-  }
-
-  protected getPriorityTranslationKey(priority: TaskPriority | 'all'): string {
-    switch (priority) {
-      case 'high':
-        return 'TASKS.PRIORITY.HIGH';
-      case 'low':
-        return 'TASKS.PRIORITY.LOW';
-      case 'all':
-        return 'TASKS.ALL_PRIORITIES';
-      default:
-        return 'TASKS.PRIORITY.MEDIUM';
-    }
-  }
-
-  /** Explicit selected text so ion-select shows the value without an extra click. */
-  protected getPrioritySelectLabelKey(priority: unknown): string {
-    return this.getPriorityTranslationKey(this.normalizePriority(priority));
-  }
-
-  protected getPriorityFilterLabelKey(): string {
-    const value = this.selectedPriorityFilter();
-    return value === 'all'
-      ? 'TASKS.ALL_PRIORITIES'
-      : this.getPriorityTranslationKey(value);
-  }
-
-  protected onPriorityFilterChange(value: unknown): void {
-    this.selectedPriorityFilter.set(
-      value === 'high' || value === 'medium' || value === 'low' ? value : 'all',
-    );
-  }
-
-  protected onTagFilterChange(value: unknown): void {
-    if (typeof value !== 'string') {
-      this.selectedTagFilter.set('all');
-      return;
-    }
-
-    this.selectedTagFilter.set(value || 'all');
+  protected toggleTagFilter(tag: string): void {
+    this.selectedTagFilter.update((current) => (current === tag ? 'all' : tag));
   }
 
   protected clearAdvancedFilters(): void {
@@ -704,207 +306,215 @@ export class TabListPage extends TaskForm {
     this.searchQuery.set('');
   }
 
-  protected onTagsInputChange(value: string): void {
-    this.tagsAutocompleteInput.set(value || '');
-  }
+  // Creating
 
-  protected onCreatePriorityChange(value: unknown): void {
-    this.taskModel.update((model) => ({
-      ...model,
-      priority: this.normalizePriority(value),
-    }));
-  }
+  protected addTask(draft: TaskDraft): void {
+    const id = Date.now();
+    const task: TaskDTO = { ...draft, id, done: false };
 
-  protected applyTagSuggestion(tag: string): void {
-    const rawInput = this.taskModel().tagsInput;
-    const splitInput = rawInput.split(',');
-    const committedTags = splitInput
-      .slice(0, -1)
-      .map((item) => item.trim().toLowerCase())
-      .filter(Boolean);
+    this.tasks.update((tasks) => [...tasks, task as Task]);
+    this.highlightNewTask(id);
+    this.revealTask(id);
 
-    const nextTags = [...new Set([...committedTags, tag])];
-    const nextValue = `${nextTags.join(', ')}, `;
-    this.taskModel.update((model) => ({ ...model, tagsInput: nextValue }));
-    this.tagsAutocompleteInput.set(nextValue);
-  }
-
-  protected clearTagsInput(): void {
-    this.clear('tagsInput');
-    this.tagsAutocompleteInput.set('');
-  }
-
-  private filterTasksByStatus(): Task[] {
-    const allTasks = this.tasks();
-    const animating = this.animatingTaskIds();
-
-    switch (this.filter()) {
-      case StatusEnum.Done:
-        return allTasks.filter((task) => task.done || animating.has(task.id));
-      case StatusEnum.Undone:
-        return allTasks.filter((task) => !task.done || animating.has(task.id));
-      default:
-        return allTasks;
+    const session = this.cloudSession();
+    if (session) {
+      void this.taskNeonService.upload({ ...task, user_id: session.userId }, session.userId, session.token);
     }
   }
 
-  private sortTasksByPriority(tasks: Task[]): Task[] {
-    return [...tasks].sort((a, b) => {
-      const priorityDiff =
-        this.getPriorityWeight(b.priority) - this.getPriorityWeight(a.priority);
+  // Completing
 
-      if (priorityDiff !== 0) {
-        return priorityDiff;
-      }
-
-      return b.id - a.id;
-    });
-  }
-
-  private getPriorityWeight(priority: TaskPriority): number {
-    switch (priority) {
-      case 'high':
-        return 3;
-      case 'medium':
-        return 2;
-      case 'low':
-        return 1;
-    }
-  }
-
-  private normalizePriority(priority: unknown): TaskPriority {
-    if (priority === 'high' || priority === 'low' || priority === 'medium') {
-      return priority;
-    }
-
-    if (typeof priority === 'string') {
-      const normalizedPriority = priority.trim().toLowerCase();
-
-      if (normalizedPriority === 'alta') {
-        return 'high';
-      }
-
-      if (normalizedPriority === 'media') {
-        return 'medium';
-      }
-
-      if (normalizedPriority === 'baja') {
-        return 'low';
-      }
-
-      if (
-        normalizedPriority === 'high' ||
-        normalizedPriority === 'medium' ||
-        normalizedPriority === 'low'
-      ) {
-        return normalizedPriority;
-      }
-    }
-
-    return DEFAULT_TASK_PRIORITY;
-  }
-
-  private parseTags(input: unknown): string[] {
-    if (typeof input !== 'string') {
-      return [];
-    }
-
-    return [
-      ...new Set(
-        input
-          .split(',')
-          .map((tag) => tag.trim().toLowerCase())
-          .filter(Boolean)
-          .slice(0, 6),
-      ),
-    ];
-  }
-
-  private closeCreateForm(): void {
-    this.isFormVisible.set(false);
-    this.resetTaskForm();
-    this.tagsAutocompleteInput.set('');
-  }
-
-  private clearClickTimer(): void {
-    if (!this.clickTimer) {
+  protected toggleTaskState(taskId: number): void {
+    if (this.settlingTaskIds().has(taskId)) {
       return;
     }
 
-    clearTimeout(this.clickTimer);
-    this.clickTimer = null;
+    this.settlingTaskIds.update((ids) => withId(ids, taskId));
+    this.tasks.update((tasks) =>
+      tasks.map((task) => (task.id === taskId ? { ...task, done: !task.done } : task)),
+    );
+    setTimeout(
+      () => this.settlingTaskIds.update((ids) => withoutId(ids, taskId)),
+      SETTLE_DELAY_MS,
+    );
+
+    const task = this.tasks().find((item) => item.id === taskId);
+    if (task) {
+      this.syncTaskToCloud(task);
+    }
   }
 
-  private clearTaskPress(): void {
-    if (!this.longPressTimer) {
+  // Editing
+
+  protected openEditor(task: Task): void {
+    if (this.suppressNextOpen) {
+      this.suppressNextOpen = false;
       return;
     }
 
-    clearTimeout(this.longPressTimer);
-    this.longPressTimer = null;
+    this.editingTaskId.set(task.id);
   }
 
-  private isTaskTextClipped(root: HTMLElement): boolean {
-    return [...root.querySelectorAll<HTMLElement>('.task-title, .task-description')].some(
-      (node) => node.scrollWidth > node.clientWidth + 1,
+  protected closeEditor(taskId: number): void {
+    this.editingTaskId.set(null);
+    setTimeout(() => document.getElementById(`task-body-${taskId}`)?.focus());
+  }
+
+  protected saveEdit(taskId: number, draft: TaskDraft): void {
+    this.tasks.update((tasks) =>
+      tasks.map((task) => (task.id === taskId ? { ...task, ...draft } : task)),
+    );
+    this.closeEditor(taskId);
+
+    const task = this.tasks().find((item) => item.id === taskId);
+    if (task) {
+      this.syncTaskToCloud(task);
+    }
+  }
+
+  // Deleting
+
+  protected deleteTask(taskId: number): void {
+    const task = this.tasks().find((item) => item.id === taskId);
+    if (!task) {
+      return;
+    }
+
+    if (this.editingTaskId() === taskId) {
+      this.editingTaskId.set(null);
+    }
+    this.tasks.update((tasks) => tasks.filter((item) => item.id !== taskId));
+
+    const session = this.cloudSession();
+    const cloudDeletion = session
+      ? this.taskNeonService.deleteTask(taskId, session.userId, session.token)
+      : Promise.resolve();
+    this.offerUndo(task, cloudDeletion);
+  }
+
+  // Long press copies the task's text.
+
+  protected onTaskPressStart(task: Task): void {
+    this.clearLongPress();
+    this.longPressTimer = setTimeout(() => {
+      this.longPressTimer = null;
+      this.suppressNextOpen = true;
+      void this.copyTaskText(task);
+    }, LONG_PRESS_MS);
+  }
+
+  protected onTaskPressEnd(): void {
+    this.clearLongPress();
+  }
+
+  private isShownAsDone(task: Task): boolean {
+    return this.settlingTaskIds().has(task.id) ? !task.done : task.done;
+  }
+
+  private taskMatchesSearch(task: Task, query: string): boolean {
+    return (
+      task.title.toLowerCase().includes(query) ||
+      task.description.toLowerCase().includes(query) ||
+      task.tags.some((tag) => tag.toLowerCase().includes(query))
     );
   }
 
-  private async presentFullTaskText(task: Task): Promise<void> {
-    const alert = await this.alertController.create({
-      header: task.title,
-      message: task.description || undefined,
-      buttons: [
-        {
-          text: this.translate.instant('TASKS.COPY'),
-          handler: () => {
-            void this.copyTaskText(task);
-          },
-        },
-        {
-          text: this.translate.instant('COMMON.OK'),
-          role: 'cancel',
-        },
-      ],
-    });
-    await alert.present();
+  private highlightNewTask(taskId: number): void {
+    this.newlyAddedTaskIds.update((ids) => withId(ids, taskId));
+    setTimeout(
+      () => this.newlyAddedTaskIds.update((ids) => withoutId(ids, taskId)),
+      NEW_TASK_HIGHLIGHT_MS,
+    );
   }
 
-  private getTaskClipboardText(task: Task): string {
-    const title = task.title?.trim() ?? '';
-    const description = task.description?.trim() ?? '';
-    return [title, description].filter(Boolean).join('\n');
+  private revealTask(taskId: number): void {
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? 'auto'
+      : 'smooth';
+    setTimeout(() =>
+      document.getElementById(`task-${taskId}`)?.scrollIntoView({ block: 'nearest', behavior }),
+    );
+  }
+
+  private offerUndo(task: Task, cloudDeletion: Promise<void>): void {
+    this.snackbar
+      .open(
+        this.translate.instant('TASKS.TASK_DELETED'),
+        this.translate.instant('TASKS.UNDO'),
+        { duration: UNDO_WINDOW_MS },
+      )
+      .onAction()
+      .subscribe(() => void this.restoreTask(task, cloudDeletion));
+  }
+
+  private async restoreTask(task: Task, cloudDeletion: Promise<void>): Promise<void> {
+    this.tasks.update((tasks) => [...tasks, task]);
+
+    const session = this.cloudSession();
+    if (!session) {
+      return;
+    }
+
+    await cloudDeletion.catch(() => undefined);
+    await this.taskNeonService.upload({ ...task, user_id: session.userId }, session.userId, session.token);
+  }
+
+  private syncTaskToCloud(task: Task): void {
+    const session = this.cloudSession();
+    if (!session) {
+      return;
+    }
+
+    void this.taskNeonService.editTask(
+      {
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        done: task.done,
+        priority: task.priority,
+        tags: task.tags,
+      },
+      session.userId,
+      session.token,
+    );
+  }
+
+  /** The signed-in user and token, or null when the list is local only. */
+  private cloudSession(): CloudSession | null {
+    const userId = this.userId();
+    if (!userId) {
+      return null;
+    }
+
+    const token = this.userService.accessToken();
+    if (!token) {
+      console.error('No access token found');
+      return null;
+    }
+
+    return { userId, token };
+  }
+
+  private clearLongPress(): void {
+    if (this.longPressTimer) {
+      clearTimeout(this.longPressTimer);
+      this.longPressTimer = null;
+    }
   }
 
   private async copyTaskText(task: Task): Promise<void> {
-    const text = this.getTaskClipboardText(task);
+    const text = [task.title.trim(), task.description?.trim()].filter(Boolean).join('\n');
     if (!text) {
       return;
     }
 
     try {
       await navigator.clipboard.writeText(text);
-      this.snackbar.open(
-        this.translate.instant('TASKS.COPIED_TO_CLIPBOARD'),
-        '',
-        { duration: 2200 },
-      );
+      this.snackbar.open(this.translate.instant('TASKS.COPIED_TO_CLIPBOARD'), '', {
+        duration: 2200,
+      });
     } catch (error) {
       console.error('Failed to copy task text:', error);
     }
-  }
-
-  private getTagInputState(input: string): {
-    currentToken: string;
-    selectedTags: string[];
-  } {
-    const chunks = input.split(',');
-    const currentToken = (chunks[chunks.length - 1] || '').trim().toLowerCase();
-    const selectedTags = chunks
-      .slice(0, -1)
-      .map((item) => item.trim().toLowerCase())
-      .filter(Boolean);
-
-    return { currentToken, selectedTags };
   }
 }

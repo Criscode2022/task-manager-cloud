@@ -1,8 +1,9 @@
 {
   "name": "Task Cloud",
   "short_name": "Tasks",
-  "theme_color": "#0b5e5a",
-  "background_color": "#f3f5f4",
+  "description": "A personal task list that works offline and syncs with a PIN.",
+  "theme_color": "#2b3fd0",
+  "background_color": "#eef1fa",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",

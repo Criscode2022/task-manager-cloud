@@ -1,124 +1,209 @@
-// Task Cloud. Daylight stone and deep teal. Priority stays separate from the brand.
+// Task Cloud. Ballpoint ink on a pale ink ground. Priority stays separate from the brand.
+
+@use '@angular/material' as mat;
 
 $latin: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 $latin-ext: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 
-@mixin face($family, $file, $weight, $range) {
+// Bricolage Grotesque, variable in weight and optical size.
+@mixin face($file, $range) {
   @font-face {
-    font-family: $family;
+    font-family: 'Bricolage Grotesque';
     font-style: normal;
-    font-weight: $weight;
+    font-weight: 200 800;
     font-display: swap;
-    src: url('../assets/fonts/#{$file}.woff2') format('woff2');
+    src: url('../assets/fonts/#{$file}.woff2') format('woff2-variations'),
+      url('../assets/fonts/#{$file}.woff2') format('woff2');
     unicode-range: $range;
   }
 }
 
-@include face('Figtree', 'figtree-latin-400-normal', 400, $latin);
-@include face('Figtree', 'figtree-latin-ext-400-normal', 400, $latin-ext);
-@include face('Figtree', 'figtree-latin-500-normal', 500, $latin);
-@include face('Figtree', 'figtree-latin-ext-500-normal', 500, $latin-ext);
-@include face('Figtree', 'figtree-latin-600-normal', 600, $latin);
-@include face('Figtree', 'figtree-latin-ext-600-normal', 600, $latin-ext);
-@include face('Literata', 'literata-latin-500-normal', 500, $latin);
-@include face('Literata', 'literata-latin-ext-500-normal', 500, $latin-ext);
-@include face('Literata', 'literata-latin-600-normal', 600, $latin);
-@include face('Literata', 'literata-latin-ext-600-normal', 600, $latin-ext);
-@include face('Literata', 'literata-latin-700-normal', 700, $latin);
-@include face('Literata', 'literata-latin-ext-700-normal', 700, $latin-ext);
+@include face('bricolage-grotesque-latin-opsz-normal', $latin);
+@include face('bricolage-grotesque-latin-ext-opsz-normal', $latin-ext);
 
 :root {
-  --font-display: 'Literata', 'Iowan Old Style', Palatino, Georgia, serif;
-  --font-body: 'Figtree', 'Segoe UI', sans-serif;
+  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-ui: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Text', 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
 
-  --ion-font-family: var(--font-body);
-  --ion-color-primary: #0b5e5a;
-  --ion-color-primary-rgb: 11, 94, 90;
+  // Ink: the header field, actions, and the current view.
+  --color-ink: #2b3fd0;
+  --color-ink-strong: #2233b4;
+  --color-ink-tint: #e4e8fd;
+  --color-on-ink: #ffffff;
+  --color-on-ink-muted: #d6dcff;
+  --color-header: #2b3fd0;
+  --color-header-field: #ffffff;
+  --color-on-header: #ffffff;
+  --color-on-header-muted: #d6dcff;
+
+  // Paper.
+  --color-ground: #eef1fa;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #f4f6fc;
+  --color-text: #11162f;
+  --color-text-muted: #4b5378;
+  --color-placeholder: #6a7192;
+  --color-line: #dde2f0;
+  --color-line-strong: #c3cae2;
+  --color-danger: #b42330;
+  --color-danger-tint: #fbe9ea;
+
+  // Priority is a word plus a hue, never the ink.
+  --priority-high: #b42330;
+  --priority-high-tint: #fbe9ea;
+  --priority-medium: #8f5300;
+  --priority-medium-tint: #fbf0de;
+  --priority-low: #167447;
+  --priority-low-tint: #e3f4ea;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --shadow-raise: 0 1px 2px rgba(17, 22, 47, 0.05), 0 6px 16px -8px rgba(17, 22, 47, 0.16);
+  --shadow-float: 0 18px 40px -12px rgba(17, 22, 47, 0.32);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --column: 44rem;
+  --gutter: 1rem;
+
+  --ion-font-family: var(--font-ui);
+  --ion-color-primary: #2b3fd0;
+  --ion-color-primary-rgb: 43, 63, 208;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #09524e;
-  --ion-color-primary-tint: #246e6b;
+  --ion-color-primary-shade: #2233b4;
+  --ion-color-primary-tint: #4052d5;
 
-  --ion-color-secondary: #3d524c;
-  --ion-color-secondary-rgb: 61, 82, 76;
+  --ion-color-secondary: #4b5378;
+  --ion-color-secondary-rgb: 75, 83, 120;
   --ion-color-secondary-contrast: #ffffff;
-  --ion-color-secondary-shade: #364842;
-  --ion-color-secondary-tint: #50635d;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #42496a;
+  --ion-color-secondary-tint: #5d6486;
 
-  --ion-background-color: #f3f5f4;
-  --ion-background-color-rgb: 243, 245, 244;
-  --ion-surface-color: #ffffff;
+  --ion-color-danger: #b42330;
+  --ion-color-danger-rgb: 180, 35, 48;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #9e1f2a;
+  --ion-color-danger-tint: #bc3945;
+  --ion-color-success: #167447;
+  --ion-color-warning: #8f5300;
+
+  --ion-background-color: #eef1fa;
+  --ion-background-color-rgb: 238, 241, 250;
+  --ion-text-color: #11162f;
+  --ion-text-color-rgb: 17, 22, 47;
+  --ion-item-background: #ffffff;
+  --ion-toolbar-background: #2b3fd0;
+  --ion-toolbar-color: #ffffff;
   --ion-tab-bar-background: #ffffff;
-  --ion-toolbar-background: #f3f5f4;
-  --ion-toolbar-color: #1a2421;
-  --ion-card-background: #ffffff;
-
-  --ion-text-color: #1a2421;
-  --ion-text-color-rgb: 26, 36, 33;
-  --ion-text-color-secondary: #3d524c;
-  --ion-text-color-tertiary: #3d524c;
-
-  --ion-border-color: #c9d4cf;
-  --ion-border-color-light: #dce5e1;
-
-  --ion-color-success: #1a6b3c;
-  --ion-color-warning: #8a5b00;
-  --ion-color-danger: #9f2d2d;
-  --ion-color-info: #0b5e5a;
-
-  --priority-high: #9f2d2d;
-  --priority-medium: #8a5b00;
-  --priority-low: #1a6b3c;
-  --priority-on: #ffffff;
-
-  --shadow-lg: 0 16px 32px rgba(16, 33, 31, 0.14);
-  --border-radius-sm: 0.4rem;
-  --border-radius-md: 0.75rem;
-  --border-radius-xl: 1rem;
+  --ion-overlay-background-color: #ffffff;
+  --ion-border-color: #dde2f0;
 
   color-scheme: light;
 }
 
 .dark-theme {
-  --ion-color-primary: #8ed9d2;
-  --ion-color-primary-rgb: 142, 217, 210;
-  --ion-color-primary-contrast: #10211f;
-  --ion-color-primary-contrast-rgb: 16, 33, 31;
-  --ion-color-primary-shade: #7dc0ba;
-  --ion-color-primary-tint: #99ddd7;
+  --color-ink: #a9b6ff;
+  --color-ink-strong: #c3ccff;
+  --color-ink-tint: #262e5c;
+  --color-on-ink: #0b0e1d;
+  --color-on-ink-muted: #c9d0ff;
+  --color-header: #1d2566;
+  --color-header-field: #10142f;
+  --color-on-header: #ffffff;
+  --color-on-header-muted: #c9d0ff;
 
-  --ion-color-secondary: #c5d5ce;
-  --ion-color-secondary-rgb: 197, 213, 206;
-  --ion-color-secondary-contrast: #10211f;
-  --ion-color-secondary-shade: #adbbb5;
-  --ion-color-secondary-tint: #cbd9d3;
+  --color-ground: #0b0e1d;
+  --color-surface: #151a31;
+  --color-surface-sunken: #10142b;
+  --color-text: #e8ebfa;
+  --color-text-muted: #a6aed1;
+  --color-placeholder: #8c94b8;
+  --color-line: #262c48;
+  --color-line-strong: #39416a;
+  --color-danger: #ff9c96;
+  --color-danger-tint: #3a1a24;
 
-  --ion-background-color: #101614;
-  --ion-background-color-rgb: 16, 22, 20;
-  --ion-surface-color: #1b2421;
-  --ion-tab-bar-background: #1b2421;
-  --ion-toolbar-background: #101614;
-  --ion-toolbar-color: #e7f0ec;
-  --ion-card-background: #1b2421;
+  --priority-high: #ff9c96;
+  --priority-high-tint: #3a1a24;
+  --priority-medium: #f0c46c;
+  --priority-medium-tint: #33280f;
+  --priority-low: #7ed8a6;
+  --priority-low-tint: #11301f;
 
-  --ion-text-color: #e7f0ec;
-  --ion-text-color-rgb: 231, 240, 236;
-  --ion-text-color-secondary: #c5d5ce;
-  --ion-text-color-tertiary: #c5d5ce;
+  --shadow-raise: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 16px -8px rgba(0, 0, 0, 0.5);
+  --shadow-float: 0 18px 40px -12px rgba(0, 0, 0, 0.6);
 
-  --ion-border-color: #31403b;
-  --ion-border-color-light: #26312d;
+  --ion-color-primary: #a9b6ff;
+  --ion-color-primary-rgb: 169, 182, 255;
+  --ion-color-primary-contrast: #0b0e1d;
+  --ion-color-primary-contrast-rgb: 11, 14, 29;
+  --ion-color-primary-shade: #95a0e0;
+  --ion-color-primary-tint: #b2bdff;
 
-  --ion-color-success: #9ee0b8;
-  --ion-color-warning: #f5d48a;
-  --ion-color-danger: #ffb4ab;
-  --ion-color-info: #8ed9d2;
+  --ion-color-secondary: #a6aed1;
+  --ion-color-secondary-rgb: 166, 174, 209;
+  --ion-color-secondary-contrast: #0b0e1d;
+  --ion-color-secondary-contrast-rgb: 11, 14, 29;
+  --ion-color-secondary-shade: #9299b8;
+  --ion-color-secondary-tint: #afb6d6;
 
-  --priority-high: #ffb4ab;
-  --priority-medium: #f5d48a;
-  --priority-low: #9ee0b8;
-  --priority-on: #10211f;
-  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.4);
+  --ion-color-danger: #ff9c96;
+  --ion-color-danger-rgb: 255, 156, 150;
+  --ion-color-danger-contrast: #0b0e1d;
+  --ion-color-danger-contrast-rgb: 11, 14, 29;
+  --ion-color-danger-shade: #e08984;
+  --ion-color-danger-tint: #ffa6a1;
+  --ion-color-success: #7ed8a6;
+  --ion-color-warning: #f0c46c;
+
+  --ion-background-color: #0b0e1d;
+  --ion-background-color-rgb: 11, 14, 29;
+  --ion-text-color: #e8ebfa;
+  --ion-text-color-rgb: 232, 235, 250;
+  --ion-item-background: #151a31;
+  --ion-toolbar-background: #1d2566;
+  --ion-toolbar-color: #ffffff;
+  --ion-tab-bar-background: #151a31;
+  --ion-overlay-background-color: #151a31;
+  --ion-border-color: #262c48;
+
+  --mat-snack-bar-container-color: #e8ebfa;
+  --mat-snack-bar-supporting-text-color: #11162f;
+  --mat-snack-bar-button-color: #2b3fd0;
 
   color-scheme: dark;
+}
+
+// Angular Material supplies the dialog and snackbar machinery; the tokens above paint them.
+@include mat.elevation-classes();
+@include mat.app-background();
+
+$app-theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$blue-palette,
+    ),
+    density: (
+      scale: 0,
+    ),
+  )
+);
+
+:root {
+  @include mat.dialog-theme($app-theme);
+  @include mat.snack-bar-theme($app-theme);
+}
+
+// After the theme include, so these win over Material's own values.
+:root {
+  --mat-snack-bar-container-color: #11162f;
+  --mat-snack-bar-supporting-text-color: #ffffff;
+  --mat-snack-bar-button-color: #a9b6ff;
+  --mat-snack-bar-supporting-text-font: var(--font-ui);
+  --mat-snack-bar-container-shape: var(--radius-md);
 }

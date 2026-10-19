@@ -1,0 +1,120 @@
+:host {
+  --segment-pad: 4px;
+  --segment-height: 2.5rem;
+
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--segment-count), minmax(0, 1fr));
+  padding: var(--segment-pad);
+  border-radius: var(--radius-md);
+  background: var(--segment-track, var(--color-surface));
+  isolation: isolate;
+}
+
+.segment-indicator {
+  position: absolute;
+  z-index: -1;
+  top: var(--segment-pad);
+  bottom: var(--segment-pad);
+  left: var(--segment-pad);
+  width: calc((100% - var(--segment-pad) * 2) / var(--segment-count));
+  border-radius: var(--radius-sm);
+  background: var(--color-ink);
+  box-shadow: var(--shadow-raise);
+  transform: translateX(calc(var(--segment-index) * 100%));
+  transition:
+    transform 260ms var(--ease-out),
+    background-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out);
+}
+
+.segment {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: 0;
+  min-height: var(--segment-height);
+  padding: 0 0.5rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 200ms var(--ease-out);
+}
+
+.segment-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.segment-icon {
+  flex: 0 0 auto;
+  font-size: 1rem;
+}
+
+.segment-count {
+  flex: 0 0 auto;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.segment.is-selected {
+  color: var(--color-on-ink);
+}
+
+.segment.is-selected:focus-visible {
+  outline-color: var(--color-text);
+  outline-offset: 1px;
+}
+
+// Priority choices take their own hue: a tinted fill, a hairline ring, and the word.
+:host([data-tone]) .segment-indicator {
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+
+:host([data-tone='high']) .segment-indicator {
+  background: var(--priority-high-tint);
+  color: var(--priority-high);
+}
+
+:host([data-tone='medium']) .segment-indicator {
+  background: var(--priority-medium-tint);
+  color: var(--priority-medium);
+}
+
+:host([data-tone='low']) .segment-indicator {
+  background: var(--priority-low-tint);
+  color: var(--priority-low);
+}
+
+:host([data-tone='high']) .segment.is-selected {
+  color: var(--priority-high);
+}
+
+:host([data-tone='medium']) .segment.is-selected {
+  color: var(--priority-medium);
+}
+
+:host([data-tone='low']) .segment.is-selected {
+  color: var(--priority-low);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .segment:not(.is-selected):hover {
+    color: var(--color-text);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segment-indicator {
+    transition: none;
+  }
+}

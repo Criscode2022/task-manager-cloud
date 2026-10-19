@@ -24,7 +24,7 @@ The list lives on the device first and works fully offline, with no account. Clo
 - Two tabs: the list and settings.
 - Tasks have a title (40 characters), an optional description (30 characters), a priority (high, medium, low), and up to six tags.
 - The list filters by status (all, pending, done), priority, tag, and a text search.
-- On a phone, tasks swipe to edit or delete. Long-press copies the text or shows the full text.
+- Tapping the ring completes a task; tapping its text edits it in place. On a phone, tasks also swipe to edit or delete. Long-press copies the text. Deleting offers Undo.
 - Settings: upload tasks to get a PIN, log in with a PIN, go offline, dark mode, language, delete all tasks, delete account.
 
 ## Capabilities and Constraints
@@ -37,7 +37,7 @@ The list lives on the device first and works fully offline, with no account. Clo
 ## Brand Commitments
 
 - Name: Task Cloud.
-- The plum and ink palette is no longer binding (the user approved a new palette on 2026-10-16).
+- The teal, stone, and Literata identity was replaced on 2026-10-19 at the user's request; the "Ballpoint Ink" world in DESIGN.md is current.
 
 ## Evidence on Hand
 

@@ -31,6 +31,7 @@ export class LanguageService {
 
     this.translate.use(language);
     this.currentLanguage.set(language);
+    document.documentElement.lang = language;
     localStorage.setItem(LanguageService.STORAGE_KEY, language);
   }
 

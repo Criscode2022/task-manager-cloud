@@ -1,8 +1,11 @@
-
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AlertController, IonicModule } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import {
+  SegmentedControlComponent,
+  SegmentOption,
+} from 'src/app/core/components/segmented-control/segmented-control.component';
 import { LanguageService } from 'src/app/core/services/language.service';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { ThemeService } from 'src/app/core/services/theme.service';
@@ -12,12 +15,16 @@ import { NeonApiService } from '../../core/services/neon-api.service';
 import { TaskService } from '../../core/services/task.service';
 import { User } from './types/user';
 
+const LANGUAGE_LABEL_KEYS: Record<string, string> = {
+  en: 'LANGUAGE.EN',
+  es: 'LANGUAGE.ES',
+};
+
 @Component({
   selector: 'app-tab-options',
   templateUrl: 'tab-options.page.html',
   styleUrls: ['tab-options.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonicModule, TranslateModule],
+  imports: [IonicModule, TranslateModule, SegmentedControlComponent],
 })
 export class TabOptionsPage {
   private readonly taskService = inject(TaskService);
@@ -33,88 +40,16 @@ export class TabOptionsPage {
 
   protected isDark = this.themeService.isDark;
   protected selectedLanguage = this.languageService.currentLanguage;
-  protected supportedLanguages = this.languageService.getSupportedLanguages();
+  protected readonly languageOptions: SegmentOption<string>[] = this.languageService
+    .getSupportedLanguages()
+    .map((language) => ({
+      value: language,
+      labelKey: LANGUAGE_LABEL_KEYS[language] ?? language,
+    }));
 
   protected userId = this.taskService.userId;
   protected tasks = this.taskService.tasks;
   protected isLoading = this.loadingService.isLoading;
-
-  public alertButtonsDownload = [
-    {
-      text: 'Cancel',
-      role: 'cancel',
-    },
-    {
-      text: 'Login',
-      role: 'confirm',
-      handler: (user: User) => {
-        this.download(user.pin);
-      },
-    },
-  ];
-
-  public alertButtonsUpload = [
-    {
-      text: 'Cancel',
-      role: 'cancel',
-    },
-    {
-      text: 'Confirm',
-      role: 'confirm',
-      handler: () => {
-        this.uploadTasks();
-      },
-    },
-  ];
-
-  public alertButtonsDelete = [
-    {
-      text: 'Cancel',
-      role: 'cancel',
-    },
-    {
-      text: 'Confirm',
-      role: 'confirm',
-      handler: () => {
-        this.userService.delete(this.userId());
-      },
-    },
-  ];
-
-  public offlineButtons = [
-    {
-      text: 'Cancel',
-      role: 'cancel',
-    },
-    {
-      text: 'Confirm',
-      role: 'confirm',
-      handler: () => {
-        this.activateOfflineMode();
-      },
-    },
-  ];
-
-  public alertButtonsInfo = [
-    {
-      text: 'Close',
-      role: 'cancel',
-    },
-  ];
-
-  public alertInputs = [
-    {
-      placeholder: 'Enter your 8-digit PIN',
-      type: 'text',
-      name: 'pin',
-      attributes: {
-        maxlength: 8,
-        inputmode: 'numeric',
-      },
-      label: 'PIN',
-      required: true,
-    },
-  ];
 
   protected async uploadTasks(): Promise<void> {
     await this.userService.createUser();
@@ -122,18 +57,6 @@ export class TabOptionsPage {
 
   protected changeLanguage(language: string): void {
     this.languageService.setLanguage(language);
-  }
-
-  protected getLanguageLabel(language: string): string {
-    if (language === 'es') {
-      return this.translate.instant('LANGUAGE.ES');
-    }
-
-    if (language === 'en') {
-      return this.translate.instant('LANGUAGE.EN');
-    }
-
-    return language;
   }
 
   protected async download(pin: User['pin']): Promise<void> {
@@ -151,11 +74,9 @@ export class TabOptionsPage {
         return;
       }
 
-      console.log('🔐 Logging in with PIN...');
       await this.userService.loginWithPin(pinString);
-      console.log('✅ Login successful!');
     } catch (error) {
-      console.error('❌ Login error:', error);
+      console.error('Login error:', error);
       this.snackbar.open(
         this.translate.instant('OPTIONS.INVALID_PIN_TRY_AGAIN'),
         this.translate.instant('COMMON.CLOSE'),
@@ -170,9 +91,6 @@ export class TabOptionsPage {
     await this.userService.logout();
   }
 
-  /**
-   * Show login alert
-   */
   protected async showLoginAlert(): Promise<void> {
     const alert = await this.alertController.create({
       header: this.translate.instant('OPTIONS.LOGIN_WITH_PIN'),
@@ -185,6 +103,8 @@ export class TabOptionsPage {
           attributes: {
             maxlength: 8,
             inputmode: 'numeric',
+            autocomplete: 'off',
+            'aria-label': this.translate.instant('COMMON.PIN'),
           },
         },
       ],
@@ -206,9 +126,6 @@ export class TabOptionsPage {
     await alert.present();
   }
 
-  /**
-   * Show go offline confirmation alert
-   */
   protected async showGoOfflineAlert(): Promise<void> {
     const alert = await this.alertController.create({
       header: this.translate.instant('COMMON.CONFIRMATION'),
@@ -219,7 +136,7 @@ export class TabOptionsPage {
           role: 'cancel',
         },
         {
-          text: this.translate.instant('COMMON.CONFIRM'),
+          text: this.translate.instant('OPTIONS.GO_OFFLINE'),
           role: 'confirm',
           handler: () => {
             this.activateOfflineMode();
@@ -231,9 +148,6 @@ export class TabOptionsPage {
     await alert.present();
   }
 
-  /**
-   * Show delete user confirmation alert
-   */
   protected async showDeleteUserAlert(): Promise<void> {
     const alert = await this.alertController.create({
       header: this.translate.instant('OPTIONS.DELETE_ACCOUNT'),
@@ -244,8 +158,8 @@ export class TabOptionsPage {
           role: 'cancel',
         },
         {
-          text: this.translate.instant('COMMON.CONFIRM'),
-          role: 'confirm',
+          text: this.translate.instant('OPTIONS.DELETE_ACCOUNT'),
+          role: 'destructive',
           handler: () => {
             this.userService.delete(this.userId());
           },
@@ -256,9 +170,6 @@ export class TabOptionsPage {
     await alert.present();
   }
 
-  /**
-   * Show info/help alert
-   */
   protected async showInfoAlert(): Promise<void> {
     const alert = await this.alertController.create({
       header: this.translate.instant('COMMON.INFORMATION'),
@@ -274,45 +185,29 @@ export class TabOptionsPage {
     await alert.present();
   }
 
-  /**
-   * Show delete all tasks confirmation alert
-   */
+  /** Offline, tasks live only here; signed in, the person chooses the cloud or both. */
   protected async showDeleteAllTasksAlert(): Promise<void> {
-    // Different options for online vs offline mode
+    const cancel = { text: this.translate.instant('COMMON.CANCEL'), role: 'cancel' };
     const buttons = !this.userId()
       ? [
-          {
-            text: this.translate.instant('COMMON.CANCEL'),
-            role: 'cancel',
-          },
+          cancel,
           {
             text: this.translate.instant('OPTIONS.DELETE_ALL_TASKS'),
             role: 'destructive',
-            handler: () => {
-              this.deleteAllTasksLocal();
-            },
+            handler: () => this.deleteAllTasksLocal(),
           },
         ]
       : [
-          {
-            text: this.translate.instant('COMMON.CANCEL'),
-            role: 'cancel',
-          },
+          cancel,
           {
             text: this.translate.instant('OPTIONS.DELETE_FROM_CLOUD_ONLY'),
             role: 'destructive',
-            handler: () => {
-              this.deleteAllTasksCloudOnly();
-            },
+            handler: () => this.deleteAllTasksCloudOnly(),
           },
           {
-            text: this.translate.instant(
-              'OPTIONS.DELETE_FROM_BOTH_CLOUD_AND_DEVICE',
-            ),
+            text: this.translate.instant('OPTIONS.DELETE_FROM_BOTH_CLOUD_AND_DEVICE'),
             role: 'destructive',
-            handler: () => {
-              this.deleteAllTasksBoth();
-            },
+            handler: () => this.deleteAllTasksBoth(),
           },
         ];
 
@@ -327,16 +222,11 @@ export class TabOptionsPage {
     await alert.present();
   }
 
-  /**
-   * Delete all tasks locally only
-   */
   protected deleteAllTasksLocal(): void {
     this.taskService.tasks.set([]);
   }
 
-  /**
-   * Delete all tasks from cloud only (keep local, go offline)
-   */
+  /** Deletes the cloud copy and goes offline, keeping the tasks on this device. */
   protected async deleteAllTasksCloudOnly(): Promise<void> {
     const userId = this.userId();
     if (!userId) return;
@@ -345,10 +235,7 @@ export class TabOptionsPage {
     if (!token) return;
 
     try {
-      // Delete all tasks from cloud (server validates Bearer token)
       await this.neon.deleteAllTasks(userId, token);
-
-      // Go offline mode (keeps local tasks)
       await this.activateOfflineMode();
 
       this.snackbar.open(
@@ -370,13 +257,9 @@ export class TabOptionsPage {
     }
   }
 
-  /**
-   * Delete all tasks from both cloud and device
-   */
   protected async deleteAllTasksBoth(): Promise<void> {
     const userId = this.userId();
     if (!userId) {
-      // If somehow offline, just delete local
       this.deleteAllTasksLocal();
       return;
     }
@@ -385,10 +268,7 @@ export class TabOptionsPage {
     if (!token) return;
 
     try {
-      // Delete all tasks from cloud (server validates Bearer token)
       await this.neon.deleteAllTasks(userId, token);
-
-      // Delete all local tasks
       this.taskService.tasks.set([]);
 
       this.snackbar.open(

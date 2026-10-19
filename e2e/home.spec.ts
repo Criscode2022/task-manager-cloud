@@ -11,9 +11,12 @@ test.describe('Task Cloud PWA', () => {
     await expect(page.locator('h1.header-title')).toContainText(/Task Cloud/i);
   });
 
-  test('shows the All filter control', async ({ page }) => {
+  test('shows the All filter control once there is a task', async ({ page }) => {
     await openPwa(page);
-    await expect(page.locator('.filter-button')).toBeVisible();
+    const title = page.locator('form.task-form .composer-title');
+    await title.fill('E2E filter');
+    await title.press('Enter');
+    await expect(page.getByRole('radio', { name: /All/ })).toBeVisible();
   });
 
   test('can open the Options tab', async ({ page }) => {
@@ -25,11 +28,11 @@ test.describe('Task Cloud PWA', () => {
     );
   });
 
-  test('creates a local task from the overlay form', async ({ page }) => {
+  test('creates a local task from the capture field', async ({ page }) => {
     await openPwa(page);
     const form = page.locator('form.task-form');
     await expect(form).toBeVisible();
-    await form.locator('input[matInput]').first().fill('E2E milk');
+    await form.locator('.composer-title').fill('E2E milk');
     await form.evaluate((el) => (el as HTMLFormElement).requestSubmit());
 
     await expect(page.locator('.task-title').filter({ hasText: 'E2E milk' })).toBeVisible({
