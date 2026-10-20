@@ -18,7 +18,7 @@ Protected `/api` routes require `Authorization: Bearer <jwt>`. Public routes:
 ## Prerequisites
 
 - A [Neon](https://console.neon.tech) account (free tier is enough)
-- Node.js 20+
+- Node.js 22+ and pnpm 11+
 - For the MCP server: Python 3.10+ and [uv](https://docs.astral.sh/uv/)
 
 ## Step 1: Create a Neon project
@@ -49,10 +49,13 @@ API_BASE_URL=/api
 API_PORT=3001
 JWT_SECRET= # openssl rand -hex 32
 PIN_PEPPER= # openssl rand -hex 32
-ALLOWED_ORIGINS=https://task-cloud.netlify.app,http://localhost:4200
+ALLOWED_ORIGINS=http://localhost:4200,http://127.0.0.1:4200
+ALLOW_VERCEL_PREVIEWS=true
 SESSION_TTL_SECONDS=86400
 TASK_MANAGER_PIN=
 ```
+
+`.env.example` lists every variable with comments. `TASK_MANAGER_PIN` (or `TASK_MANAGER_TOKEN` / `MCP_API_KEY`) is only for the MCP server.
 
 Generate Angular env files:
 
@@ -89,7 +92,7 @@ Directory = repo root) and set these env vars:
 - `JWT_SECRET` (required)
 - `PIN_PEPPER` (required)
 
-Optional: `SESSION_TTL_SECONDS`, `AUTH_RATE_LIMIT`, `AUTH_RATE_WINDOW_MS`.
+Optional: `SESSION_TTL_SECONDS`, `ALLOWED_ORIGINS`, `ALLOW_VERCEL_PREVIEWS`.
 `API_BASE_URL` defaults to `/api` (same origin), so leave it unset.
 
 ## Step 6: MCP server
@@ -103,7 +106,7 @@ uv run server.py
 
 ## Verify
 
-1. Open the app → Options → create account (save the PIN)
+1. Open the app → Settings → Upload tasks and get a PIN (save the PIN)
 2. Add / edit / delete tasks
-3. Reload — session should restore via stored token
-4. Optional: `pnpm test:api` against a running API
+3. Reload: the session restores from the stored token
+4. Optional: `pnpm --filter @task-cloud/api test:api` runs the smoke test against a running API

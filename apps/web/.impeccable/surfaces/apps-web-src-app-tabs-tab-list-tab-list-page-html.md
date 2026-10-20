@@ -2,7 +2,7 @@
 version: 1
 slug: "apps-web-src-app-tabs-tab-list-tab-list-page-html"
 primary_target: "apps/web/src/app/tabs/tab-list/tab-list.page.html"
-related_targets: ["apps/web/src/app/tabs/tab-options/tab-options.page.html","apps/web/src/app/core/components/pin-dialog/pin-dialog.component.html","apps/web/src/app/tabs/tab-list/task-editor/task-editor.component.html"]
+related_targets: ["apps/web/src/app/tabs/tab-options/tab-options.page.html","apps/web/src/app/core/components/pin-dialog/pin-dialog.component.html","apps/web/src/app/tabs/tab-list/task-editor/task-editor.component.html","apps/web/src/app/core/components/install-guide/install-guide.component.html"]
 ---
 
 ## Scope

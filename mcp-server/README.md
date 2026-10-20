@@ -67,7 +67,7 @@ Task Manager Cloud is an Ionic/Angular app that stores tasks in Neon Postgres vi
                                    └──────────────────┘
 ```
 
-The server runs as a **stdio** process. The host spawns it, communicates over stdin/stdout, and the server talks to Neon using `DATABASE_URL` and the same tables as the Angular app (`users`, `tasks`, `sessions`).
+By default the server runs as a **stdio** process: the host spawns it and communicates over stdin/stdout. With `MCP_TRANSPORT=streamable-http` it serves remote clients over HTTP at `/mcp` instead (see [Railway deploy](#railway-deploy)). Either way it talks to Neon using `DATABASE_URL` and the same tables as the Angular app (`users`, `tasks`, `sessions`).
 
 Search is performed **client-side** after fetching the user's tasks — the same approach as the Angular `tab-list` component. This keeps filter behavior consistent between the app and the MCP server.
 
@@ -79,7 +79,7 @@ Search is performed **client-side** after fetching the user's tasks — the same
 |-------------|-----------------|
 | Python | 3.10+ (project uses 3.14 via uv) |
 | [uv](https://docs.astral.sh/uv/getting-started/installation/) | Package manager and virtualenv |
-| Neon project | Same `DATABASE_URL` configured for the Angular/Netlify API |
+| Neon project | Same `DATABASE_URL` as the Nest API |
 | Task Manager credentials | 8-digit PIN, Nest JWT, or MCP API key |
 
 Install uv (if needed):
@@ -167,8 +167,10 @@ Opens a browser UI where you can list tools, call `create_user`, and inspect res
 | `MCP_API_KEY_USER_ID` | With `MCP_API_KEY` | — | User id bound to `MCP_API_KEY` |
 | `MCP_API_KEYS` | No | — | JSON object or `key:user_id,...` list |
 | `MCP_TRANSPORT` | No | `stdio` | `stdio` or `streamable-http` (remote HTTP clients) |
-| `MCP_HOST` | No | `127.0.0.1` | Bind address for HTTP |
-| `MCP_PORT` | No | `8000` | Listen port for HTTP (`/mcp`) |
+| `MCP_HOST` / `HOST` | No | `127.0.0.1` (`0.0.0.0` with HTTP) | Bind address |
+| `PORT` / `MCP_PORT` | No | `8000` | Listen port for HTTP (`/mcp`); `PORT` wins when both are set |
+| `MCP_PUBLIC_URL` / `MCP_ISSUER_URL` | No | `https://` + `RAILWAY_PUBLIC_DOMAIN` | Public origin (no `/mcp`); turns on the OAuth endpoints for HTTP |
+| `MCP_STATELESS_HTTP` | No | `true` | Stateless streamable HTTP sessions |
 
 **Where to set them:**
 
@@ -638,7 +640,10 @@ mcp-server/
 ├── server.py          # FastMCP server — tools, resources, prompts
 ├── database.py        # Neon queries, sessions, identity resolution
 ├── auth.py            # PIN, JWT, API keys, multi-method resolver
-├── tests/             # pytest coverage for auth and tool wiring
+├── oauth.py           # OAuth provider and PIN login page for HTTP clients
+├── tests/             # pytest coverage for auth, OAuth, and tool wiring
+├── Dockerfile         # HTTP image for Railway
+├── railway.toml       # Railway service settings
 ├── pyproject.toml     # uv project manifest
 ├── uv.lock            # Locked dependency versions
 ├── .env.example       # Environment variable template
@@ -651,6 +656,7 @@ mcp-server/
 | `server.py` | MCP protocol surface — decorators register tools/resources/prompts |
 | `database.py` | All Neon/Postgres I/O; loads `.env` from `mcp-server/` and project root |
 | `auth.py` | PIN / JWT / API-key helpers and first-match credential resolution |
+| `oauth.py` | OAuth authorize/token flow with a PIN sign-in page, used only over HTTP |
 
 ---
 

@@ -24,4 +24,6 @@ Documentación de producto y arquitectura usada también en el portfolio ([crist
 La skill completa está en [`.claude/skills/angular/`](../.claude/skills/angular/).
 Testing en el portfolio: [cristiancode.dev/featured/task-cloud/testing](https://cristiancode.dev/featured/task-cloud/testing).
 
-Otros setup notes en la raíz del repo: `README.MD`, `NEON_SETUP.md`, `VERCEL.md`.
+Sistema de diseño y contexto de producto (en inglés): [`apps/web/DESIGN.md`](../apps/web/DESIGN.md) y [`apps/web/PRODUCT.md`](../apps/web/PRODUCT.md).
+
+Otros setup notes en la raíz del repo: `README.MD`, `NEON_SETUP.md`, `VERCEL.md`. El servidor MCP se documenta en `mcp-server/README.md`.

@@ -8,10 +8,10 @@ Task Cloud tiene **tres capas** de prueba más un job de **GitHub Actions**. Tod
 
 | Capa | Runner | Qué cubre | Comando |
 |------|--------|-----------|---------|
-| Unitario web | Jasmine + Karma (ChromeHeadless) | Componentes y servicios Angular | `pnpm test:ci` |
+| Unitario web | Jasmine + Karma (ChromeHeadless) | Componentes y servicios Angular (77 tests en 17 specs) | `pnpm test:ci` |
 | Unitario API | Vitest | PIN, JWT, guards, ownership | `pnpm test:api` |
 | Integración API | Vitest + Supertest + `@nestjs/testing` | HTTP real contra Nest, Neon mockeado | `pnpm test:integration` |
-| E2E | Playwright (Chromium) | PWA: título, filtro, tab Options | `pnpm test:e2e` |
+| E2E | Playwright (Chromium) | PWA: título, crear tarea, filtro de estado, pestaña Ajustes | `pnpm test:e2e` |
 | Smoke Neon (opcional) | `apps/api/scripts/test-api.mjs` | API viva + `DATABASE_URL` | `pnpm --filter @task-cloud/api test:api` |
 
 CI (`.github/workflows/ci.yml`):

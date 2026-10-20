@@ -115,7 +115,7 @@
       {
         "name": "float",
         "value": "0 18px 40px -12px rgba(17,22,47,.32)",
-        "purpose": "Alerts and the PIN dialog."
+        "purpose": "Alerts and the app dialogs: PIN and install guide."
       },
       {
         "name": "capture-lift",

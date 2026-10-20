@@ -128,6 +128,11 @@ components:
     typography: "{typography.caption}"
     rounded: "{rounded.pill}"
     height: "1.5rem"
+  dialog-card:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.text}"
+    rounded: "{rounded.xl}"
+    padding: "1.5rem 1.375rem 1.25rem"
   task-group:
     backgroundColor: "{colors.surface}"
     rounded: "{rounded.lg}"
@@ -208,7 +213,7 @@ The full ramp in use is 0.75, 0.8125, 0.875, 0.9375, 1, 1.0625, 1.125, 1.25, 1.3
 ## Elevation & Depth
 
 - One raised shadow for paper on the ground: `0 1px 2px rgba(17,22,47,.05), 0 6px 16px -8px rgba(17,22,47,.16)` (task groups, the status switch, setting groups, the sync panel).
-- One float shadow for overlays: `0 18px 40px -12px rgba(17,22,47,.32)` (alerts, the PIN dialog).
+- One float shadow for overlays: `0 18px 40px -12px rgba(17,22,47,.32)` (alerts and the app dialogs: PIN and install guide).
 - The capture field lifts off the ink with `0 12px 28px -16px rgba(6,10,40,.6)`.
 - Paper never carries a border and a shadow together. Fields inside paper use a sunken fill instead of a border, and a 1.5px inset ink ring on focus.
 
@@ -229,7 +234,10 @@ The full ramp in use is 0.75, 0.8125, 0.875, 0.9375, 1, 1.0625, 1.125, 1.25, 1.3
 - **Delete:** immediate, with an Undo snackbar for five seconds.
 - **Settings rows:** a line icon, a title, and a note in paper groups; destructive rows are red with a chevron. Dark mode is a native Ionic toggle row.
 - **Sync panel:** a state icon (device or cloud), a Bricolage headline, a note, and the actions as real buttons.
+- **Dialog card:** every app dialog is one paper card, 24px corners, float shadow, at most 25rem wide. The title is the 1.625rem headline, set through Material's dialog title tokens on the panel so it holds in both themes; body text is muted.
 - **PIN dialog:** the PIN in Bricolage, in two groups of four, on sunken paper with a copy button; Continue unlocks after the confirmation checkbox.
+- **Install button:** a download icon among the header actions, shown only where installing is possible. Where the browser offers its install dialog (Chrome, Edge, Samsung Internet), one tap opens it; on iPhone and iPad it opens the install guide. It disappears once the app is installed.
+- **Install guide:** the app icon at Apple's corner rounding, the headline, a one-line reason, then the steps as a numbered list on sunken paper: ink-tint number circles, the action in 650 weight, a muted hint, and the iOS glyph to look for (Share, Add to Home Screen) at the row's end, where iOS shows it. Got it closes; a quiet button hides the install button for good.
 
 ## Do's and Don'ts
 

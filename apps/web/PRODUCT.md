@@ -20,7 +20,7 @@ The list lives on the device first and works fully offline, with no account. Clo
 
 ## Operating Context
 
-- Installable PWA built with Ionic, opened from a phone's home screen.
+- Installable PWA built with Ionic, opened from a phone's home screen. The header's install button opens the browser's install dialog where one exists (Chromium browsers) and shows the Share → Add to Home Screen steps on iPhone and iPad; it hides once the app is installed.
 - Two tabs: the list and settings.
 - Tasks have a title (40 characters), an optional description (30 characters), a priority (high, medium, low), and up to six tags.
 - The list filters by status (all, pending, done), priority, tag, and a text search.

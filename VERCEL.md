@@ -29,9 +29,11 @@ Project → Settings → Environment Variables (Production + Preview):
 | `JWT_SECRET` | yes | `openssl rand -hex 32` |
 | `PIN_PEPPER` | yes | `openssl rand -hex 32` |
 | `SESSION_TTL_SECONDS` | no | default `86400` |
-| `AUTH_RATE_LIMIT` / `AUTH_RATE_WINDOW_MS` | no | default `10` / `900000` |
-| `API_BASE_URL` | no | defaults to `/api` (same origin) — leave unset |
+| `API_BASE_URL` | no | defaults to `/api` (same origin); leave unset |
 | `ALLOWED_ORIGINS` | no | only needed if another origin must call the API |
+| `ALLOW_VERCEL_PREVIEWS` | no | default `true`: accepts `https://*.vercel.app` origins |
+
+The API also validates `AUTH_RATE_LIMIT` and `AUTH_RATE_WINDOW_MS`, but does not read them yet: registration and login are limited to 10 requests per IP every 15 minutes in code.
 
 ## 3. Deploy
 
@@ -47,7 +49,9 @@ and publishes the static PWA plus the `/api/*` function.
 ## 4. Smoke checks
 
 - `GET https://<project>.vercel.app/api/health` → `{ "ok": true, "service": "task-cloud-nest-api" }`
-- Open `https://<project>.vercel.app` → Options → register (8-digit PIN) → sync tasks
+- `GET https://<project>.vercel.app/manifest.webmanifest` returns the manifest JSON, not `index.html`. If it returns HTML, the build didn't copy `apps/web/public/`, and browsers won't offer to install the app.
+- Open `https://<project>.vercel.app` → Settings → Upload tasks and get a PIN → sync tasks
+- In Chrome, the install button in the header opens the browser's install dialog
 
 ## How the API function works
 
@@ -59,7 +63,7 @@ identically.
 
 Notes:
 
-- Rate limiting is in-memory per function instance (best-effort, as before).
+- Rate limiting is in-memory per function instance (best effort).
 - The function has `maxDuration: 30` and includes `apps/api/dist/**` via
   `vercel.json` → `functions`.
 - Turborepo Remote Caching is enabled automatically for Vercel-linked repos.

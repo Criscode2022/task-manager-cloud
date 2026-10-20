@@ -9,6 +9,7 @@ NestJS backend for Task Cloud. Replaces the former Netlify Functions + `server/*
 | GET | `/api`, `/api/health` | — | Health check |
 | POST | `/api/users` | — | Register with `{ pin }` |
 | POST | `/api/auth/login` | — | Login with `{ pin }` |
+| GET | `/api/users/by-pin/:hash` | — | Retired: answers 410 Gone, pointing to `POST /api/auth/login` |
 | POST | `/api/auth/logout` | Bearer | Revoke session |
 | GET | `/api/auth/me` | Bearer | Current user |
 | GET/DELETE | `/api/users/:id` | Bearer | Self only |
@@ -20,6 +21,8 @@ NestJS backend for Task Cloud. Replaces the former Netlify Functions + `server/*
 
 Boot fails if `DATABASE_URL`, `JWT_SECRET` (32+ chars) or `PIN_PEPPER` (32+ chars) are missing. Task payloads only accept `title`, `description`, `done`, `priority`, `tags`.
 
+Auth is a global guard; public routes use `@Public()`. Rate limits are in memory per instance: 100 requests per minute overall, and 10 per IP every 15 minutes on register and login.
+
 From repo root (loads root `.env`):
 
 ```bash
@@ -28,10 +31,19 @@ pnpm api
 pnpm --filter @task-cloud/api start:dev
 ```
 
-Smoke test (API must be running with real `DATABASE_URL` + secrets):
+## Tests
+
+From the repo root:
 
 ```bash
-pnpm test:api
+pnpm test:api           # unit tests (Vitest): PIN, JWT, guard, ownership
+pnpm test:integration   # HTTP integration (Supertest), database faked
+```
+
+Smoke test against real Neon (the API must be running with a real `DATABASE_URL` and secrets):
+
+```bash
+pnpm --filter @task-cloud/api test:api
 ```
 
 ## Vercel

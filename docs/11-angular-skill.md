@@ -26,6 +26,13 @@ Hallazgos aplicados:
 3. **`httpResource`** para lecturas GET: `cloudTasks` (`GET /tasks`) y `meResource` (`GET /auth/me`), disparados por `session`. Mutaciones (POST/PUT/DELETE) siguen en `HttpClient`; tras mutar se llama `cloudTasks.reload()`.
 4. HTTP Fetch, `@if`, OnPush y Zone explícito se mantienen.
 
+## Revisión 2026-10-20 (rediseño «Ballpoint Ink»)
+
+1. **Formularios de tareas sin controles Ionic.** `TaskComposerComponent` extiende la base `TaskForm`; `TaskEditorComponent` crea su `form()` sobre un borrador `linkedSignal` de la tarea. Ambos validan con `required` / `maxLength`. Título y nota son inputs nativos; prioridad y etiquetas usan `app-segmented-control` y `app-tag-field`, que implementan `FormValueControl` (`model()` para el valor). Todos los campos van con `[formField]`; ya no hay `ion-select` ni `mat-select` que escriban el modelo a mano.
+2. **Estado derivado con `computed`.** Filtros, contadores, resumen y grupos (pendientes / hechas) de la lista son `computed`.
+3. **Servicio nuevo con `@Service()`.** `InstallService` usa el decorador de v22 y se instancia al arrancar con `provideAppInitializer`, para no perder el `beforeinstallprompt` del navegador.
+4. **Material reducido** a `MatDialog` y `MatSnackBar`.
+
 ## Qué Angular 22 no se puede (o no se debe) aplicar por Ionic 8
 
 Ionic **8.8** declara `zone.js` como peer y sus web components (`ion-select`, overlays, `ion-router-outlet`, tabs) no implementan las APIs signal-first de v22. Esto **no** es deuda de la skill: es un techo del runtime Ionic. No forzar estas APIs hasta que Ionic las soporte.
@@ -33,9 +40,9 @@ Ionic **8.8** declara `zone.js` como peer y sus web components (`ion-select`, ov
 | API Angular 22 | Por qué Ionic la bloquea | Qué hacemos aquí |
 |----------------|--------------------------|------------------|
 | **Zoneless** (`provideZonelessChangeDetection()`, quitar `zone.js`) | Peer oficial `zone.js >= 0.13`. Eventos, overlays y navegación de Ionic siguen notificando la vista vía Zone. Sin Zone, taps y modales se quedan mudos. | `provideZoneChangeDetection()` + `zone.js` |
-| **`[formField]` en controles Ionic** | `ion-select`, `ion-checkbox`, `ion-toggle`, `ion-input` no implementan `FormValueControl`. Signal Forms solo enlaza nativos / Material. | `form()` + `[formField]` en `matInput`; `ion-select` / `mat-select` escriben el `signal` del modelo |
+| **`[formField]` en controles Ionic** | `ion-select`, `ion-checkbox`, `ion-toggle`, `ion-input` no implementan `FormValueControl`. Signal Forms solo enlaza nativos o controles con `FormValueControl`. | Formularios de tareas con inputs nativos y controles propios (`app-segmented-control`, `app-tag-field`) enlazados con `[formField]`; `ion-toggle` / `ion-checkbox` solo fuera de formularios (modo oscuro, confirmación del PIN) |
 | **View Transitions del router Angular** | La navegación real pasa por `ion-router-outlet` + `IonicRouteStrategy`, no por las transiciones del `Router` de Angular. | Transiciones de Ionic; no `withViewTransitions()` |
-| **Angular ARIA en overlays** | Alertas, popovers y action sheets son de Ionic. Sustituirlos por Angular ARIA rompe el look y el focus trap nativo. | Overlays Ionic; ARIA solo si se añade un control *nuevo* no-Ionic |
+| **Angular ARIA en overlays** | Alertas, popovers y action sheets son de Ionic. Sustituirlos por Angular ARIA rompe el look y el focus trap nativo. | Alertas de Ionic; diálogos del PIN y de instalación con `MatDialog`. Los controles nuevos no-Ionic llevan su propio ARIA (el segmentado es un `radiogroup` con tabindex itinerante) |
 | **SSR / hidratación** | PWA + Capacitor + `IonicStorage` son cliente. No hay servidor de render para `ion-*`. | SPA + service worker |
 
 **No atribuir a Ionic** (queda fuera por el builder/legado, no por el peer):
@@ -43,7 +50,7 @@ Ionic **8.8** declara `zone.js` como peer y sus web components (`ion-select`, ov
 - Vitest — el builder webpack/Karma de esta app
 - Shell `NgModule` (`IonicModule.forRoot()`, `TabsModule`) — Ionic 8 *sí* tiene `provideIonicAngular()`; no se ha migrado el andamiaje de tabs
 
-Revisar esta tabla al subir de major de Ionic. Si el peer deja de pedir `zone.js` y los `ion-*` implementan `FormValueControl`, se puede zoneless + `[formField]` en selects.
+Revisar esta tabla al subir de major de Ionic. Si el peer deja de pedir `zone.js`, se puede pasar a zoneless; los formularios de tareas ya no dependen de que los `ion-*` implementen `FormValueControl`.
 
 ## House style (extracto)
 
