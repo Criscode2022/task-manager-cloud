@@ -192,10 +192,10 @@ button.setting-row:focus-visible {
   color: var(--color-danger);
 }
 
-// The toggle row: Ionic draws the switch, the row draws the words.
+// The toggle row: Ionic draws the switch, the row draws the words. Ionic forces
+// content-box on the toggle, so the width stays auto and the padding keeps the switch off the card edge.
 .setting-toggle {
-  box-sizing: border-box;
-  width: 100%;
+  width: auto;
   padding-inline-end: 1rem;
 }
 
