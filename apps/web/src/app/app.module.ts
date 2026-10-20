@@ -4,7 +4,13 @@ import {
   withInterceptors,
 } from '@angular/common/http';
 import { LocationStrategy, PathLocationStrategy } from '@angular/common';
-import { NgModule, isDevMode, provideZoneChangeDetection } from '@angular/core';
+import {
+  NgModule,
+  inject,
+  isDevMode,
+  provideAppInitializer,
+  provideZoneChangeDetection,
+} from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { RouteReuseStrategy } from '@angular/router';
@@ -15,6 +21,7 @@ import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoadingInterceptor } from './core/interceptors/loading-interceptor';
+import { InstallService } from './core/services/install.service';
 import { StorageModule } from './storage.module';
 
 @NgModule({
@@ -37,6 +44,10 @@ import { StorageModule } from './storage.module';
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideZoneChangeDetection(),
     provideAnimationsAsync(),
+    // The browser can offer install before the list page loads, so listen from startup.
+    provideAppInitializer(() => {
+      inject(InstallService);
+    }),
     provideHttpClient(withFetch(), withInterceptors([LoadingInterceptor])),
     provideTranslateHttpLoader({
       prefix: '/assets/i18n/',

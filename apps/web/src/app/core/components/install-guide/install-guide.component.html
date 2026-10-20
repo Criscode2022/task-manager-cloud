@@ -1,0 +1,34 @@
+<div class="dialog-card">
+  <img class="app-icon" ngSrc="icons/icon-192x192.png" width="64" height="64" alt="" />
+  <h2 class="dialog-title" mat-dialog-title>{{ 'INSTALL_GUIDE.TITLE' | translate }}</h2>
+  <p class="dialog-text">{{ 'INSTALL_GUIDE.INTRO' | translate }}</p>
+
+  <ol class="steps" role="list">
+    <li class="step">
+      <span class="step-action">{{ 'INSTALL_GUIDE.STEP_SHARE' | translate }}</span>
+      <span class="step-hint">{{ 'INSTALL_GUIDE.STEP_SHARE_HINT' | translate }}</span>
+      <ion-icon class="step-glyph" name="share-outline" aria-hidden="true"></ion-icon>
+    </li>
+    <li class="step">
+      <span class="step-action">{{ 'INSTALL_GUIDE.STEP_ADD' | translate }}</span>
+      <span class="step-hint">{{ 'INSTALL_GUIDE.STEP_ADD_HINT' | translate }}</span>
+      <svg class="step-glyph" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" />
+        <path d="M12 8.25v7.5M8.25 12h7.5" />
+      </svg>
+    </li>
+    <li class="step">
+      <span class="step-action">{{ 'INSTALL_GUIDE.STEP_CONFIRM' | translate }}</span>
+      <span class="step-hint">{{ 'INSTALL_GUIDE.STEP_CONFIRM_HINT' | translate }}</span>
+    </li>
+  </ol>
+
+  <div class="actions">
+    <button type="button" class="btn btn-ink btn-block" (click)="close()">
+      {{ 'INSTALL_GUIDE.DONE' | translate }}
+    </button>
+    <button type="button" class="btn btn-quiet btn-block" (click)="hideInstallButton()">
+      {{ 'INSTALL_GUIDE.HIDE_BUTTON' | translate }}
+    </button>
+  </div>
+</div>

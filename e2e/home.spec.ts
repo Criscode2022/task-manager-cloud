@@ -24,7 +24,7 @@ test.describe('Task Cloud PWA', () => {
     await page.locator('ion-tab-button[tab="options"]').click();
     await expect(page).toHaveURL(/options/i);
     await expect(page.locator('app-tab-options h1')).toContainText(
-      /settings|configuracion/i,
+      /settings|ajustes/i,
     );
   });
 

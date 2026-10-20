@@ -79,9 +79,6 @@
     "CREATE_FIRST_TASK": "Write your first task in the field above and press Enter.",
     "SYNC_WITH_CLOUD": "Sync with the cloud",
     "INSTALL_APP": "Install app",
-    "HOW_TO_INSTALL": "Install Task Cloud",
-    "INSTALL_ALERT": "Open your browser's menu and choose Add to Home Screen or Install app.",
-    "DONT_SHOW_AGAIN": "Don't show again",
     "COPIED_TO_CLIPBOARD": "Copied to clipboard"
   },
   "OPTIONS": {
@@ -128,5 +125,17 @@
     "INFO_TEXT": "It can't be shown again after you close this. Write it down or keep it in a password manager.",
     "CONFIRM_CHECKBOX": "I saved my PIN somewhere safe",
     "CONFIRM_HINT": "Confirm you saved your PIN to continue."
+  },
+  "INSTALL_GUIDE": {
+    "TITLE": "Add Task Cloud to your Home Screen",
+    "INTRO": "It opens full screen and works offline, like your other apps.",
+    "STEP_SHARE": "Tap Share",
+    "STEP_SHARE_HINT": "Don't see it? Tap the ••• button first.",
+    "STEP_ADD": "Choose Add to Home Screen",
+    "STEP_ADD_HINT": "It may be under View More.",
+    "STEP_CONFIRM": "Tap Add",
+    "STEP_CONFIRM_HINT": "If you see Open as Web App, leave it on.",
+    "DONE": "Got it",
+    "HIDE_BUTTON": "Hide the install button"
   }
 }

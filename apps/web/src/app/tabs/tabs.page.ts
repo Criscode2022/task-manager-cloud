@@ -16,7 +16,6 @@ export class TabsPage {
 
   constructor() {
     this.themeService.setTheme();
-    this.checkInstallAlert();
 
     effect(() => {
       if (!this.taskService.storageReady()) {
@@ -31,17 +30,5 @@ export class TabsPage {
     this.userService.getUser();
     this.taskService.tasks.set(await this.taskService.getTasks());
     this.taskService.tasksHydrated.set(true);
-  }
-
-  private checkInstallAlert(): void {
-    const hideInstall =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      localStorage.getItem('install') === 'false';
-
-    if (!hideInstall) {
-      return;
-    }
-
-    this.taskService.shouldShowInstall.set(false);
   }
 }

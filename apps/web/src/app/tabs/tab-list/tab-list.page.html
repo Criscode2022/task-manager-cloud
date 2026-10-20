@@ -22,11 +22,11 @@
           </button>
         }
 
-        @if (shouldShowInstall()) {
+        @if (canInstall()) {
           <button
             type="button"
-            class="icon-button"
-            id="install-alert"
+            class="icon-button install-button"
+            (click)="installApp()"
             [attr.aria-label]="'TASKS.INSTALL_APP' | translate"
           >
             <ion-icon name="download-outline" aria-hidden="true"></ion-icon>
@@ -321,10 +321,3 @@
     </ion-item-options>
   </ion-item-sliding>
 </ng-template>
-
-<ion-alert
-  trigger="install-alert"
-  [header]="'TASKS.HOW_TO_INSTALL' | translate"
-  [message]="'TASKS.INSTALL_ALERT' | translate"
-  [buttons]="installButtons"
-></ion-alert>

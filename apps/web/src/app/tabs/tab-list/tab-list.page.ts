@@ -9,16 +9,19 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { UserService } from 'src/app/core/services/user-service/user.service';
+import { InstallGuideComponent } from '../../core/components/install-guide/install-guide.component';
 import {
   SegmentedControlComponent,
   SegmentOption,
 } from '../../core/components/segmented-control/segmented-control.component';
+import { InstallService } from '../../core/services/install.service';
 import { TaskNeonService } from '../../core/services/task-neon.service';
 import { TaskService } from '../../core/services/task.service';
 import { TaskComposerComponent } from './task-composer/task-composer.component';
@@ -67,6 +70,8 @@ type CloudSession = { userId: number; token: string };
 })
 export class TabListPage {
   private readonly taskNeonService = inject(TaskNeonService);
+  private readonly installService = inject(InstallService);
+  private readonly dialog = inject(MatDialog);
   private readonly snackbar = inject(MatSnackBar);
   private readonly translate = inject(TranslateService);
   private readonly taskService = inject(TaskService);
@@ -78,7 +83,7 @@ export class TabListPage {
 
   protected readonly loadingService = inject(LoadingService);
   protected readonly filter = this.taskService.filter;
-  protected readonly shouldShowInstall = this.taskService.shouldShowInstall;
+  protected readonly canInstall = this.installService.canInstall;
   protected readonly tasks = this.taskService.tasks;
   protected readonly userId = this.taskService.userId;
 
@@ -210,23 +215,6 @@ export class TabListPage {
     return null;
   });
 
-  protected get installButtons() {
-    return [
-      {
-        text: this.translate.instant('COMMON.OK'),
-        role: 'cancel',
-      },
-      {
-        text: this.translate.instant('TASKS.DONT_SHOW_AGAIN'),
-        role: 'confirm',
-        handler: () => {
-          this.shouldShowInstall.set(false);
-          localStorage.setItem('install', 'false');
-        },
-      },
-    ];
-  }
-
   constructor() {
     effect(async () => {
       await this.taskService.saveTasks(this.tasks());
@@ -256,6 +244,20 @@ export class TabListPage {
 
   protected refresh(): void {
     this.userService.getUser();
+  }
+
+  /** Opens the browser's install dialog where it offers one, or the Home Screen steps on iOS. */
+  protected async installApp(): Promise<void> {
+    if (this.installService.method() === 'prompt') {
+      await this.installService.promptInstall();
+      return;
+    }
+
+    this.dialog.open(InstallGuideComponent, {
+      maxWidth: 'calc(100vw - 2rem)',
+      panelClass: 'app-dialog-panel',
+      autoFocus: 'first-heading',
+    });
   }
 
   protected switchToAlternativeFilter(): void {

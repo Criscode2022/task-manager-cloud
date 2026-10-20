@@ -214,15 +214,52 @@ ion-alert .alert-button.alert-button-role-confirm.sc-ion-alert-md {
   letter-spacing: 0;
 }
 
-// Dialog panel: the component draws its own surface.
+// Dialog panel: the component draws its own surface. Material styles the title from these tokens.
 .app-dialog-panel {
   --mat-dialog-container-color: transparent;
   --mat-dialog-container-elevation-shadow: none;
   --mat-dialog-container-shape: 0;
+  --mat-dialog-subhead-color: var(--color-text);
+  --mat-dialog-subhead-font: var(--font-display);
+  --mat-dialog-subhead-size: 1.625rem;
+  --mat-dialog-subhead-weight: 650;
+  --mat-dialog-subhead-tracking: -0.02em;
+  --mat-dialog-subhead-line-height: 1.15;
 }
 
 .app-dialog-panel .mat-mdc-dialog-surface {
   overflow: visible;
+}
+
+// Dialog card: the surface, title, and text every app dialog shares.
+.dialog-card {
+  width: min(calc(100vw - 2rem), 25rem);
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
+  padding: 1.5rem 1.375rem 1.25rem;
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-float);
+  color: var(--color-text);
+}
+
+// Type and color come from the panel's tokens; this sets the spacing Material would add.
+.dialog-card .dialog-title {
+  margin: 0;
+  padding: 0;
+  text-wrap: balance;
+}
+
+// Material's title directive adds its own spacing; the card sets its own.
+.dialog-card .dialog-title::before {
+  display: none;
+}
+
+.dialog-card .dialog-text {
+  margin: 0.625rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.45;
 }
 
 .cdk-overlay-dark-backdrop {

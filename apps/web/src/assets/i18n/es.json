@@ -79,9 +79,6 @@
     "CREATE_FIRST_TASK": "Escribe tu primera tarea en el campo de arriba y pulsa Intro.",
     "SYNC_WITH_CLOUD": "Sincronizar con la nube",
     "INSTALL_APP": "Instalar app",
-    "HOW_TO_INSTALL": "Instalar Task Cloud",
-    "INSTALL_ALERT": "Abre el menú del navegador y elige Añadir a pantalla de inicio o Instalar app.",
-    "DONT_SHOW_AGAIN": "No volver a mostrar",
     "COPIED_TO_CLIPBOARD": "Copiado al portapapeles"
   },
   "OPTIONS": {
@@ -128,5 +125,17 @@
     "INFO_TEXT": "No se puede volver a mostrar después de cerrar esto. Anótalo o guárdalo en un gestor de contraseñas.",
     "CONFIRM_CHECKBOX": "Guardé mi PIN en un lugar seguro",
     "CONFIRM_HINT": "Confirma que guardaste tu PIN para continuar."
+  },
+  "INSTALL_GUIDE": {
+    "TITLE": "Añade Task Cloud a tu pantalla de inicio",
+    "INTRO": "Se abre a pantalla completa y funciona sin conexión, como tus otras apps.",
+    "STEP_SHARE": "Toca Compartir",
+    "STEP_SHARE_HINT": "¿No aparece? Toca primero el botón •••.",
+    "STEP_ADD": "Elige Añadir a pantalla de inicio",
+    "STEP_ADD_HINT": "Puede estar en Ver más.",
+    "STEP_CONFIRM": "Toca Añadir",
+    "STEP_CONFIRM_HINT": "Si ves Abrir como app web, déjalo activado.",
+    "DONE": "Entendido",
+    "HIDE_BUTTON": "Ocultar el botón de instalar"
   }
 }

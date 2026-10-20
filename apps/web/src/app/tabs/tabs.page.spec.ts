@@ -13,7 +13,6 @@ describe('TabsPage', () => {
 
   const taskServiceMock = {
     tasks: signal([]),
-    shouldShowInstall: signal(true),
     storage: {},
     storageReady: signal(true),
     tasksHydrated: signal(false),

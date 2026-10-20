@@ -1,10 +1,13 @@
-import { signal } from '@angular/core';
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { computed, signal } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
+import { InstallGuideComponent } from 'src/app/core/components/install-guide/install-guide.component';
+import { InstallMethod, InstallService } from 'src/app/core/services/install.service';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { TaskNeonService } from 'src/app/core/services/task-neon.service';
 import { TaskService } from 'src/app/core/services/task.service';
@@ -31,7 +34,6 @@ describe('TabListPage', () => {
   const taskServiceMock = {
     tasks: signal<Task[]>([]),
     filter: signal(StatusEnum.All),
-    shouldShowInstall: signal(true),
     storageReady: signal(true),
     tasksHydrated: signal(true),
     userId: signal(0),
@@ -61,12 +63,26 @@ describe('TabListPage', () => {
     open: jasmine.createSpy('open'),
   };
 
+  const installMethod = signal<InstallMethod>('none');
+  const installServiceMock = {
+    method: installMethod,
+    canInstall: computed(() => installMethod() !== 'none'),
+    promptInstall: jasmine.createSpy('promptInstall').and.resolveTo(true),
+  };
+
+  const dialogMock = {
+    open: jasmine.createSpy('open'),
+  };
+
   const ids = (tasks: Task[]): number[] => tasks.map((task) => task.id);
 
   beforeEach(async () => {
     undoAction = new Subject<void>();
     snackBarMock.open.calls.reset();
     snackBarMock.open.and.returnValue({ onAction: () => undoAction });
+    installMethod.set('none');
+    installServiceMock.promptInstall.calls.reset();
+    dialogMock.open.calls.reset();
 
     await TestBed.configureTestingModule({
       imports: [IonicModule.forRoot(), TranslateModule.forRoot(), TabListPage],
@@ -77,6 +93,8 @@ describe('TabListPage', () => {
         { provide: LoadingService, useValue: loadingServiceMock },
         { provide: TaskNeonService, useValue: taskNeonServiceMock },
         { provide: MatSnackBar, useValue: snackBarMock },
+        { provide: MatDialog, useValue: dialogMock },
+        { provide: InstallService, useValue: installServiceMock },
       ],
     }).compileComponents();
 
@@ -166,7 +184,40 @@ describe('TabListPage', () => {
     expect(fixture.nativeElement.querySelector('.toolbar-search-icon')).toBeTruthy();
   });
 
-  it('keeps a crossed-off task among the open ones until its stroke settles', fakeAsync(() => {
+  describe('install button', () => {
+    const installButton = (): HTMLButtonElement | null =>
+      fixture.nativeElement.querySelector('.install-button');
+
+    it('is hidden where the app cannot be installed', () => {
+      expect(installButton()).toBeNull();
+    });
+
+    it('opens the browser install dialog directly when the browser offers one', async () => {
+      installMethod.set('prompt');
+      fixture.detectChanges();
+
+      installButton()!.click();
+      await fixture.whenStable();
+
+      expect(installServiceMock.promptInstall).toHaveBeenCalledTimes(1);
+      expect(dialogMock.open).not.toHaveBeenCalled();
+    });
+
+    it('shows the Home Screen steps on iOS, which has no install dialog', () => {
+      installMethod.set('guide');
+      fixture.detectChanges();
+
+      installButton()!.click();
+
+      expect(dialogMock.open).toHaveBeenCalledWith(InstallGuideComponent, jasmine.any(Object));
+      expect(installServiceMock.promptInstall).not.toHaveBeenCalled();
+    });
+  });
+
+  // Jasmine's clock, not fakeAsync: fakeAsync flushes every timer when the test ends, including
+  // the load timeout of the Ionic chunks the task row's first render requests, which then fail.
+  it('keeps a crossed-off task among the open ones until its stroke settles', () => {
+    jasmine.clock().install();
     taskServiceMock.tasks.set([makeTask({ id: 1, title: 'Water the plants' })]);
 
     component['toggleTaskState'](1);
@@ -174,11 +225,12 @@ describe('TabListPage', () => {
     expect(taskServiceMock.tasks()[0].done).toBeTrue();
     expect(ids(component['openTasks']())).toEqual([1]);
 
-    tick(650);
+    jasmine.clock().tick(650);
 
     expect(ids(component['openTasks']())).toEqual([]);
     expect(ids(component['doneTasks']())).toEqual([1]);
-  }));
+    jasmine.clock().uninstall();
+  });
 
   it('opens the editor in place when a task is tapped, and saves it', () => {
     taskServiceMock.tasks.set([makeTask({ id: 1, title: 'Book dentist' })]);
