@@ -9,10 +9,12 @@ Task Cloud tiene **tres capas** de prueba más un job de **GitHub Actions**. Tod
 | Capa | Runner | Qué cubre | Comando |
 |------|--------|-----------|---------|
 | Unitario web | Jasmine + Karma (ChromeHeadless) | Componentes y servicios Angular (77 tests en 17 specs) | `pnpm test:ci` |
-| Unitario API | Vitest | PIN, JWT, guards, ownership | `pnpm test:api` |
-| Integración API | Vitest + Supertest + `@nestjs/testing` | HTTP real contra Nest, Neon mockeado | `pnpm test:integration` |
-| E2E | Playwright (Chromium) | PWA: título, crear tarea, filtro de estado, pestaña Ajustes | `pnpm test:e2e` |
+| Unitario API | Vitest | PIN, JWT, guards, ownership (21 tests en 6 ficheros) | `pnpm test:api` |
+| Integración API | Vitest + Supertest + `@nestjs/testing` | HTTP real contra Nest, Neon mockeado (9 tests) | `pnpm test:integration` |
+| E2E | Playwright (Chromium) | PWA: título, crear tarea, filtro de estado, pestaña Ajustes (4 tests) | `pnpm test:e2e` |
 | Smoke Neon (opcional) | `apps/api/scripts/test-api.mjs` | API viva + `DATABASE_URL` | `pnpm --filter @task-cloud/api test:api` |
+
+Además, `pnpm test:scripts` corre 28 tests de `node:test` sobre los scripts de `scripts/`. Comprobado el 20 de octubre de 2026: unitarios, integración y scripts pasan en local, y el e2e pasa en CI.
 
 CI (`.github/workflows/ci.yml`):
 
