@@ -168,46 +168,60 @@
         }
       </div>
     } @else {
-      @if (openTasks().length) {
-        <section class="task-section" [attr.aria-label]="'TASKS.FILTER.PENDING' | translate">
-          <ion-list class="task-group" lines="none">
-            @for (task of openTasks(); track task.id) {
-              <ng-container [ngTemplateOutlet]="taskRow" [ngTemplateOutletContext]="{ $implicit: task }" />
+      <div class="task-sections" [class.has-both]="showDoneHeading()">
+        @if (openTasks().length) {
+          <section
+            class="task-section task-section--open"
+            [attr.aria-labelledby]="showDoneHeading() ? 'open-heading' : null"
+            [attr.aria-label]="showDoneHeading() ? null : ('TASKS.FILTER.PENDING' | translate)"
+          >
+            @if (showDoneHeading()) {
+              <h2 class="section-heading section-heading--open" id="open-heading">
+                <span class="section-label">
+                  {{ 'TASKS.FILTER.PENDING' | translate }}
+                  <span class="section-count">{{ openTasks().length }}</span>
+                </span>
+              </h2>
             }
-          </ion-list>
-        </section>
-      }
-
-      @if (doneTasks().length) {
-        <section
-          class="task-section task-section--done"
-          [attr.aria-labelledby]="showDoneHeading() ? 'done-heading' : null"
-          [attr.aria-label]="showDoneHeading() ? null : ('TASKS.FILTER.DONE' | translate)"
-        >
-          @if (showDoneHeading()) {
-            <h2 class="section-heading" id="done-heading">
-              <button
-                type="button"
-                class="section-toggle"
-                aria-controls="done-list"
-                [attr.aria-expanded]="isDoneExpanded()"
-                (click)="toggleDoneGroup()"
-              >
-                {{ 'TASKS.FILTER.DONE' | translate }}
-                <span class="section-count">{{ doneTasks().length }}</span>
-                <ion-icon class="section-chevron" name="chevron-down" aria-hidden="true"></ion-icon>
-              </button>
-            </h2>
-          }
-          @if (isDoneExpanded() || !showDoneHeading()) {
-            <ion-list id="done-list" class="task-group" lines="none">
-              @for (task of doneTasks(); track task.id) {
+            <ion-list class="task-group" lines="none">
+              @for (task of openTasks(); track task.id) {
                 <ng-container [ngTemplateOutlet]="taskRow" [ngTemplateOutletContext]="{ $implicit: task }" />
               }
             </ion-list>
-          }
-        </section>
-      }
+          </section>
+        }
+
+        @if (doneTasks().length) {
+          <section
+            class="task-section task-section--done"
+            [attr.aria-labelledby]="showDoneHeading() ? 'done-heading' : null"
+            [attr.aria-label]="showDoneHeading() ? null : ('TASKS.FILTER.DONE' | translate)"
+          >
+            @if (showDoneHeading()) {
+              <h2 class="section-heading" id="done-heading">
+                <button
+                  type="button"
+                  class="section-toggle"
+                  aria-controls="done-list"
+                  [attr.aria-expanded]="isDoneExpanded()"
+                  (click)="toggleDoneGroup()"
+                >
+                  {{ 'TASKS.FILTER.DONE' | translate }}
+                  <span class="section-count">{{ doneTasks().length }}</span>
+                  <ion-icon class="section-chevron" name="chevron-down" aria-hidden="true"></ion-icon>
+                </button>
+              </h2>
+            }
+            @if (isDoneExpanded() || !showDoneHeading()) {
+              <ion-list id="done-list" class="task-group" lines="none">
+                @for (task of doneTasks(); track task.id) {
+                  <ng-container [ngTemplateOutlet]="taskRow" [ngTemplateOutletContext]="{ $implicit: task }" />
+                }
+              </ion-list>
+            }
+          </section>
+        }
+      </div>
     }
   </div>
 </ion-content>
@@ -262,10 +276,12 @@
             (pointerleave)="onTaskPressEnd()"
             (contextmenu)="$event.preventDefault()"
           >
-            <span class="task-title"><span class="task-title-ink">{{ task.title }}</span></span>
-            @if (task.description) {
-              <span class="task-note">{{ task.description }}</span>
-            }
+            <span class="task-main">
+              <span class="task-title"><span class="task-title-ink">{{ task.title }}</span></span>
+              @if (task.description) {
+                <span class="task-note">{{ task.description }}</span>
+              }
+            </span>
             <span class="task-meta">
               <span class="priority-tag">
                 <ion-icon name="flag" aria-hidden="true"></ion-icon>

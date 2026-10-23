@@ -66,6 +66,16 @@ $latin-ext: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --column: 44rem;
   --gutter: 1rem;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --column: 68rem;
+    --gutter: 1.75rem;
+  }
+}
+
+:root {
 
   --ion-font-family: var(--font-ui);
   --ion-color-primary: #2b3fd0;

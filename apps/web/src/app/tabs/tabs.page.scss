@@ -40,3 +40,67 @@ ion-tab-button.tab-selected {
     --color: var(--color-ink);
   }
 }
+
+@media (min-width: 768px) {
+  .app-tab-bar {
+    --border: 0;
+    position: fixed;
+    bottom: 1.25rem;
+    left: 50%;
+    z-index: 100;
+    contain: layout style;
+    width: max-content;
+    height: 3.5rem;
+    padding: 0.35rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--ion-tab-bar-background);
+    box-shadow: var(--shadow-float);
+    transform: translateX(-50%);
+    gap: 0.25rem;
+  }
+
+  ion-tab-button {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 7.75rem;
+    max-width: none;
+    height: 2.8rem;
+    border-radius: 999px;
+    font-weight: 600;
+    transition:
+      background-color 180ms var(--ease-out),
+      color 180ms var(--ease-out);
+  }
+
+  ion-tab-button::part(native) {
+    flex-direction: row;
+    gap: 0.5rem;
+    padding-inline: 1.25rem;
+    border-radius: 999px;
+  }
+
+  ion-tab-button ion-label {
+    margin: 0 0 0 0.45rem !important;
+    font-size: 0.9375rem;
+    line-height: 1;
+  }
+
+  .tab-icon {
+    margin: 0 !important;
+    font-size: 1.25rem;
+  }
+
+  ion-tab-button.tab-selected {
+    --color-selected: var(--color-on-ink);
+    background: var(--color-ink);
+    color: var(--color-on-ink);
+    font-weight: 650;
+  }
+}
+
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+  ion-tab-button:not(.tab-selected):hover {
+    background: var(--color-surface-sunken);
+  }
+}

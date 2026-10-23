@@ -176,6 +176,25 @@ describe('TabListPage', () => {
     expect(chip.textContent).toContain('#work');
   });
 
+  it('pairs open and done sections in a two-group container when both have tasks', () => {
+    taskServiceMock.tasks.set([
+      makeTask({ id: 1, title: 'Open item', done: false }),
+      makeTask({ id: 2, title: 'Finished item', done: true }),
+    ]);
+    fixture.detectChanges();
+
+    const container: HTMLElement | null =
+      fixture.nativeElement.querySelector('.task-sections.has-both');
+    const openHeading: HTMLElement | null =
+      fixture.nativeElement.querySelector('#open-heading .section-count');
+    const doneHeading: HTMLElement | null =
+      fixture.nativeElement.querySelector('#done-heading .section-count');
+
+    expect(container).toBeTruthy();
+    expect(openHeading?.textContent?.trim()).toBe('1');
+    expect(doneHeading?.textContent?.trim()).toBe('1');
+  });
+
   it('keeps search in the header and omits a filter search chip', () => {
     taskServiceMock.tasks.set([makeTask({ id: 1, title: 'Tagged task', tags: ['work'] })]);
     fixture.detectChanges();

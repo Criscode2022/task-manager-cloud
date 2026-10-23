@@ -76,8 +76,9 @@ rounded:
   pill: "999px"
 spacing:
   gutter: "16px"
-  gutter-wide: "24px"
-  column: "44rem"
+  gutter-wide: "28px"
+  column: "42rem"
+  column-wide: "68rem"
 components:
   button-primary:
     backgroundColor: "{colors.ink}"
@@ -203,12 +204,11 @@ The full ramp in use is 0.75, 0.8125, 0.875, 0.9375, 1, 1.0625, 1.125, 1.25, 1.3
 
 ## Layout
 
-- One column, at most 44rem, centred, with a 16px gutter (24px from 768px).
-- The ink header spans the full width; its content sits in the same column.
-- **List, phone:** the name and summary on the left, icon actions on the right, the capture field across the bottom of the header. Search replaces the capture field while it is open, with a Cancel button.
-- **List, 768px and up:** search moves into the header beside the name and stays open; rows show Edit and Delete icon buttons; filter chips wrap instead of scrolling.
-- Under the header: the status switch, the chip row (horizontally scrolling on a phone, with faded edges), then the open group, then the collapsible Done group.
-- **Settings:** the sync panel first, then labelled groups: Appearance, Language, Delete data.
+- **Phone (< 768px):** one column, at most 44rem, centred, with a 16px gutter. The ink header spans the full width; its content sits in the same column. Under the header: the status switch, the horizontally scrolling chip row with faded edges, then the open group, then the collapsible Done group, and a bottom tab bar.
+- **Desktop (768px and up):** the reading column widens to 68rem with a 28px gutter. The ink masthead becomes a framed ink sheet aligned with the workspace column below it; the summary sits inline beside the page title as a translucent pill, search stays open in the header, and the expanded capture field arranges note, priority, tags, and character count in a two-column grid.
+- **List, desktop:** the status switch and filter chips share a horizontal control bar; task rows lay out title and note on the left with priority and tag pills aligned on the right beside Edit and Delete actions; at 960px and up, when both Open and Done groups have tasks, they sit side-by-side in an asymmetric two-column ledger with matching headings and counts.
+- **Settings, desktop:** a two-column asymmetric grid with the sync panel on the left and Appearance, Language, and Delete data stacked on the right.
+- **Navigation, desktop:** the bottom tab bar transforms into a floating pill dock with horizontal icon-and-label pills.
 
 ## Elevation & Depth
 

@@ -26,114 +26,118 @@
         <p class="loading-text">{{ 'COMMON.LOADING' | translate }}</p>
       </div>
     } @else {
-      <section class="sync-panel" aria-labelledby="sync-title">
-        <div class="sync-state">
-          <span class="sync-icon" [class.is-synced]="userId()" aria-hidden="true">
-            <ion-icon [name]="userId() ? 'cloud-done-outline' : 'phone-portrait-outline'"></ion-icon>
-          </span>
-          <div class="sync-copy">
-            <h2 id="sync-title" class="sync-title">
-              {{ (userId() ? 'OPTIONS.STATUS_SYNCED_TITLE' : 'OPTIONS.STATUS_LOCAL_TITLE') | translate }}
-            </h2>
-            <p class="sync-note">
-              {{ (userId() ? 'OPTIONS.STATUS_SYNCED' : 'OPTIONS.STATUS_LOCAL') | translate }}
-            </p>
-          </div>
-        </div>
-
-        @if (userId()) {
-          <dl class="sync-id">
-            <dt>{{ 'OPTIONS.USER_ID' | translate }}</dt>
-            <dd>{{ userId() }}</dd>
-          </dl>
-          <div class="sync-actions">
-            <button type="button" class="btn btn-soft" (click)="showLoginAlert()">
-              <ion-icon name="key-outline" aria-hidden="true"></ion-icon>
-              {{ 'OPTIONS.SWITCH_ACCOUNT' | translate }}
-            </button>
-            <button type="button" class="btn btn-quiet" (click)="showGoOfflineAlert()">
-              <ion-icon name="cloud-offline-outline" aria-hidden="true"></ion-icon>
-              {{ 'OPTIONS.GO_OFFLINE' | translate }}
-            </button>
-          </div>
-        } @else {
-          <div class="sync-actions sync-actions--stacked">
-            <button type="button" class="btn btn-ink btn-block" (click)="uploadTasks()">
-              <ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon>
-              {{ 'OPTIONS.UPLOAD_TASKS' | translate }}
-            </button>
-            <button type="button" class="btn btn-soft btn-block" (click)="showLoginAlert()">
-              <ion-icon name="key-outline" aria-hidden="true"></ion-icon>
-              {{ 'OPTIONS.LOGIN_WITH_PIN' | translate }}
-            </button>
-          </div>
-        }
-      </section>
-
-      <section class="settings-group" aria-labelledby="appearance-title">
-        <h2 class="group-label" id="appearance-title">{{ 'OPTIONS.APPEARANCE' | translate }}</h2>
-        <div class="group-card">
-          <ion-toggle
-            class="setting-toggle"
-            justify="space-between"
-            [checked]="isDark()"
-            (ionChange)="themeService.switchTheme()"
-          >
-            <span class="setting-row setting-row--toggle">
-              <ion-icon class="setting-icon" name="moon-outline" aria-hidden="true"></ion-icon>
-              <span class="setting-copy">
-                <span class="setting-title">{{ 'OPTIONS.DARK_MODE' | translate }}</span>
-                <span class="setting-note">{{ 'OPTIONS.DARK_MODE_DESCRIPTION' | translate }}</span>
-              </span>
+      <div class="options-layout">
+        <section class="sync-panel" aria-labelledby="sync-title">
+          <div class="sync-state">
+            <span class="sync-icon" [class.is-synced]="userId()" aria-hidden="true">
+              <ion-icon [name]="userId() ? 'cloud-done-outline' : 'phone-portrait-outline'"></ion-icon>
             </span>
-          </ion-toggle>
-        </div>
-      </section>
-
-      <section class="settings-group" aria-labelledby="language-title">
-        <h2 class="group-label" id="language-title">{{ 'OPTIONS.LANGUAGE' | translate }}</h2>
-        <app-segmented-control
-          class="language-switch"
-          [options]="languageOptions"
-          [value]="selectedLanguage()"
-          (valueChange)="changeLanguage($event)"
-          [label]="'OPTIONS.LANGUAGE' | translate"
-        />
-      </section>
-
-      <section class="settings-group" aria-labelledby="delete-title">
-        <h2 class="group-label" id="delete-title">{{ 'OPTIONS.DANGER_ZONE' | translate }}</h2>
-        <div class="group-card">
-          <button
-            type="button"
-            class="setting-row setting-row--danger"
-            [disabled]="!tasks().length"
-            (click)="showDeleteAllTasksAlert()"
-          >
-            <ion-icon class="setting-icon" name="trash-outline" aria-hidden="true"></ion-icon>
-            <span class="setting-copy">
-              <span class="setting-title">{{ 'OPTIONS.DELETE_ALL_TASKS' | translate }}</span>
-              <span class="setting-note">{{ 'OPTIONS.DELETE_ALL_TASKS_DESCRIPTION' | translate }}</span>
-            </span>
-            <ion-icon class="setting-chevron" name="chevron-forward" aria-hidden="true"></ion-icon>
-          </button>
+            <div class="sync-copy">
+              <h2 id="sync-title" class="sync-title">
+                {{ (userId() ? 'OPTIONS.STATUS_SYNCED_TITLE' : 'OPTIONS.STATUS_LOCAL_TITLE') | translate }}
+              </h2>
+              <p class="sync-note">
+                {{ (userId() ? 'OPTIONS.STATUS_SYNCED' : 'OPTIONS.STATUS_LOCAL') | translate }}
+              </p>
+            </div>
+          </div>
 
           @if (userId()) {
-            <button
-              type="button"
-              class="setting-row setting-row--danger"
-              (click)="showDeleteUserAlert()"
-            >
-              <ion-icon class="setting-icon" name="cloud-offline-outline" aria-hidden="true"></ion-icon>
-              <span class="setting-copy">
-                <span class="setting-title">{{ 'OPTIONS.DELETE_ACCOUNT' | translate }}</span>
-                <span class="setting-note">{{ 'OPTIONS.DELETE_ACCOUNT_DESCRIPTION' | translate }}</span>
-              </span>
-              <ion-icon class="setting-chevron" name="chevron-forward" aria-hidden="true"></ion-icon>
-            </button>
+            <dl class="sync-id">
+              <dt>{{ 'OPTIONS.USER_ID' | translate }}</dt>
+              <dd>{{ userId() }}</dd>
+            </dl>
+            <div class="sync-actions">
+              <button type="button" class="btn btn-soft" (click)="showLoginAlert()">
+                <ion-icon name="key-outline" aria-hidden="true"></ion-icon>
+                {{ 'OPTIONS.SWITCH_ACCOUNT' | translate }}
+              </button>
+              <button type="button" class="btn btn-quiet" (click)="showGoOfflineAlert()">
+                <ion-icon name="cloud-offline-outline" aria-hidden="true"></ion-icon>
+                {{ 'OPTIONS.GO_OFFLINE' | translate }}
+              </button>
+            </div>
+          } @else {
+            <div class="sync-actions sync-actions--stacked">
+              <button type="button" class="btn btn-ink btn-block" (click)="uploadTasks()">
+                <ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon>
+                {{ 'OPTIONS.UPLOAD_TASKS' | translate }}
+              </button>
+              <button type="button" class="btn btn-soft btn-block" (click)="showLoginAlert()">
+                <ion-icon name="key-outline" aria-hidden="true"></ion-icon>
+                {{ 'OPTIONS.LOGIN_WITH_PIN' | translate }}
+              </button>
+            </div>
           }
+        </section>
+
+        <div class="settings-stack">
+          <section class="settings-group" aria-labelledby="appearance-title">
+            <h2 class="group-label" id="appearance-title">{{ 'OPTIONS.APPEARANCE' | translate }}</h2>
+            <div class="group-card">
+              <ion-toggle
+                class="setting-toggle"
+                justify="space-between"
+                [checked]="isDark()"
+                (ionChange)="themeService.switchTheme()"
+              >
+                <span class="setting-row setting-row--toggle">
+                  <ion-icon class="setting-icon" name="moon-outline" aria-hidden="true"></ion-icon>
+                  <span class="setting-copy">
+                    <span class="setting-title">{{ 'OPTIONS.DARK_MODE' | translate }}</span>
+                    <span class="setting-note">{{ 'OPTIONS.DARK_MODE_DESCRIPTION' | translate }}</span>
+                  </span>
+                </span>
+              </ion-toggle>
+            </div>
+          </section>
+
+          <section class="settings-group" aria-labelledby="language-title">
+            <h2 class="group-label" id="language-title">{{ 'OPTIONS.LANGUAGE' | translate }}</h2>
+            <app-segmented-control
+              class="language-switch"
+              [options]="languageOptions"
+              [value]="selectedLanguage()"
+              (valueChange)="changeLanguage($event)"
+              [label]="'OPTIONS.LANGUAGE' | translate"
+            />
+          </section>
+
+          <section class="settings-group" aria-labelledby="delete-title">
+            <h2 class="group-label" id="delete-title">{{ 'OPTIONS.DANGER_ZONE' | translate }}</h2>
+            <div class="group-card">
+              <button
+                type="button"
+                class="setting-row setting-row--danger"
+                [disabled]="!tasks().length"
+                (click)="showDeleteAllTasksAlert()"
+              >
+                <ion-icon class="setting-icon" name="trash-outline" aria-hidden="true"></ion-icon>
+                <span class="setting-copy">
+                  <span class="setting-title">{{ 'OPTIONS.DELETE_ALL_TASKS' | translate }}</span>
+                  <span class="setting-note">{{ 'OPTIONS.DELETE_ALL_TASKS_DESCRIPTION' | translate }}</span>
+                </span>
+                <ion-icon class="setting-chevron" name="chevron-forward" aria-hidden="true"></ion-icon>
+              </button>
+
+              @if (userId()) {
+                <button
+                  type="button"
+                  class="setting-row setting-row--danger"
+                  (click)="showDeleteUserAlert()"
+                >
+                  <ion-icon class="setting-icon" name="cloud-offline-outline" aria-hidden="true"></ion-icon>
+                  <span class="setting-copy">
+                    <span class="setting-title">{{ 'OPTIONS.DELETE_ACCOUNT' | translate }}</span>
+                    <span class="setting-note">{{ 'OPTIONS.DELETE_ACCOUNT_DESCRIPTION' | translate }}</span>
+                  </span>
+                  <ion-icon class="setting-chevron" name="chevron-forward" aria-hidden="true"></ion-icon>
+                </button>
+              }
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
     }
   </div>
 </ion-content>

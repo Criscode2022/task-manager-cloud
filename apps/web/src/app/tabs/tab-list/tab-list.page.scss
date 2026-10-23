@@ -236,6 +236,11 @@
   margin: 0 0 0.5rem;
 }
 
+.section-heading--open {
+  display: none;
+}
+
+.section-label,
 .section-toggle {
   display: inline-flex;
   align-items: center;
@@ -250,6 +255,9 @@
   font-size: 1.125rem;
   font-weight: 650;
   letter-spacing: -0.015em;
+}
+
+.section-toggle {
   cursor: pointer;
 }
 
@@ -392,6 +400,15 @@
 .task-body:focus-visible {
   outline-offset: -2px;
   border-radius: var(--radius-sm);
+}
+
+.task-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .task-title {
@@ -588,11 +605,12 @@
   margin-top: 1.25rem;
 }
 
-// Wider screens: search sits in the masthead, rows show their actions.
+// Wider screens: search sits in the masthead, controls share a bar, rows use horizontal space,
+// and Open + Done sit side-by-side in a two-column ledger.
 
 @media (min-width: 768px) {
   .masthead {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     grid-template-areas:
       'heading search actions'
       'field field field';
@@ -605,7 +623,7 @@
     display: flex;
     grid-area: search;
     justify-self: end;
-    width: min(100%, 20rem);
+    width: min(100%, 22rem);
   }
 
   .masthead.is-searching .masthead-composer {
@@ -613,8 +631,9 @@
   }
 
   .search-field {
-    height: 2.75rem;
-    border-radius: var(--radius-md);
+    height: 2.875rem;
+    padding-inline: 1rem 0.375rem;
+    border-radius: 999px;
   }
 
   .search-cancel,
@@ -622,20 +641,94 @@
     display: none;
   }
 
-  .row-actions {
-    display: flex;
+  .list-controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .status-switch {
+    flex: 0 0 23.5rem;
+    max-width: 100%;
   }
 
   .filter-chips {
+    flex: 1 1 18rem;
     flex-wrap: wrap;
+    justify-content: flex-end;
     margin-inline: 0;
     padding-inline: 0;
     overflow: visible;
     mask-image: none;
   }
 
+  .filter-chip:not([aria-pressed='true']):not(.filter-chip--clear) {
+    background: var(--color-surface);
+  }
+
+  .task-section {
+    container-type: inline-size;
+  }
+
+  .row-actions {
+    display: flex;
+    align-self: center;
+    padding: 0 0.75rem 0 0.25rem;
+  }
+
+  .empty-state {
+    padding: 3.25rem 3rem;
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-raise);
+  }
+
   .empty-title--first {
     font-size: 2.75rem;
+  }
+}
+
+@container (min-width: 28rem) {
+  .task-row {
+    align-items: center;
+  }
+
+  .check {
+    padding-top: 0.95rem;
+  }
+
+  .task-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 1rem;
+    padding: 0.95rem 0.5rem 0.95rem 0;
+  }
+
+  .task-meta {
+    justify-content: flex-end;
+    max-width: 15rem;
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 960px) {
+  .task-sections.has-both {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(21rem, 0.95fr);
+    align-items: start;
+    gap: 1.5rem;
+  }
+
+  .task-sections.has-both .task-section + .task-section {
+    margin-top: 0;
+  }
+
+  .task-sections.has-both .section-heading--open {
+    display: block;
   }
 }
 

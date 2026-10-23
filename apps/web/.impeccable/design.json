@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-19T12:30:00.000Z",
+  "generatedAt": "2026-10-24T00:54:10.000Z",
   "title": "Design System: Task Cloud",
   "extensions": {
     "colorMeta": {
@@ -158,6 +158,10 @@
       {
         "name": "wide",
         "value": "768px"
+      },
+      {
+        "name": "ledger",
+        "value": "960px"
       }
     ]
   },
